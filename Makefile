@@ -1,5 +1,6 @@
 NAME = minirc
-CPP = main2.cpp\
+CPP = main.cpp\
+	Clients.cpp\
 
 OOO = $(CPP:.cpp=.o)
 
