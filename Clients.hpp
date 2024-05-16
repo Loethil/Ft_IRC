@@ -11,6 +11,7 @@
 # include <unistd.h>
 # include <cstring>
 # include <poll.h>
+# include <sstream>
 
 class Clients
 {

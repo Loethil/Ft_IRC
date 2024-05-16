@@ -49,6 +49,17 @@ void acceptNewConnection(int server_fd)
     newClient.set_Socket(new_socket);
     clients.push_back(newClient);
     std::cout << "New connection accepted" << std::endl;
+	if (clients[new_socket - 4].get_Username().compare("") == 0)
+	{
+		char buf[BUFFER_SIZE];
+
+		send(new_socket, "Set an Username : ", 19, 0);
+		int valread = recv(new_socket, buf, BUFFER_SIZE, 0);
+		buf[valread - 1] = '\0';
+		clients[new_socket - 4].set_Username(buf);		
+		std::string name = "Welcome " + clients[new_socket - 4].get_Username() + '\n';
+		send(new_socket, name.c_str(), name.size(), 0);
+	}
 }
 
 void handleClientMessage(int client_socket) 
@@ -62,7 +73,10 @@ void handleClientMessage(int client_socket)
         return;
     }
     buffer[valread] = '\0';
-    std::cout << "Received message: " << buffer << std::endl;
+
+	std::string buf = buffer;
+    std::cout << "Received message from " << clients[client_socket - 4].get_Username() << ": " << buffer;
+	// -4 car fd[0] == entree standard fd[1] == sortie standar fd[2] == sortie d'erreur fd[3] == fd server
 
     // Echo message back to client
     send(client_socket, buffer, valread, 0);
@@ -72,7 +86,8 @@ int main(int argc, char **argv)
 {
 	if (argc != 3)
 		return (0);
-    int server_fd = initServer(atoi(argv[2]));
+
+    int server_fd = initServer(atoi(argv[1]));
     std::vector<struct pollfd> pollfds;
     struct pollfd server_pollfd;
 
@@ -100,8 +115,8 @@ int main(int argc, char **argv)
                     client_pollfd.events = POLLIN;
                     pollfds.push_back(client_pollfd);
                 } 
-				else 
-                    handleClientMessage(pollfds[i].fd);
+				else
+                	handleClientMessage(pollfds[i].fd);
             }
         }
     }
