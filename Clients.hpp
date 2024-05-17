@@ -1,17 +1,6 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Clients.hpp                                        :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/05/16 15:50:02 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/16 20:51:55 by scarpent         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #pragma once
 #include "libs.hpp"
+#include "Channel.hpp"
 
 class Clients
 {
@@ -32,7 +21,7 @@ class Clients
 		std::string get_Username(void);
 		void		set_Username(std::string new_Username);
 		status		get_Status(void);
-		void		set_Status(status new_status);
+		void		set_Status(status new_Status);
 	private:
 		int			_Socket;
 		std::string _Nickname;

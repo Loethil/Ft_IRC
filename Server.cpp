@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Server.cpp                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/05/16 16:23:59 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/17 18:48:52 by llaigle          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "Server.hpp"
 #include <cstdio>
 
@@ -85,8 +73,6 @@ void Server::acceptNewConnection()
     send(new_socket, "Please enter the password: ", 28, 0);
 }
 
-
-
 void Server::handleClientMessage(int client_socket, Clients::status status)
 {
     char buffer[BUFFER_SIZE + 1]; // +1 for null terminator
@@ -137,7 +123,7 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
                 return;
             }
             std::cout << "Received message: " << buffer << std::endl;
-            send(client_socket, buffer, valread, 0);
+            // send(client_socket, buffer, valread, 0);
             break;
     }
 }
