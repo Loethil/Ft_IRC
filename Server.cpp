@@ -6,7 +6,7 @@
 /*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:23:59 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/17 18:38:50 by llaigle          ###   ########.fr       */
+/*   Updated: 2024/05/17 18:48:52 by llaigle          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ void    Server::start(int port)
         std::cerr << "Socket failed" << std::endl;
         exit(EXIT_FAILURE);
     }
-    // fcntl(_server_fd, F_SETFL, O_NONBLOCK);
+    fcntl(_server_fd, F_SETFL, O_NONBLOCK);
     _serv_adr.sin_family = AF_INET;
     _serv_adr.sin_addr.s_addr = INADDR_ANY;
     _serv_adr.sin_port = htons(port);
@@ -75,7 +75,7 @@ void Server::acceptNewConnection()
         std::cerr << "Accept failed" << std::endl;
         exit(EXIT_FAILURE);
     }
-    
+    fcntl(_server_fd, F_SETFL, O_NONBLOCK);
     Clients newClient;
     newClient.set_Socket(new_socket);
     newClient.set_Status(Clients::PASSWORD);
@@ -114,7 +114,7 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
             }
             else
             {
-                send(client_socket, "Invalid password, please try again...", 38, 0);
+                send(client_socket, "Invalid password, please try again...\n", 39, 0);
             }
             break;
         case Clients::USERNAME:
@@ -127,7 +127,7 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
             buffer[valread - 1] = '\0';
             client.set_Nickname(buffer);
             client.set_Status(Clients::COMPLETED);
-            welcomeMsg = "Welcome " + client.get_Username() + " " + client.get_Nickname() + '\n';
+            welcomeMsg = "Welcome " + client.get_Username() + " " + client.get_Nickname() + " !\n";
             send(client_socket, welcomeMsg.c_str(), welcomeMsg.size(), 0);
             break;
         case Clients::COMPLETED:
