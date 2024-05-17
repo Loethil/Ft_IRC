@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Clients.cpp                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/05/16 15:49:54 by llaigle           #+#    #+#             */
+/*   Updated: 2024/05/16 20:51:49 by scarpent         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "Clients.hpp"
 
 Clients::Clients(void)
@@ -26,7 +38,7 @@ std::string Clients::get_Nickname(void)
 	return(this->_Nickname);
 }
 
-void	Clients::set_Nickname(int new_Nickname)
+void	Clients::set_Nickname(std::string new_Nickname)
 {
 	this->_Nickname = new_Nickname;
 	return ;
