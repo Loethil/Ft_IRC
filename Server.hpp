@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
+/*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:24:31 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/16 19:42:33 by scarpent         ###   ########.fr       */
+/*   Updated: 2024/05/17 18:30:29 by llaigle          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,8 @@ class Server
         int                                 _server_fd;
         int                                 _port;
         std::string                         _pwd;
-        std::vector<Clients>                _clients;
+        //std::vector<Clients>                _clients;
+        std::map<int , Clients>             _clients;
         struct sockaddr_in                  _cli_adr;
         struct sockaddr_in                  _serv_adr;
 
