@@ -12,4 +12,3 @@
 # include <unistd.h>
 # include <cstring>
 # include <poll.h>
-# include <errno.h>

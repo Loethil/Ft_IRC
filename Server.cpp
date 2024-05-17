@@ -6,7 +6,7 @@
 /*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:23:59 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/17 14:39:52 by scarpent         ###   ########.fr       */
+/*   Updated: 2024/05/16 20:55:04 by scarpent         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ void    Server::start(int port)
         std::cerr << "Socket failed" << std::endl;
         exit(EXIT_FAILURE);
     }
-    fcntl(_server_fd, F_SETFL, O_NONBLOCK | fcntl(_server_fd, F_GETFL, 0));
+    // fcntl(_server_fd, F_SETFL, O_NONBLOCK);
     _serv_adr.sin_family = AF_INET;
     _serv_adr.sin_addr.s_addr = INADDR_ANY;
     _serv_adr.sin_port = htons(port);
@@ -69,7 +69,7 @@ void    Server::acceptNewConnection()
 {
     socklen_t addrlen = sizeof(_cli_adr);
     int new_socket = accept(_server_fd, (struct sockaddr *)&_cli_adr, &addrlen);
-    fcntl(new_socket, F_SETFL, O_NONBLOCK | fcntl(new_socket, F_GETFL, 0));
+    // fcntl(new_socket, F_SETFL, O_NONBLOCK);
     if (new_socket < 0)
     {
         std::cerr << "Accept failed" << std::endl;
@@ -79,80 +79,55 @@ void    Server::acceptNewConnection()
     newClient.set_Socket(new_socket);
     _clients.push_back(newClient);
     std::cout << "New connection accepted" << std::endl;
-    // Username
-    std::string username;
-    char buffer[BUFFER_SIZE];
-    while (true) {
-        int userRead = recv(new_socket, buffer, BUFFER_SIZE, 0);
-        if (userRead < 0) {
-            std::cerr << "Error receiving username " << buffer << std::endl;
-            close(new_socket);
-            return;
-        } else if (userRead == 0) {
-            std::cerr << "Client disconnected while receiving username" << std::endl;
-            close(new_socket);
-            return;
-        }
-        username.append(buffer, userRead);
-        if (username.find('\n') != std::string::npos) { // Check for newline (complete username)
-            username.erase(username.find('\n')); // Remove newline character
-            _clients[new_socket - 4].set_Username(username);
-            send(new_socket, "Set a Nickname : ", 18, 0);
-            break;
-        }
-    }
-
-    // Nickname
-    std::string nickname;
-    while (true) {
-        int nickRead = recv(new_socket, buffer, BUFFER_SIZE, 0);
-        if (nickRead < 0) {
-            std::cerr << "Error receiving nickname" << std::endl;
-            close(new_socket);
-            return;
-        } else if (nickRead == 0) {
-            std::cerr << "Client disconnected while receiving nickname" << std::endl;
-            close(new_socket);
-            return;
-        }
-        nickname.append(buffer, nickRead);
-        if (nickname.find('\n') != std::string::npos) { // Check for newline (complete nickname)
-            nickname.erase(nickname.find('\n')); // Remove newline character
-            _clients[new_socket - 4].set_Nickname(nickname);
-            std::string welcomeMsg = "Welcome " + _clients[new_socket - 4].get_Username() + " " + _clients[new_socket - 4].get_Nickname() + '\n';
-            send(new_socket, welcomeMsg.c_str(), welcomeMsg.size(), 0);
-            break;
-        }
-    }
+	send(new_socket, "Please enter the password : ", 29, 0);
+	std::cout << new_socket << std::endl;
+	_clients[new_socket - 4].set_Status(Clients::PASSWORD);
 }
 
-ssize_t    Server::handleClientMessage(int client_socket)
+void    Server::handleClientMessage(int client_socket, Clients::status status)
 {
     char buffer[BUFFER_SIZE];
     ssize_t valread = read(client_socket, buffer, BUFFER_SIZE);
-    if (valread == 0)
-    {
-        close(client_socket);
-        std::cout << "Client disconnected" << std::endl;
-        return valread;
-    }
-    else if (valread < 0)
-    {
-        if (errno == EWOULDBLOCK)
-            return 0;
-    }
-    else
-    {
-        std::cerr << "Read error on client socket: " << client_socket << std::endl;
-        close(client_socket);
-        return -1;
-    }
-    buffer[valread] = '\0';
-    std::cout << "Received message: " << std::endl << buffer << std::endl;
+	std::string Username;
+	std::string pwd = _pwd + "\n";
 
-    // Echo message back to client
-    send(client_socket, buffer, valread, 0);
-    return valread;
+	switch (status)
+	{
+		case Clients::PASSWORD: ;
+			if (pwd.compare(buffer) == 0)
+			{
+				_clients[client_socket - 4].set_Status(Clients::USERNAME);
+				send(client_socket, "Set a Username : ", 18, 0);
+			}
+			else
+			{
+				send(client_socket, "Invalid password, please try again...", 38, 0);
+			}
+			break ;
+		case Clients::USERNAME:
+			_clients[client_socket - 4].set_Username(buffer);
+			send(client_socket, "Set a Nickname : ", 18, 0);
+			_clients[client_socket - 4].set_Status(Clients::NICKNAME);
+			break ;
+		case Clients::NICKNAME:
+			_clients[client_socket - 4].set_Nickname(buffer);
+			_clients[client_socket - 4].set_Status(Clients::COMPLETED);
+			Username = "Welcome " + _clients[client_socket - 4].get_Username() + " " + _clients[client_socket - 4].get_Nickname() + '\n';
+			send(client_socket, Username.c_str(), Username.size(), 0);
+			break ;
+		case Clients::COMPLETED: ;
+			if (valread == 0)
+			{
+				close(client_socket);
+				std::cout << "Client disconnected" << std::endl;
+				return;
+			}
+			buffer[valread] = '\0';
+			std::cout << "Received message: " << std::endl << buffer << std::endl;	
+			// Echo message back to client
+			send(client_socket, buffer, valread, 0);
+			break ;
+	}
 }
 
 void    Server::run()
@@ -191,11 +166,7 @@ void    Server::run()
                     pollfds.push_back(client_pollfd);
                 }
                 else
-                {
-                    ssize_t valread = handleClientMessage(pollfds[i].fd);
-                    if (!valread)
-                        pollfds.erase(pollfds.begin() + i);
-                }
+                    handleClientMessage(pollfds[i].fd, _clients[i].get_Status());
             }
         }
     }
