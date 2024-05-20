@@ -6,7 +6,7 @@
 /*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:23:59 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/20 15:25:19 by llaigle          ###   ########.fr       */
+/*   Updated: 2024/05/20 16:32:47 by llaigle          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,7 +128,7 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 
         std::cout << "Command: " << command << std::endl;
 		std::cout << "read buffer: " << buffer << std::endl;
-        if (status == Clients::USERNAME)
+        if (status == Clients::USERNAME),
         {
             if (command == "NICK")
             {
