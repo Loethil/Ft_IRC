@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
+/*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:23:59 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/20 13:44:04 by scarpent         ###   ########.fr       */
+/*   Updated: 2024/05/20 15:25:19 by llaigle          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,26 +127,6 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
         lineStream >> command;
 
         std::cout << "Command: " << command << std::endl;
-
-        // if (status == Clients::PASSWORD)
-        // {
-        //     if (command == "PASS")
-        //     {
-        //         std::string pass;
-        //         lineStream >> pass;
-        //         if (pass == _pwd)
-        //         {
-        //             client.set_Status(Clients::USERNAME);
-        //         }
-        //         else
-        //         {
-        //             send(client_socket, "NOTICE AUTH :*** Invalid password\n", 34, 0);
-        //             close(client_socket);
-        //             _clients.erase(client_socket);
-        //             return;
-        //         }
-        //     }
-        // }
 		std::cout << "read buffer: " << buffer << std::endl;
         if (status == Clients::USERNAME)
         {
