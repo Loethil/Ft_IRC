@@ -6,7 +6,7 @@
 /*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 15:50:02 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/18 16:27:24 by scarpent         ###   ########.fr       */
+/*   Updated: 2024/05/20 16:20:51 by scarpent         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,7 @@ class Clients
 		std::string			partialData;
 		typedef enum		status
 		{
-			PASSWORD,
 			USERNAME,
-			NICKNAME,
 			COMPLETED,
 		}					status;
 		int			get_Socket(void);
