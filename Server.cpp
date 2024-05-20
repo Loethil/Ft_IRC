@@ -46,7 +46,7 @@ void    Server::start(int port)
         std::cerr << "Socket failed" << std::endl;
         exit(EXIT_FAILURE);
     }
-    // fcntl(_server_fd, F_SETFL, O_NONBLOCK);
+    //fcntl(_server_fd, F_SETFL, O_NONBLOCK | fcntl(_server_fd, F_GETFL, 0));
     _serv_adr.sin_family = AF_INET;
     _serv_adr.sin_addr.s_addr = INADDR_ANY;
     _serv_adr.sin_port = htons(port);
@@ -69,7 +69,7 @@ void    Server::acceptNewConnection()
 {
     socklen_t addrlen = sizeof(_cli_adr);
     int new_socket = accept(_server_fd, (struct sockaddr *)&_cli_adr, &addrlen);
-    // fcntl(new_socket, F_SETFL, O_NONBLOCK);
+    //fcntl(new_socket, F_SETFL, O_NONBLOCK | fcntl(new_socket, F_GETFL, 0));
     if (new_socket < 0)
     {
         std::cerr << "Accept failed" << std::endl;
@@ -79,55 +79,38 @@ void    Server::acceptNewConnection()
     newClient.set_Socket(new_socket);
     _clients.push_back(newClient);
     std::cout << "New connection accepted" << std::endl;
-	send(new_socket, "Please enter the password : ", 29, 0);
-	std::cout << new_socket << std::endl;
-	_clients[new_socket - 4].set_Status(Clients::PASSWORD);
+    if (_clients[new_socket - 4].get_Username().compare("") == 0)
+	{
+		char buf[BUFFER_SIZE];
+
+		send(new_socket, "Set a Username : ", 18, 0);
+		int userRead = recv(new_socket, buf, BUFFER_SIZE, 0);
+		buf[userRead - 1] = '\0';
+		_clients[new_socket - 4].set_Username(buf);		
+        send(new_socket, "Set a Nickname : ", 18, 0);
+        int nickRead = recv(new_socket, buf, BUFFER_SIZE, 0);
+        buf[nickRead - 1] = '\0';
+        _clients[new_socket - 4].set_Nickname(buf);
+		std::string Username = "Welcome " + _clients[new_socket - 4].get_Username() + " " + _clients[new_socket - 4].get_Nickname() + '\n';
+		send(new_socket, Username.c_str(), Username.size(), 0);
+	}
 }
 
-void    Server::handleClientMessage(int client_socket, Clients::status status)
+void    Server::handleClientMessage(int client_socket)
 {
     char buffer[BUFFER_SIZE];
     ssize_t valread = read(client_socket, buffer, BUFFER_SIZE);
-	std::string Username;
-	std::string pwd = _pwd + "\n";
+    if (valread == 0)
+    {
+        close(client_socket);
+        std::cout << "Client disconnected" << std::endl;
+        return;
+    }
+    buffer[valread] = '\0';
+    std::cout << "Received message: " << std::endl << buffer << std::endl;
 
-	switch (status)
-	{
-		case Clients::PASSWORD: ;
-			if (pwd.compare(buffer) == 0)
-			{
-				_clients[client_socket - 4].set_Status(Clients::USERNAME);
-				send(client_socket, "Set a Username : ", 18, 0);
-			}
-			else
-			{
-				send(client_socket, "Invalid password, please try again...", 38, 0);
-			}
-			break ;
-		case Clients::USERNAME:
-			_clients[client_socket - 4].set_Username(buffer);
-			send(client_socket, "Set a Nickname : ", 18, 0);
-			_clients[client_socket - 4].set_Status(Clients::NICKNAME);
-			break ;
-		case Clients::NICKNAME:
-			_clients[client_socket - 4].set_Nickname(buffer);
-			_clients[client_socket - 4].set_Status(Clients::COMPLETED);
-			Username = "Welcome " + _clients[client_socket - 4].get_Username() + " " + _clients[client_socket - 4].get_Nickname() + '\n';
-			send(client_socket, Username.c_str(), Username.size(), 0);
-			break ;
-		case Clients::COMPLETED: ;
-			if (valread == 0)
-			{
-				close(client_socket);
-				std::cout << "Client disconnected" << std::endl;
-				return;
-			}
-			buffer[valread] = '\0';
-			std::cout << "Received message: " << std::endl << buffer << std::endl;	
-			// Echo message back to client
-			send(client_socket, buffer, valread, 0);
-			break ;
-	}
+    // Echo message back to client
+    send(client_socket, buffer, valread, 0);
 }
 
 void    Server::run()
@@ -166,7 +149,7 @@ void    Server::run()
                     pollfds.push_back(client_pollfd);
                 }
                 else
-                    handleClientMessage(pollfds[i].fd, _clients[i].get_Status());
+                    handleClientMessage(pollfds[i].fd);
             }
         }
     }

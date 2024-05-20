@@ -33,7 +33,7 @@ class Server
         ~Server();
         void    start(int port);
         void    acceptNewConnection();
-        void	handleClientMessage(int client_socket, Clients::status status);
+        void    handleClientMessage(int client_socket);
         void    run();
 
         std::string getPwd();

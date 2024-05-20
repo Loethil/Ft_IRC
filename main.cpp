@@ -22,7 +22,6 @@ int main(int argc, char **argv)
     }
 
     Server server;
-	server.setPwd(argv[2]);
     server.start(atoi(argv[1]));
     server.run();
 
