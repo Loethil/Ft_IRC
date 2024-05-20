@@ -12,7 +12,9 @@
 
 NAME = ircserv
 CPP = main.cpp\
-	Clients.cpp Server.cpp
+	Clients.cpp\
+	Server.cpp\
+	Channel.cpp
 
 OOO = $(CPP:.cpp=.o)
 

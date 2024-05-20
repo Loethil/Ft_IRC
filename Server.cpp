@@ -39,6 +39,7 @@ void	Server::setPort(int port)
 	_port = port;
 }
 
+//fonction permettant d'initialiser tout ce dont le serveur a besoin(ex: socket, bind, listen)
 void	Server::start(int port)
 {
 	std::cout << "Starting the server on port " << port << "..." << std::endl;
@@ -67,168 +68,7 @@ void	Server::start(int port)
 	std::cout << "The server started with success !" << std::endl;
 }
 
-void	Server::acceptNewConnection()
-{
-	socklen_t addrlen = sizeof(_cli_adr);
-	int new_socket = accept(_server_fd, (struct sockaddr *)&_cli_adr, &addrlen);
-	if (new_socket < 0)
-	{
-		std::cerr << "Accept failed" << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	fcntl(_server_fd, F_SETFL, O_NONBLOCK);
-	Clients newClient;
-	newClient.set_Socket(new_socket);
-	newClient.set_Status(Clients::USERNAME); //modif
-	_clients[new_socket] = newClient;
-
-	std::cout << "New connection accepted: " << new_socket << std::endl;
-	//send(new_socket, "Please enter the password: ", 28, 0);
-}
-
-void Server::handleClientMessage(int client_socket, Clients::status status)
-{
-    char buffer[BUFFER_SIZE + 1]; // +1 for null terminator
-    ssize_t valread = read(client_socket, buffer, BUFFER_SIZE);
-    if (valread < 0)
-    {
-        std::cerr << "Read failed" << std::endl;
-        close(client_socket);
-        _clients.erase(client_socket);
-        return;
-    }
-    buffer[valread] = '\0';
-
-    std::string msg(buffer);
-    std::istringstream iss(msg);
-    std::string line;
-
-    Clients &client = _clients[client_socket];
-
-    // Append received data to the client's partial data buffer
-    client.partialData.append(buffer, valread);
-
-    // Process complete lines from the client's partial data buffer
-    size_t pos;
-    while ((pos = client.partialData.find('\n')) != std::string::npos)
-    {
-        std::string line = client.partialData.substr(0, pos);
-        client.partialData.erase(0, pos + 1);
-
-        // Remove trailing '\r' if present
-        if (!line.empty() && line[line.size() - 1] == '\r')
-            line.erase(line.size() - 1);
-
-        std::istringstream lineStream(line);
-        std::string command;
-        lineStream >> command;
-
-        std::cout << "Command: " << command << std::endl;
-		std::cout << "read buffer: " << buffer << std::endl;
-        std::cout << "Client Status: " << client.get_Status() << std::endl;
-
-        if (status == Clients::USERNAME)
-        {
-            if (command == "PASS")
-            {
-                std::string pass;
-                lineStream >> pass;
-                if (pass == _pwd)
-                {
-                    client.set_Status(Clients::USERNAME);
-                }
-                else
-                {
-                    send(client_socket, "Invalid password, try again...\n", 32, 0);
-                    close(client_socket);
-                    _clients.erase(client_socket);
-                    return;
-                }
-            }
-            else if (command == "NICK")
-            {
-                std::string nick;
-                lineStream >> nick;
-                client.set_Nickname(nick);
-                std::cout << "Nickname set to: " << client.get_Nickname() << std::endl;
-            }
-            else if (command == "USER")
-            {
-                std::string user, mode, unused, realname;
-                lineStream >> user >> mode >> unused;
-                std::getline(lineStream, realname);
-                if (!realname.empty() && realname[0] == ' ' && realname[1] == ':')
-                    realname.erase(0, 2);
-                client.set_Username(user);
-                client.set_Realname(realname);
-                client.set_Status(Clients::COMPLETED);
-                std::cout << "Username set to: " << client.get_Username() << std::endl;
-                std::cout << "Realname set to: " << client.get_Realname() << std::endl;
-                sendWelcomeMessages(client_socket, client);
-            }
-        }
-        else if (status == Clients::COMPLETED)
-        {
-            if (command == "JOIN")
-            {
-                std::string channel;
-                lineStream >> channel;
-
-                std::string joinMsg = ":" + client.get_Nickname() + "!" + client.get_Username() + "@localhost JOIN " + channel + "\r\n";
-                std::cout << "Sent JOIN message: " << joinMsg << std::endl;
-                send(client_socket, joinMsg.c_str(), joinMsg.size(), 0);
-
-                std::string namesList = ":I.R.SIUSIU 353 " + client.get_Nickname() + " = " + channel + " :" + client.get_Nickname() + "\n";
-                std::cout << "Sent NAMES list: " << namesList << std::endl;
-                send(client_socket, namesList.c_str(), namesList.size(), 0);
-
-                std::string endOfNames = ":I.R.SIUSIU 366 " + client.get_Nickname() + " " + channel + " :End of /NAMES list.\n";
-                std::cout << "Sent end of NAMES list: " << endOfNames << std::endl;
-                send(client_socket, endOfNames.c_str(), endOfNames.size(), 0);
-            }
-            else if (valread == 0)
-            {
-                close(client_socket);
-                _clients.erase(client_socket);
-                std::cout << "Client disconnected" << std::endl;
-                return;
-            }
-            else
-            {
-                std::cout << "Received message: " << buffer << std::endl;
-                send(client_socket, buffer, valread, 0);
-            }
-        }
-    }
-}
-
-void Server::sendWelcomeMessages(int client_socket, Clients &client)
-{
-    std::string welcomeMsg = ":I.R.SIUSIU 001 " + client.get_Nickname() + " :Welcome to the IRC server, " + client.get_Realname() + "\n";
-    send(client_socket, welcomeMsg.c_str(), welcomeMsg.size(), 0);
-    std::cout << "Sent welcome message: " << welcomeMsg;
-
-    std::string yourHost = ":I.R.SIUSIU 002 " + client.get_Nickname() + " :Your host is I.R.SIUSIU, running version 1.0\n";
-    send(client_socket, yourHost.c_str(), yourHost.size(), 0);
-    std::cout << "Sent yourHost message: " << yourHost;
-
-    std::string created = ":I.R.SIUSIU 003 " + client.get_Nickname() + "\n";
-    send(client_socket, created.c_str(), created.size(), 0);
-    std::cout << "Sent created message: " << created;
-
-    std::string myInfo = ":I.R.SIUSIU 004 " + client.get_Nickname() + "\n";
-    send(client_socket, myInfo.c_str(), myInfo.size(), 0);
-    std::cout << "Sent myInfo message: " << myInfo;
-
-    std::string motdStart = ":I.R.SIUSIU 375 " + client.get_Nickname() + " :- I.R.SIUSIU Message of the Day -\n";
-    send(client_socket, motdStart.c_str(), motdStart.size(), 0);
-    std::cout << "Sent MOTD start: " << motdStart;
-
-    std::string motdEnd = ":I.R.SIUSIU 376 " + client.get_Nickname() + " :End of /MOTD command.\n";
-    send(client_socket, motdEnd.c_str(), motdEnd.size(), 0);
-    std::cout << "Sent MOTD end: " << motdEnd;
-}
-
+//fonction permettant de lancer le serveur
 void	Server::run()
 {
 	if (_server_fd == -1)
@@ -274,3 +114,181 @@ void	Server::run()
 		}
 	}
 }
+
+//fonction permettant d'accepter de nouveau clents et de lui donner ses bons parametres
+void	Server::acceptNewConnection()
+{
+	socklen_t addrlen = sizeof(_cli_adr);
+	int new_socket = accept(_server_fd, (struct sockaddr *)&_cli_adr, &addrlen);
+	if (new_socket < 0)
+	{
+		std::cerr << "Accept failed" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	fcntl(_server_fd, F_SETFL, O_NONBLOCK);
+	Clients newClient;
+	newClient.set_Socket(new_socket);
+	newClient.set_Status(Clients::USERNAME); //modif
+	_clients[new_socket] = newClient;
+
+	std::cout << "New connection accepted: " << new_socket << std::endl;
+	//send(new_socket, "Please enter the password: ", 28, 0);
+}
+
+//fonction qui gere toutes les entrees de l'utilisateur 
+void Server::handleClientMessage(int client_socket, Clients::status status)
+{
+    char buffer[BUFFER_SIZE + 1]; // +1 for null terminator
+    ssize_t valread = read(client_socket, buffer, BUFFER_SIZE);
+    if (valread < 0)
+    {
+        std::cerr << "Read failed" << std::endl;
+        close(client_socket);
+        _clients.erase(client_socket);
+        return;
+    }
+    buffer[valread] = '\0';
+
+    // std::string msg(buffer); decommenter car inutile ?
+    // std::istringstream iss(msg); decommenter car inutile ? 
+    // std::string line; decommenter car inutile ?
+    Clients &client = _clients[client_socket];
+    client.partialData.append(buffer, valread);
+    size_t pos;
+
+    while ((pos = client.partialData.find('\n')) != std::string::npos)
+    {
+        std::string line = client.partialData.substr(0, pos);
+        client.partialData.erase(0, pos + 1);
+        if (!line.empty() && line[line.size() - 1] == '\r')  // Remove trailing '\r' if present
+            line.erase(line.size() - 1);
+        std::istringstream lineStream(line);
+
+        std::string command;
+        lineStream >> command;
+        std::cout << "Command: " << command << std::endl;
+		std::cout << "read buffer: " << buffer << std::endl;
+        std::cout << "Client Status: " << client.get_Status() << std::endl;
+
+        if (status == Clients::USERNAME)
+        {
+            if (command == "PASS")
+			{
+				if (pass(client, lineStream, client_socket) == false)
+					return ;	
+			}
+            else if (command == "NICK")
+				nick(client, lineStream);
+            else if (command == "USER")
+				user(client, lineStream, client_socket);
+        }
+        else if (status == Clients::COMPLETED)
+        {
+            if (command == "JOIN")
+				join(client, lineStream, client_socket);
+            else if (valread == 0)
+            {
+                close(client_socket);
+                _clients.erase(client_socket);
+                std::cout << "Client disconnected" << std::endl;
+                return;
+            }
+            else
+            {
+                std::cout << "Received message: " << buffer << std::endl;
+                send(client_socket, buffer, valread, 0);
+            }
+        }
+    }
+}
+ //fonction permettant de rejoindre un channel
+void	Server::join(Clients &client, std::istringstream &lineStream, int client_socket)
+{
+        std::string channel;
+		lineStream >> channel;
+
+		std::string joinMsg = ":" + client.get_Nickname() + "!" + client.get_Username() + "@localhost JOIN " + channel + "\r\n";
+		std::cout << "Sent JOIN message: " << joinMsg << std::endl;
+		send(client_socket, joinMsg.c_str(), joinMsg.size(), 0);
+
+		std::string namesList = ":I.R.SIUSIU 353 " + client.get_Nickname() + " = " + channel + " :" + client.get_Nickname() + "\n";
+		std::cout << "Sent NAMES list: " << namesList << std::endl;
+		send(client_socket, namesList.c_str(), namesList.size(), 0);
+
+		std::string endOfNames = ":I.R.SIUSIU 366 " + client.get_Nickname() + " " + channel + " :End of /NAMES list.\n";
+		std::cout << "Sent end of NAMES list: " << endOfNames << std::endl;
+		send(client_socket, endOfNames.c_str(), endOfNames.size(), 0);
+}
+
+//fonction permettant de verifier le mot de passe
+bool	Server::pass(Clients &client, std::istringstream &lineStream, int client_socket)
+{
+    std::string pass;
+	lineStream >> pass;
+	if (pass == _pwd)
+	{
+		client.set_Status(Clients::USERNAME);
+		return (true);
+	}
+	else
+	{
+		send(client_socket, "Invalid password, try again...\n", 32, 0);
+		close(client_socket);
+		_clients.erase(client_socket);
+		return (false);
+	}
+}
+
+//fonction permettant de set le nickname de l'utilisateur
+void	Server::nick(Clients &client, std::istringstream &lineStream)
+{
+	std::string nick;
+	lineStream >> nick;
+	client.set_Nickname(nick);
+	std::cout << "Nickname set to: " << client.get_Nickname() << std::endl;
+}
+
+//fonction permettant de set l'Username, le Realname et le status de l'utilisateur
+void	Server::user(Clients &client, std::istringstream &lineStream, int client_socket)
+{
+	std::string user, mode, unused, realname;
+	lineStream >> user >> mode >> unused;
+	std::getline(lineStream, realname);
+	if (!realname.empty() && realname[0] == ' ' && realname[1] == ':')
+		realname.erase(0, 2);
+	client.set_Username(user);
+	client.set_Realname(realname);
+	client.set_Status(Clients::COMPLETED);
+	std::cout << "Username set to: " << client.get_Username() << std::endl;
+	std::cout << "Realname set to: " << client.get_Realname() << std::endl;
+	sendWelcomeMessages(client_socket, client);
+}
+
+//fonction permettant d'afficher les messages de bienvenu a l'utilisateur
+void Server::sendWelcomeMessages(int client_socket, Clients &client)
+{
+    std::string welcomeMsg = ":I.R.SIUSIU 001 " + client.get_Nickname() + " :Welcome to the IRC server, " + client.get_Realname() + "\n";
+    send(client_socket, welcomeMsg.c_str(), welcomeMsg.size(), 0);
+    std::cout << "Sent welcome message: " << welcomeMsg;
+
+    std::string yourHost = ":I.R.SIUSIU 002 " + client.get_Nickname() + " :Your host is I.R.SIUSIU, running version 1.0\n";
+    send(client_socket, yourHost.c_str(), yourHost.size(), 0);
+    std::cout << "Sent yourHost message: " << yourHost;
+
+    std::string created = ":I.R.SIUSIU 003 " + client.get_Nickname() + "\n";
+    send(client_socket, created.c_str(), created.size(), 0);
+    std::cout << "Sent created message: " << created;
+
+    std::string myInfo = ":I.R.SIUSIU 004 " + client.get_Nickname() + "\n";
+    send(client_socket, myInfo.c_str(), myInfo.size(), 0);
+    std::cout << "Sent myInfo message: " << myInfo;
+
+    std::string motdStart = ":I.R.SIUSIU 375 " + client.get_Nickname() + " :- I.R.SIUSIU Message of the Day -\n";
+    send(client_socket, motdStart.c_str(), motdStart.size(), 0);
+    std::cout << "Sent MOTD start: " << motdStart;
+
+    std::string motdEnd = ":I.R.SIUSIU 376 " + client.get_Nickname() + " :End of /MOTD command.\n";
+    send(client_socket, motdEnd.c_str(), motdEnd.size(), 0);
+    std::cout << "Sent MOTD end: " << motdEnd;
+}
+
