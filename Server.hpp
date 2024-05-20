@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
+/*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:24:31 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/17 18:30:29 by llaigle          ###   ########.fr       */
+/*   Updated: 2024/05/20 13:36:41 by scarpent         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@ class Server
         int                                 _server_fd;
         int                                 _port;
         std::string                         _pwd;
+        std::string                         _server_name;
         //std::vector<Clients>                _clients;
         std::map<int , Clients>             _clients;
         struct sockaddr_in                  _cli_adr;
@@ -35,6 +36,7 @@ class Server
         void    start(int port);
         void    acceptNewConnection();
         void	handleClientMessage(int client_socket, Clients::status status);
+        void    sendWelcomeMessages(int client_socket, Clients &client);
         void    run();
 
         std::string getPwd();
