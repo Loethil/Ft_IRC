@@ -6,7 +6,7 @@
 /*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:23:59 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/20 13:44:04 by scarpent         ###   ########.fr       */
+/*   Updated: 2024/05/20 16:21:42 by scarpent         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,7 +84,6 @@ void	Server::acceptNewConnection()
 
 	std::cout << "New connection accepted: " << new_socket << std::endl;
 	//send(new_socket, "Please enter the password: ", 28, 0);
-	send(new_socket, "NOTICE AUTH :*** Welcome to the IRC server!\n", 45, 0);
 }
 
 void Server::handleClientMessage(int client_socket, Clients::status status)
@@ -127,30 +126,28 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
         lineStream >> command;
 
         std::cout << "Command: " << command << std::endl;
-
-        // if (status == Clients::PASSWORD)
-        // {
-        //     if (command == "PASS")
-        //     {
-        //         std::string pass;
-        //         lineStream >> pass;
-        //         if (pass == _pwd)
-        //         {
-        //             client.set_Status(Clients::USERNAME);
-        //         }
-        //         else
-        //         {
-        //             send(client_socket, "NOTICE AUTH :*** Invalid password\n", 34, 0);
-        //             close(client_socket);
-        //             _clients.erase(client_socket);
-        //             return;
-        //         }
-        //     }
-        // }
 		std::cout << "read buffer: " << buffer << std::endl;
+        std::cout << "Client Status: " << client.get_Status() << std::endl;
+
         if (status == Clients::USERNAME)
         {
-            if (command == "NICK")
+            if (command == "PASS")
+            {
+                std::string pass;
+                lineStream >> pass;
+                if (pass == _pwd)
+                {
+                    client.set_Status(Clients::USERNAME);
+                }
+                else
+                {
+                    send(client_socket, "Invalid password, try again...\n", 32, 0);
+                    close(client_socket);
+                    _clients.erase(client_socket);
+                    return;
+                }
+            }
+            else if (command == "NICK")
             {
                 std::string nick;
                 lineStream >> nick;
@@ -179,16 +176,16 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
                 std::string channel;
                 lineStream >> channel;
 
-                std::string joinMsg = ":" + client.get_Nickname() + "!" + client.get_Username() + "@localhost JOIN " + channel + "\n";
-                std::cout << "Sending JOIN message: " << joinMsg << std::endl;
+                std::string joinMsg = ":" + client.get_Nickname() + "!" + client.get_Username() + "@localhost JOIN " + channel + "\r\n";
+                std::cout << "Sent JOIN message: " << joinMsg << std::endl;
                 send(client_socket, joinMsg.c_str(), joinMsg.size(), 0);
 
                 std::string namesList = ":I.R.SIUSIU 353 " + client.get_Nickname() + " = " + channel + " :" + client.get_Nickname() + "\n";
-                std::cout << "Sending NAMES list: " << namesList << std::endl;
+                std::cout << "Sent NAMES list: " << namesList << std::endl;
                 send(client_socket, namesList.c_str(), namesList.size(), 0);
 
                 std::string endOfNames = ":I.R.SIUSIU 366 " + client.get_Nickname() + " " + channel + " :End of /NAMES list.\n";
-                std::cout << "Sending end of NAMES list: " << endOfNames << std::endl;
+                std::cout << "Sent end of NAMES list: " << endOfNames << std::endl;
                 send(client_socket, endOfNames.c_str(), endOfNames.size(), 0);
             }
             else if (valread == 0)
@@ -228,10 +225,6 @@ void Server::sendWelcomeMessages(int client_socket, Clients &client)
     std::string motdStart = ":I.R.SIUSIU 375 " + client.get_Nickname() + " :- I.R.SIUSIU Message of the Day -\n";
     send(client_socket, motdStart.c_str(), motdStart.size(), 0);
     std::cout << "Sent MOTD start: " << motdStart;
-
-    std::string motd = ":I.R.SIUSIU 372 " + client.get_Nickname() + " :- Welcome to our IRC server! -\n";
-    send(client_socket, motd.c_str(), motd.size(), 0);
-    std::cout << "Sent MOTD: " << motd;
 
     std::string motdEnd = ":I.R.SIUSIU 376 " + client.get_Nickname() + " :End of /MOTD command.\n";
     send(client_socket, motdEnd.c_str(), motdEnd.size(), 0);
