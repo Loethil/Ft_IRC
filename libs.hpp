@@ -12,3 +12,4 @@
 # include <unistd.h>
 # include <cstring>
 # include <poll.h>
+# include <netdb.h>
