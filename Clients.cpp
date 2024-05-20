@@ -54,14 +54,3 @@ void	Clients::set_Username(std::string new_Username)
 	this->_Username = new_Username;
 	return ;
 }
-
-Clients::status		Clients::get_Status(void)
-{
-	return (this->_Status);
-}
-
-void		Clients::set_Status(status new_status)
-{
-	this->_Status = new_status;
-	return ;
-}
