@@ -270,6 +270,7 @@ void	Server::join(Clients &client, std::istringstream &lineStream, int client_so
 		std::cout << "Sent JOIN message: " << joinMsg << std::endl;
 		send(client_socket, joinMsg.c_str(), joinMsg.size(), 0);
 
+}
  //fonction permettant de rejoindre un channel
 void	Server::join(Clients &client, std::istringstream &lineStream, int client_socket)
 {
