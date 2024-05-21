@@ -245,16 +245,16 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
             }
             else
             {
+				//permet de specifier le nickname de la personne envoyant le message
+				std::string new_buf = ":" + client.get_Nickname() + " " + buffer; 
                 std::cout << "Received message: " << buffer << std::endl;
                 // Envoyer le message à tous les autres clients dans le même canal
                 std::string clientChannel = client.get_Channel();
                 for (std::map<int, Clients>::iterator it = _clients.begin(); it != _clients.end(); ++it)
                 {
                     if (it->second.get_Channel() == clientChannel && it->first != client_socket)
-                        send(it->first, buffer, valread, 0);
+                        send(it->first, new_buf.c_str(), new_buf.length(), 0);
                 }
-                // Envoyer le message au client d'origine mais pas besoin en vrai
-                //send(client_socket, buffer, valread, 0);
             }
         }
     }
