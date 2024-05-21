@@ -6,7 +6,7 @@
 /*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:23:59 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/21 14:39:17 by llaigle          ###   ########.fr       */
+/*   Updated: 2024/05/21 15:53:03 by llaigle          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -212,7 +212,6 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
                             break;
                         }
                     }
-
                     if (found)
                     {
                         // Envoyer le message au destinataire
@@ -223,7 +222,7 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
                     else
                     {
                         // Le destinataire n'a pas été trouvé, envoyer un message d'erreur au client
-                        std::string errMsg = "Le destinataire '" + blase + "' n'existe pas.\n";
+                        std::string errMsg = "User '" + blase + "' doesn't exist.\n";
                         ssize_t msgSize = errMsg.length();
                         send(client_socket, errMsg.c_str(), msgSize, 0);
                     }
@@ -231,7 +230,7 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
                 else
                 {
                     // La commande MSG est mal formée, envoyer un message d'erreur au client
-                    std::string errMsg = "Commande MSG mal formée. Utilisation : MSG <destinataire> <message>\n";
+                    std::string errMsg = "MSG command error. Use : MSG <destinataire> <message>\n";
                     ssize_t msgSize = errMsg.length();
                     send(client_socket, errMsg.c_str(), msgSize, 0);
                 }
@@ -254,8 +253,8 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
                     if (it->second.get_Channel() == clientChannel && it->first != client_socket)
                         send(it->first, buffer, valread, 0);
                 }
-                // Envoyer le message au client d'origine
-                send(client_socket, buffer, valread, 0);
+                // Envoyer le message au client d'origine mais pas besoin en vrai
+                //send(client_socket, buffer, valread, 0);
             }
         }
     }
