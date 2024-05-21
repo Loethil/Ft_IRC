@@ -11,8 +11,8 @@
 /* ************************************************************************** */
 
 #pragma once
-#include "libs.hpp"
-#include "Clients.hpp"
+# include "libs.hpp"
+# include "Clients.hpp"
 
 #define MAX_CLIENTS 10
 #define BUFFER_SIZE 1024
@@ -36,6 +36,10 @@ class Server
         void    acceptNewConnection();
         void	handleClientMessage(int client_socket, Clients::status status);
         void    sendWelcomeMessages(int client_socket, Clients &client);
+		void	user(Clients &client, std::istringstream &lineStream, int client_socket);
+		void	nick(Clients &client, std::istringstream &lineStream);
+		bool	pass(Clients &client, std::istringstream &lineStream, int client_socket);
+		void	join(Clients &client, std::istringstream &lineStream, int client_socket);
         void    run();
 
         std::string getPwd();

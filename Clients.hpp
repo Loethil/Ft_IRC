@@ -11,7 +11,7 @@
 /* ************************************************************************** */
 
 #pragma once
-#include "libs.hpp"
+# include "libs.hpp"
 
 class Clients
 {
@@ -30,14 +30,17 @@ class Clients
 		void		set_Nickname(std::string new_Nickname);
 		std::string get_Username(void);
 		void		set_Username(std::string new_Username);
-		status		get_Status(void);
-		void		set_Status(status new_status);
-		void		set_Realname(std::string new_Realname);
 		std::string	get_Realname(void);
+		void		set_Realname(std::string new_Realname);
+		status		get_Status(void);
+		void		set_Status(status new_Status);
+		std::string get_Channel(void);
+		void		set_Channel(std::string new_Channel);
 	private:
 		int			_Socket;
 		std::string _Nickname;
 		std::string _Username;
 		std::string	_Realname;
 		status		_Status;
+		std::string _channel;
 };

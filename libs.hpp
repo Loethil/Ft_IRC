@@ -13,3 +13,5 @@
 # include <cstring>
 # include <poll.h>
 # include <netdb.h>
+# include <cstdio>
+# include <sstream>
