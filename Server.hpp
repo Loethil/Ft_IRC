@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
+/*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:24:31 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/20 16:20:28 by scarpent         ###   ########.fr       */
+/*   Updated: 2024/05/21 13:58:33 by llaigle          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,12 @@ class Server
 		bool	pass(Clients &client, std::istringstream &lineStream, int client_socket);
 		void	join(Clients &client, std::istringstream &lineStream, int client_socket);
         void    run();
+
+        // class bindException : public std::exception
+        // {
+        // public:
+        //     virtual const char *what() const throw();
+        // };
 
         std::string getPwd();
 

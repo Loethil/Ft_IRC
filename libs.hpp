@@ -15,3 +15,4 @@
 # include <netdb.h>
 # include <cstdio>
 # include <sstream>
+# include <exception>
