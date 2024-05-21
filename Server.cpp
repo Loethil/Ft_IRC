@@ -6,13 +6,11 @@
 /*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:23:59 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/20 16:21:42 by scarpent         ###   ########.fr       */
+/*   Updated: 2024/05/21 15:53:03 by llaigle          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
-#include <cstdio>
-#include <sstream>
 
 Server::Server() : _server_fd(-1), _server_name("I.R.SIUSIU") {}
 
@@ -39,6 +37,11 @@ void	Server::setPort(int port)
 	_port = port;
 }
 
+// const char *Server::bindException::what() const throw()
+// {
+//     return "Bind failed";
+// }
+
 //fonction permettant d'initialiser tout ce dont le serveur a besoin(ex: socket, bind, listen)
 void	Server::start(int port)
 {
@@ -55,13 +58,13 @@ void	Server::start(int port)
 	_serv_adr.sin_port = htons(port);
 	if (bind(_server_fd, (struct sockaddr *)&_serv_adr, sizeof(_serv_adr)) < 0)
 	{
-		std::cerr << "Bind failed" << std::endl;
 		close(_server_fd);
+		throw std::runtime_error("Bind failed");
 		exit(EXIT_FAILURE);
 	}
 	if (listen(_server_fd, 3) < 0)
 	{
-		std::cerr << "Listen failed" << std::endl;
+		throw std::runtime_error("Listen failed");
 		close(_server_fd);
 		exit(EXIT_FAILURE);
 	}
@@ -73,7 +76,7 @@ void	Server::run()
 {
 	if (_server_fd == -1)
 	{
-		std::cerr << "Server not initialized" << std::endl;
+		throw std::runtime_error("Server not initialized");
 		return;
 	}
 
@@ -89,7 +92,7 @@ void	Server::run()
 		int poll_count = poll(pollfds.data(), pollfds.size(), -1);
 		if (poll_count < 0)
 		{
-			std::cerr << "Poll error" << std::endl;
+			throw std::runtime_error("Poll error");
 			exit(EXIT_FAILURE);
 		}
 		for (size_t i = 0; i < pollfds.size(); ++i)
@@ -122,7 +125,7 @@ void	Server::acceptNewConnection()
 	int new_socket = accept(_server_fd, (struct sockaddr *)&_cli_adr, &addrlen);
 	if (new_socket < 0)
 	{
-		std::cerr << "Accept failed" << std::endl;
+		throw std::runtime_error("Accept failed");
 		exit(EXIT_FAILURE);
 	}
 	fcntl(_server_fd, F_SETFL, O_NONBLOCK);
@@ -142,7 +145,7 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
     ssize_t valread = read(client_socket, buffer, BUFFER_SIZE);
     if (valread < 0)
     {
-        std::cerr << "Read failed" << std::endl;
+        throw std::runtime_error("Read failed");
         close(client_socket);
         _clients.erase(client_socket);
         return;
@@ -175,7 +178,7 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
             if (command == "PASS")
 			{
 				if (pass(client, lineStream, client_socket) == false)
-					return ;	
+					return ;
 			}
             else if (command == "NICK")
 				nick(client, lineStream);
@@ -186,6 +189,53 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
         {
             if (command == "JOIN")
 				join(client, lineStream, client_socket);
+    //-----------------------petit pb au niveau du blase de qui envoit le msg je crois----------------------------------------------
+            else if (command == "MSG")
+            {
+                // Récupérer le nom du destinataire et le contenu du message
+                std::string blase;
+                std::string msg;
+                if (lineStream >> blase && std::getline(lineStream, msg))
+                {
+                    // Supprimer les espaces en trop
+                    if (!msg.empty() && msg[0] == ' ')
+                        msg.erase(0, 1);
+                    // Recherche du destinataire dans la liste des clients
+                    bool found = false;
+                    int rSocket = -1;
+                    for (std::map<int, Clients>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+                    {
+                        if (it->second.get_Nickname() == blase)
+                        {
+                            found = true;
+                            rSocket = it->first;
+                            break;
+                        }
+                    }
+                    if (found)
+                    {
+                        // Envoyer le message au destinataire
+                        std::string fullMsg = "MSG " + client.get_Nickname() + ": " + msg + "\n";
+                        ssize_t msgSize = fullMsg.length();
+                        send(rSocket, fullMsg.c_str(), msgSize, 0);
+                    }
+                    else
+                    {
+                        // Le destinataire n'a pas été trouvé, envoyer un message d'erreur au client
+                        std::string errMsg = "User '" + blase + "' doesn't exist.\n";
+                        ssize_t msgSize = errMsg.length();
+                        send(client_socket, errMsg.c_str(), msgSize, 0);
+                    }
+                }
+                else
+                {
+                    // La commande MSG est mal formée, envoyer un message d'erreur au client
+                    std::string errMsg = "MSG command error. Use : MSG <destinataire> <message>\n";
+                    ssize_t msgSize = errMsg.length();
+                    send(client_socket, errMsg.c_str(), msgSize, 0);
+                }
+            }
+            //-------------------------------------------------------------------------
             else if (valread == 0)
             {
                 close(client_socket);
@@ -196,16 +246,30 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
             else
             {
                 std::cout << "Received message: " << buffer << std::endl;
-				// for (size_t i = 0; 4 + i < _clients.size(); i++)
-				// {
-				// 	if (client.get_Channel() == _clients[4 + i].get_Channel())
-				// 		 send(4 + i, buffer, valread, 0);
-				// } a retravailler, (_clients[4 + i].get_Channel()) ne renvoie pas la bonne valeur, j'ai besoin d'aide pour les maps haha
-                // send(client_socket, buffer, valread, 0);
+                // Envoyer le message à tous les autres clients dans le même canal
+                std::string clientChannel = client.get_Channel();
+                for (std::map<int, Clients>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+                {
+                    if (it->second.get_Channel() == clientChannel && it->first != client_socket)
+                        send(it->first, buffer, valread, 0);
+                }
+                // Envoyer le message au client d'origine mais pas besoin en vrai
+                //send(client_socket, buffer, valread, 0);
             }
         }
     }
 }
+ //fonction permettant de rejoindre un channel
+void	Server::join(Clients &client, std::istringstream &lineStream, int client_socket)
+{
+        std::string channel;
+		lineStream >> channel;
+
+		client.set_Channel(channel);
+		std::string joinMsg = ":" + client.get_Nickname() + "!" + client.get_Username() + "@localhost JOIN " + channel + "\r\n";
+		std::cout << "Sent JOIN message: " << joinMsg << std::endl;
+		send(client_socket, joinMsg.c_str(), joinMsg.size(), 0);
+
  //fonction permettant de rejoindre un channel
 void	Server::join(Clients &client, std::istringstream &lineStream, int client_socket)
 {
