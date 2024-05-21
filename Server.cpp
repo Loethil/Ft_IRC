@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
+/*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:23:59 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/20 16:37:13 by llaigle          ###   ########.fr       */
+/*   Updated: 2024/05/20 16:21:42 by scarpent         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,7 @@ void	Server::acceptNewConnection()
 	fcntl(_server_fd, F_SETFL, O_NONBLOCK);
 	Clients newClient;
 	newClient.set_Socket(new_socket);
-	newClient.set_Status(Clients::USERNAME);
+	newClient.set_Status(Clients::USERNAME); //modif
 	_clients[new_socket] = newClient;
 
 	std::cout << "New connection accepted: " << new_socket << std::endl;
@@ -117,9 +117,7 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 
         // Remove trailing '\r' if present
         if (!line.empty() && line[line.size() - 1] == '\r')
-        {
             line.erase(line.size() - 1);
-        }
 
         std::istringstream lineStream(line);
         std::string command;
