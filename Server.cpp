@@ -259,18 +259,7 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
         }
     }
 }
- //fonction permettant de rejoindre un channel
-void	Server::join(Clients &client, std::istringstream &lineStream, int client_socket)
-{
-        std::string channel;
-		lineStream >> channel;
 
-		client.set_Channel(channel);
-		std::string joinMsg = ":" + client.get_Nickname() + "!" + client.get_Username() + "@localhost JOIN " + channel + "\r\n";
-		std::cout << "Sent JOIN message: " << joinMsg << std::endl;
-		send(client_socket, joinMsg.c_str(), joinMsg.size(), 0);
-
-}
  //fonction permettant de rejoindre un channel
 void	Server::join(Clients &client, std::istringstream &lineStream, int client_socket)
 {
