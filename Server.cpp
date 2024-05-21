@@ -196,7 +196,12 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
             else
             {
                 std::cout << "Received message: " << buffer << std::endl;
-                send(client_socket, buffer, valread, 0);
+				// for (size_t i = 0; 4 + i < _clients.size(); i++)
+				// {
+				// 	if (client.get_Channel() == _clients[4 + i].get_Channel())
+				// 		 send(4 + i, buffer, valread, 0);
+				// } a retravailler, (_clients[4 + i].get_Channel()) ne renvoie pas la bonne valeur, j'ai besoin d'aide pour les maps haha
+                // send(client_socket, buffer, valread, 0);
             }
         }
     }
@@ -207,6 +212,7 @@ void	Server::join(Clients &client, std::istringstream &lineStream, int client_so
         std::string channel;
 		lineStream >> channel;
 
+		client.set_Channel(channel);
 		std::string joinMsg = ":" + client.get_Nickname() + "!" + client.get_Username() + "@localhost JOIN " + channel + "\r\n";
 		std::cout << "Sent JOIN message: " << joinMsg << std::endl;
 		send(client_socket, joinMsg.c_str(), joinMsg.size(), 0);

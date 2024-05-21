@@ -59,6 +59,7 @@ void	Clients::set_Username(std::string new_Username)
 	return ;
 }
 
+
 Clients::status		Clients::get_Status(void)
 {
 	return (this->_Status);
@@ -68,4 +69,14 @@ void		Clients::set_Status(status new_status)
 {
 	this->_Status = new_status;
 	return ;
+}
+
+std::string		Clients::get_Channel(void)
+{
+	return (this->_channel);
+}
+
+void		Clients::set_Channel(std::string new_Channel)
+{
+	this->_channel = new_Channel;
 }
