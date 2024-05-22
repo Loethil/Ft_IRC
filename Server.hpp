@@ -6,7 +6,7 @@
 /*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:24:31 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/22 14:31:11 by llaigle          ###   ########.fr       */
+/*   Updated: 2024/05/22 18:36:53 by llaigle          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@ class Server
         int                                 _server_fd;
         int                                 _port;
         std::string                         _pwd;
+        std::string                         _topic;
         std::string                         _server_name;
         std::map<int , Clients>             _clients;
         struct sockaddr_in                  _cli_adr;
@@ -43,6 +44,7 @@ class Server
 		void	msg(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients>  _clients);
         void    run();
         void    part(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients> & _clients);
+        void    topic(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients> &_clients);
 
 
         // class bindException : public std::exception
@@ -52,7 +54,9 @@ class Server
         // };
 
         std::string getPwd();
+        std::string getTopic(); //foutre dans la classe de la map channel
 
         void    setPwd(std::string pwd);
         void    setPort(int port);
+        void    setTopic(std::string topic); //foutre dans la classe de la map channel
 };

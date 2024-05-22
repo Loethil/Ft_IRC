@@ -6,7 +6,7 @@
 /*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:23:59 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/22 15:58:50 by llaigle          ###   ########.fr       */
+/*   Updated: 2024/05/22 18:33:55 by llaigle          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,16 @@ void	Server::setPwd(std::string pwd)
 void	Server::setPort(int port)
 {
 	_port = port;
+}
+
+std::string Server::getTopic()
+{
+	return _topic;
+}
+
+void	Server::setTopic(std::string topic)
+{
+	_topic = topic;
 }
 
 //fonction permettant d'initialiser tout ce dont le serveur a besoin(ex: socket, bind, listen)
@@ -188,6 +198,8 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 				msg(client, lineStream, client_socket, _clients);
 			else if (command == "PART")
 				part(client, lineStream, client_socket, _clients);
+			else if (command == "TOPIC")
+				topic(client, lineStream, client_socket, _clients);
             else if (valread == 0)
             {
                 close(client_socket);
@@ -212,6 +224,52 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
     }
 }
 
+
+////////////stocker le topic dans une map ?
+void Server::topic(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients> &_clients)
+{
+    std::string channel;
+    std::string newTopic;
+    
+    // Lire le nom du canal
+    if (lineStream >> channel)
+    {
+        // Lire le nouveau sujet du canal
+        if (std::getline(lineStream, newTopic))
+        {
+            // Supprimer les espaces en trop
+            if (!newTopic.empty() && newTopic[0] == ' ')
+                newTopic.erase(0, 2);
+        }
+        // Vérifier si le client est dans le canal
+        if (client.get_Channel() == channel)
+        {
+            // Informer les autres membres du canal du changement de sujet
+            std::string fullTopicMessage = ":" + client.get_Nickname() + "!" + client.get_Username() + "@I.R.SIUSIU TOPIC " + channel + " " + newTopic + "\n";
+            for (std::map<int, Clients>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+            {
+                if (it->second.get_Channel() == channel)
+                {
+                    send(it->first, fullTopicMessage.c_str(), fullTopicMessage.length(), 0);
+                }
+            }
+        }
+        else
+        {
+            // Envoyer un message d'erreur si le client n'est pas dans le canal
+            std::string errMsg = "You're not on that channel\n";
+            send(client_socket, errMsg.c_str(), errMsg.length(), 0);
+        }
+    }
+    else
+    {
+        // La commande TOPIC est mal formée, envoyer un message d'erreur au client
+        std::string errMsg = "TOPIC command error. Use : TOPIC <channel> [new_topic]\n";
+        send(client_socket, errMsg.c_str(), errMsg.length(), 0);
+    }
+}
+
+
 void Server::part(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients> &_clients)
 {
     std::string channel;
@@ -230,7 +288,7 @@ void Server::part(Clients &client, std::istringstream &lineStream, int client_so
         if (client.get_Channel() == channel)
         {
             // Informer les autres membres du canal que le client a quitté
-            std::string fullPartMessage = ":" + client.get_Nickname() + "!" + client.get_Username() + "@localhost PART " + channel;
+            std::string fullPartMessage = ":" + client.get_Nickname() + "!" + client.get_Username() + "@I.R.SIUSIU PART " + channel;
             if (!partMessage.empty())
                 fullPartMessage += " :" + partMessage; // Ajoute ":" seulement si partMessage n'est pas vide
             fullPartMessage += "\n";
@@ -417,4 +475,3 @@ void Server::sendWelcomeMessages(int client_socket, Clients &client)
     send(client_socket, motdEnd.c_str(), motdEnd.size(), 0);
     std::cout << "Sent MOTD end: " << motdEnd;
 }
-
