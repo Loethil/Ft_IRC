@@ -13,6 +13,7 @@
 #pragma once
 # include "libs.hpp"
 # include "Clients.hpp"
+# include "Channel.hpp"
 
 #define MAX_CLIENTS 10
 #define BUFFER_SIZE 1024
@@ -27,6 +28,7 @@ class Server
         std::map<int , Clients>             _clients;
         struct sockaddr_in                  _cli_adr;
         struct sockaddr_in                  _serv_adr;
+		std::map<std::string, Channel>		_Channel;
 
     public:
 
@@ -39,7 +41,7 @@ class Server
 		void	user(Clients &client, std::istringstream &lineStream, int client_socket);
 		void	nick(Clients &client, std::istringstream &lineStream);
 		bool	pass(Clients &client, std::istringstream &lineStream, int client_socket);
-		void	join(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients> & _clients);
+		void	join(Clients &client, std::istringstream &lineStream, int client_socket);
 		void	msg(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients>  _clients);
         void    run();
         void    part(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients> & _clients);

@@ -5,14 +5,16 @@
 class Channel
 {
     private:
-        const std::string               _chanName;
-		std::string						_Topic;
-        std::map<std::string, Clients*>	_connUsers;
+       	std::string              			_chanName;
+		std::string							_Topic;
+        std::map<std::string, Clients *>	_connUsers;
     public:
-        Channel(const std::string & chanName);
+        Channel(std::string & chanName);
+		Channel();
         ~Channel();
 
-        const std::string 	getChanName();
-		std::string			get_Topic(void);
-		void				set_Topic(std::string new_Topic);
+        std::string 						getChanName();
+		std::string							get_Topic(void);
+		void								set_Topic(std::string new_Topic);
+		std::map<std::string, Clients *>	&get_connUsers(void);
 };
