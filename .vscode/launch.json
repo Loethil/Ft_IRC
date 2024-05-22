@@ -1,0 +1,25 @@
+{
+	"version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Débogage C++",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/ircserv", // Chemin de l'exécutable de votre programme
+            "args": ["3020", "oui"], // Arguments de ligne de commande pour votre programme (s'il y en a)
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "" // Nom de la tâche de build à exécuter avant le débogage
+        }
+    ]
+}
