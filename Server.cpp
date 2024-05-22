@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
+/*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:23:59 by llaigle           #+#    #+#             */
 /*   Updated: 2024/05/21 16:42:16 by llaigle          ###   ########.fr       */
@@ -189,53 +189,8 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
         {
             if (command == "JOIN")
 				join(client, lineStream, client_socket);
-    //-----------------------petit pb au niveau du blase de qui envoit le msg je crois----------------------------------------------
             else if (command == "MSG")
-            {
-                // Récupérer le nom du destinataire et le contenu du message
-                std::string blase;
-                std::string msg;
-                if (lineStream >> blase && std::getline(lineStream, msg))
-                {
-                    // Supprimer les espaces en trop
-                    if (!msg.empty() && msg[0] == ' ')
-                        msg.erase(0, 1);
-                    // Recherche du destinataire dans la liste des clients
-                    bool found = false;
-                    int rSocket = -1;
-                    for (std::map<int, Clients>::iterator it = _clients.begin(); it != _clients.end(); ++it)
-                    {
-                        if (it->second.get_Nickname() == blase)
-                        {
-                            found = true;
-                            rSocket = it->first;
-                            break;
-                        }
-                    }
-                    if (found)
-                    {
-                        // Envoyer le message au destinataire
-                        std::string fullMsg = "MSG " + client.get_Nickname() + ": " + msg + "\n";
-                        ssize_t msgSize = fullMsg.length();
-                        send(rSocket, fullMsg.c_str(), msgSize, 0);
-                    }
-                    else
-                    {
-                        // Le destinataire n'a pas été trouvé, envoyer un message d'erreur au client
-                        std::string errMsg = "User '" + blase + "' doesn't exist.\n";
-                        ssize_t msgSize = errMsg.length();
-                        send(client_socket, errMsg.c_str(), msgSize, 0);
-                    }
-                }
-                else
-                {
-                    // La commande MSG est mal formée, envoyer un message d'erreur au client
-                    std::string errMsg = "MSG command error. Use : MSG <destinataire> <message>\n";
-                    ssize_t msgSize = errMsg.length();
-                    send(client_socket, errMsg.c_str(), msgSize, 0);
-                }
-            }
-            //-------------------------------------------------------------------------
+				msg(client, lineStream, client_socket, _clients);
             else if (valread == 0)
             {
                 close(client_socket);
@@ -245,16 +200,16 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
             }
             else
             {
+				//permet de specifier le nickname de la personne envoyant le message
+				std::string new_buf = ":" + client.get_Nickname() + " " + buffer; 
                 std::cout << "Received message: " << buffer << std::endl;
                 // Envoyer le message à tous les autres clients dans le même canal
                 std::string clientChannel = client.get_Channel();
                 for (std::map<int, Clients>::iterator it = _clients.begin(); it != _clients.end(); ++it)
                 {
                     if (it->second.get_Channel() == clientChannel && it->first != client_socket)
-                        send(it->first, buffer, valread, 0);
+                        send(it->first, new_buf.c_str(), new_buf.length(), 0);
                 }
-                // Envoyer le message au client d'origine mais pas besoin en vrai
-                //send(client_socket, buffer, valread, 0);
             }
         }
     }
@@ -279,6 +234,52 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 // 		std::cout << "Sent end of NAMES list: " << endOfNames << std::endl;
 // 		send(client_socket, endOfNames.c_str(), endOfNames.size(), 0);
 // }
+
+void Server::msg(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients> _clients)
+{
+	// Récupérer le nom du destinataire et le contenu du message
+	std::string blase;
+	std::string msg;
+	if (lineStream >> blase && std::getline(lineStream, msg))
+	{
+		// Supprimer les espaces en trop
+		if (!msg.empty() && msg[0] == ' ')
+			msg.erase(0, 1);
+		// Recherche du destinataire dans la liste des clients
+		bool found = false;
+		int rSocket = -1;
+		for (std::map<int, Clients>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+		{
+			if (it->second.get_Nickname() == blase)
+			{
+				found = true;
+				rSocket = it->first;
+				break;
+			}
+		}
+		if (found)
+		{
+			// Envoyer le message au destinataire
+			std::string fullMsg = "MSG " + client.get_Nickname() + ": " + msg + "\n";
+			ssize_t msgSize = fullMsg.length();
+			send(rSocket, fullMsg.c_str(), msgSize, 0);
+		}
+		else
+		{
+			// Le destinataire n'a pas été trouvé, envoyer un message d'erreur au client
+			std::string errMsg = "User '" + blase + "' doesn't exist.\n";
+			ssize_t msgSize = errMsg.length();
+			send(client_socket, errMsg.c_str(), msgSize, 0);
+		}
+	}
+	else
+	{
+		// La commande MSG est mal formée, envoyer un message d'erreur au client
+		std::string errMsg = "MSG command error. Use : MSG <destinataire> <message>\n";
+		ssize_t msgSize = errMsg.length();
+		send(client_socket, errMsg.c_str(), msgSize, 0);
+	}
+}
 
 void Server::join(Clients &client, std::istringstream &lineStream, int client_socket)
 {
