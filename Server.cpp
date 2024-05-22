@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
+/*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:23:59 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/21 16:42:16 by llaigle          ###   ########.fr       */
+/*   Updated: 2024/05/22 15:58:50 by llaigle          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,11 +36,6 @@ void	Server::setPort(int port)
 {
 	_port = port;
 }
-
-// const char *Server::bindException::what() const throw()
-// {
-//     return "Bind failed";
-// }
 
 //fonction permettant d'initialiser tout ce dont le serveur a besoin(ex: socket, bind, listen)
 void	Server::start(int port)
@@ -188,9 +183,11 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
         else if (status == Clients::COMPLETED)
         {
             if (command == "JOIN")
-				join(client, lineStream, client_socket);
+				join(client, lineStream, client_socket, _clients);
             else if (command == "MSG")
 				msg(client, lineStream, client_socket, _clients);
+			else if (command == "PART")
+				part(client, lineStream, client_socket, _clients);
             else if (valread == 0)
             {
                 close(client_socket);
@@ -215,25 +212,53 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
     }
 }
 
- //fonction permettant de rejoindre un channel
-// void	Server::join(Clients &client, std::istringstream &lineStream, int client_socket)
-// {
-//         std::string channel;
-// 		lineStream >> channel;
-
-// 		client.set_Channel(channel);
-// 		std::string joinMsg = ":" + client.get_Nickname() + "!" + client.get_Username() + "@localhost JOIN " + channel + "\r\n";
-// 		std::cout << "Sent JOIN message: " << joinMsg << std::endl;
-// 		send(client_socket, joinMsg.c_str(), joinMsg.size(), 0);
-
-// 		std::string namesList = ":I.R.SIUSIU 353 " + client.get_Nickname() + " = " + channel + " :" + client.get_Nickname() + "\n";
-// 		std::cout << "Sent NAMES list: " << namesList << std::endl;
-// 		send(client_socket, namesList.c_str(), namesList.size(), 0);
-
-// 		std::string endOfNames = ":I.R.SIUSIU 366 " + client.get_Nickname() + " " + channel + " :End of /NAMES list.\n";
-// 		std::cout << "Sent end of NAMES list: " << endOfNames << std::endl;
-// 		send(client_socket, endOfNames.c_str(), endOfNames.size(), 0);
-// }
+void Server::part(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients> &_clients)
+{
+    std::string channel;
+    std::string partMessage;
+    
+    // Lire le nom du canal
+    if (lineStream >> channel)
+    {
+        // Lire le message d'adieu optionnel
+        if (std::getline(lineStream, partMessage))
+        {
+            if (!partMessage.empty() && partMessage[0] == ' ')
+                partMessage.erase(0, 2);
+        }
+        // Vérifier si le client est dans le canal
+        if (client.get_Channel() == channel)
+        {
+            // Informer les autres membres du canal que le client a quitté
+            std::string fullPartMessage = ":" + client.get_Nickname() + "!" + client.get_Username() + "@localhost PART " + channel;
+            if (!partMessage.empty())
+                fullPartMessage += " :" + partMessage; // Ajoute ":" seulement si partMessage n'est pas vide
+            fullPartMessage += "\n";
+            
+            for (std::map<int, Clients>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+            {
+                if (it->second.get_Channel() == channel)
+                {
+                    send(it->first, fullPartMessage.c_str(), fullPartMessage.length(), 0);
+                }
+            }
+            // Retirer le client du canal
+            client.set_Channel("");
+        }
+        else
+        {
+            // Envoyer un message d'erreur si le client n'est pas dans le canal
+            std::string errMsg = "You're not on that channel\n";
+            send(client_socket, errMsg.c_str(), errMsg.length(), 0);
+        }
+    }
+    else
+    {
+        // La commande PART est mal formée, envoyer un message d'erreur au client
+        std::string errMsg = "PART command error. Use : PART <channel> [message]\n";
+        send(client_socket, errMsg.c_str(), errMsg.length(), 0);
+    }
+}
 
 void Server::msg(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients> _clients)
 {
@@ -281,15 +306,15 @@ void Server::msg(Clients &client, std::istringstream &lineStream, int client_soc
 	}
 }
 
-void Server::join(Clients &client, std::istringstream &lineStream, int client_socket)
+void Server::join(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients> &_clients)
 {
     std::string channel;
     if (lineStream >> channel)
     {
         client.set_Channel(channel);
         
-        // Inform all clients in the channel that a new client has joined
-        std::string joinMessage = ":" + client.get_Nickname() + " JOIN " + channel + "\n";
+        // Informer tous les clients du canal qu'un nouveau client a rejoint
+        std::string joinMessage = ":" + client.get_Nickname() + "!" + client.get_Username() + "@I.R.SIUSIU JOIN " + channel + "\n";
         for (std::map<int, Clients>::iterator it = _clients.begin(); it != _clients.end(); ++it)
         {
             if (it->second.get_Channel() == channel)
@@ -298,7 +323,7 @@ void Server::join(Clients &client, std::istringstream &lineStream, int client_so
             }
         }
         
-        // Send the list of users in the channel to the new client
+        // Envoyer la liste des utilisateurs du canal au nouveau client
         std::string namesMessage = ":I.R.SIUSIU 353 " + client.get_Nickname() + " = " + channel + " :";
         for (std::map<int, Clients>::iterator it = _clients.begin(); it != _clients.end(); ++it)
         {
@@ -310,7 +335,7 @@ void Server::join(Clients &client, std::istringstream &lineStream, int client_so
         namesMessage += "\n";
         send(client_socket, namesMessage.c_str(), namesMessage.length(), 0);
 
-        // End of NAMES list message
+        // Fin de la liste des noms
         std::string endNamesMessage = ":I.R.SIUSIU 366 " + client.get_Nickname() + " " + channel + " :End of /NAMES list.\n";
         send(client_socket, endNamesMessage.c_str(), endNamesMessage.length(), 0);
     }
@@ -320,7 +345,6 @@ void Server::join(Clients &client, std::istringstream &lineStream, int client_so
         send(client_socket, errorMessage.c_str(), errorMessage.length(), 0);
     }
 }
-
 
 //fonction permettant de verifier le mot de passe
 bool	Server::pass(Clients &client, std::istringstream &lineStream, int client_socket)
