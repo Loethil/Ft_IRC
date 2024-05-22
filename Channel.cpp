@@ -14,3 +14,14 @@ const std::string   Channel::getChanName()
 {
     return _chanName;
 }
+
+std::string	Channel::get_Topic(void)
+{
+	return (this->_Topic);
+}
+
+void	Channel::set_Topic(std::string new_Topic)
+{
+	this->_Topic = new_Topic;
+	return ;
+}
