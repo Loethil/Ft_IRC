@@ -6,7 +6,7 @@
 /*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:23:59 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/22 18:33:55 by llaigle          ###   ########.fr       */
+/*   Updated: 2024/05/22 18:42:18 by llaigle          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,16 +35,6 @@ void	Server::setPwd(std::string pwd)
 void	Server::setPort(int port)
 {
 	_port = port;
-}
-
-std::string Server::getTopic()
-{
-	return _topic;
-}
-
-void	Server::setTopic(std::string topic)
-{
-	_topic = topic;
 }
 
 //fonction permettant d'initialiser tout ce dont le serveur a besoin(ex: socket, bind, listen)
