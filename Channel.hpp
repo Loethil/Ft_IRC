@@ -8,6 +8,7 @@ class Channel
        	std::string              			_chanName;
 		std::string							_topic;
         std::map<std::string, Clients *>	_connUsers;
+
     public:
         Channel(std::string & chanName);
 		Channel();
@@ -17,4 +18,7 @@ class Channel
 		std::string							getTopic();
 		void								setTopic(std::string new_topic);
 		std::map<std::string, Clients *>	&getConnUsers();
+
+        void                                setTopic(std::string topic);
+        std::string                         getTopic();
 };
