@@ -6,7 +6,7 @@
 /*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:23:59 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/23 16:28:27 by llaigle          ###   ########.fr       */
+/*   Updated: 2024/05/23 16:31:00 by llaigle          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -217,6 +217,7 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 }
 
 ///////////////////////////////a revoir celle la elle est bancale un peu
+/// c'est giga long mais ca peut deja etre separe en deux avec channel et client split
 void Server::mode(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients> &_clients, std::map<std::string, Channel> &channels)
 {
     std::string target;
@@ -233,7 +234,6 @@ void Server::mode(Clients &client, std::istringstream &lineStream, int client_so
             if (chanIt != channels.end())
             {
                 Channel &channel = chanIt->second;
-
                 // Lire les modes et les paramètres de mode
                 if (lineStream >> modes)
                 {
@@ -248,19 +248,13 @@ void Server::mode(Clients &client, std::istringstream &lineStream, int client_so
                     {
                         char mode = modes[i];
                         if (mode == '+')
-                        {
                             adding = true;
-                        }
                         else if (mode == '-')
-                        {
                             adding = false;
-                        }
                         else
                         {
                             if (channel.changeMode(mode, adding))
-                            {
                                 result += (adding ? "+" : "-") + std::string(1, mode);
-                            }
                             else
                             {
                                 // Mode non reconnu ou non applicable, envoyer un message d'erreur au client
@@ -275,17 +269,13 @@ void Server::mode(Clients &client, std::istringstream &lineStream, int client_so
                     {
                         std::string fullModeMessage = ":" + client.get_Nickname() + "!" + client.get_Username() + "@I.R.SIUSIU MODE " + target + " " + result;
                         if (!modeParams.empty())
-                        {
                             fullModeMessage += " " + modeParams;
-                        }
                         fullModeMessage += "\n";
 
                         for (std::map<int, Clients>::iterator it = _clients.begin(); it != _clients.end(); ++it)
                         {
                             if (it->second.get_Channel() == target)
-                            {
                                 send(it->first, fullModeMessage.c_str(), fullModeMessage.length(), 0);
-                            }
                         }
                     }
                 }
@@ -330,19 +320,13 @@ void Server::mode(Clients &client, std::istringstream &lineStream, int client_so
                     {
                         char mode = modes[i];
                         if (mode == '+')
-                        {
                             adding = true;
-                        }
                         else if (mode == '-')
-                        {
                             adding = false;
-                        }
                         else
                         {
                             if (targetUser.changeMode(mode, adding))
-                            {
                                 result += (adding ? "+" : "-") + std::string(1, mode);
-                            }
                             else
                             {
                                 // Mode non reconnu ou non applicable, envoyer un message d'erreur au client
