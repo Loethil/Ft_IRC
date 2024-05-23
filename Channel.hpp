@@ -1,24 +1,22 @@
 #pragma once
 # include "libs.hpp"
-# include "Clients.hpp"
+
+class Clients;
 
 class Channel
 {
     private:
-       	std::string              			_chanName;
-		std::string							_topic;
+        std::string              			_chanName;
+        std::string							_topic;
         std::map<std::string, Clients *>	_connUsers;
 
     public:
         Channel(std::string & chanName);
-		Channel();
+        Channel();
         ~Channel();
 
         std::string 						getChanName();
-		std::string							getTopic();
-		void								setTopic(std::string new_topic);
-		std::map<std::string, Clients *>	&getConnUsers();
-
-        void                                setTopic(std::string topic);
-        std::string                         getTopic();
+        std::string							getTopic();
+        void								setTopic(std::string new_topic);
+        std::map<std::string, Clients *>	&getConnUsers();
 };

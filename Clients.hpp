@@ -6,12 +6,13 @@
 /*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 15:50:02 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/20 16:20:51 by scarpent         ###   ########.fr       */
+/*   Updated: 2024/05/23 17:26:58 by scarpent         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 # include "libs.hpp"
+# include "Channel.hpp"
 
 class Clients
 {
@@ -34,13 +35,13 @@ class Clients
 		void		set_Realname(std::string new_Realname);
 		status		get_Status(void);
 		void		set_Status(status new_Status);
-		std::string get_Channel(void);
-		void		set_Channel(std::string new_Channel);
+		std::vector<Channel *>& getCurrConnected(void);
+		void		setCurrConnected(std::vector<Channel *>& newCurrConnected);
 	private:
-		int			_Socket;
-		std::string _Nickname;
-		std::string _Username;
-		std::string	_Realname;
-		status		_Status;
-		std::string _channel;
+		int						_Socket;
+		std::string 			_Nickname;
+		std::string 			_Username;
+		std::string				_Realname;
+		status					_Status;
+		std::vector<Channel *>	_currConnected;
 };

@@ -1,11 +1,11 @@
 #include "Channel.hpp"
 
-Channel::Channel(std::string & chanName): _chanName(chanName)
+Channel::Channel(std::string & chanName): _chanName(chanName), _topic("")
 {
     // std::cout << "Channel " << chanName << " was created" << std::endl;
 }
 
-Channel::Channel() {}
+Channel::Channel():_chanName(""), _topic("") {}
 
 Channel::~Channel()
 {
@@ -27,12 +27,7 @@ std::string Channel::getTopic()
 	return _topic;
 }
 
-std::string Channel::getTopic()
+void	Channel::setTopic(std::string new_topic)
 {
-	return _topic;
-}
-
-void	Channel::setTopic(std::string topic)
-{
-	_topic = topic;
+	_topic = new_topic;
 }
