@@ -128,7 +128,7 @@ void	Server::acceptNewConnection()
 	newClient.set_Socket(new_socket);
 	newClient.set_Status(Clients::USERNAME); //modif
 	_clients[new_socket] = newClient;
-
+	std::cout << _clients[new_socket] << std::endl;
 	std::cout << "New connection accepted: " << new_socket << std::endl;
 }
 
@@ -183,7 +183,7 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 		{
 			if (command == "JOIN")
 				join(client, lineStream, client_socket);
-			else if (command == "MSG")
+			else if (command == "PRIVMSG")
 				msg(client, lineStream, client_socket, _clients);
 			else if (command == "PART")
 				part(client, lineStream, client_socket);
@@ -196,19 +196,10 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 				std::cout << "Client disconnected" << std::endl;
 				return;
 			}
-			//else
-			//{
-				// //permet de specifier le nickname de la personne envoyant le message
-				// std::string new_buf = ":" + client.get_Nickname() + " " + buffer; 
-				// std::cout << "Received message: " << buffer << std::endl;
-				// // Envoyer le message à tous les autres clients dans le même canal
-				// std::string clientChannel = currIt;
-				// for (std::map<int, Clients>::iterator it = _clients.begin(); it != _clients.end(); ++it)
-				// {
-				// 	if (it->second.get_Channel() == clientChannel && it->first != client_socket)
-				// 		send(it->first, new_buf.c_str(), new_buf.length(), 0);
-				// }
-			//}
+			else
+			{
+				;	
+			}
 		}
 	}
 }
@@ -359,11 +350,12 @@ void	Server::part(Clients &client, std::istringstream &lineStream, int client_so
 
 void Server::msg(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients> _clients)
 {
-	// Récupérer le nom du destinataire et le contenu du message
 	std::string dest;
 	std::string msg;
 	if (lineStream >> dest && std::getline(lineStream, msg))
 	{
+		if (!msg.empty() && msg[0] == ' ' && msg[1] == ':')
+			msg.erase(0, 2);
 		if (dest.find("#") < dest.size())
 		{
 			std::cout << "msg: " << msg << std::endl;
@@ -373,11 +365,14 @@ void Server::msg(Clients &client, std::istringstream &lineStream, int client_soc
 				if (dest == (*currIt)->getChanName())
 				{
 					sent_msg = ":" + client.get_Nickname() + " " + msg;
-				}
-				std::string clientChannel = (*currIt)->getChanName();
-				for (std::map<std::string, Clients *>::iterator it = (*currIt)->getConnUsers().begin(); it != (*currIt)->getConnUsers().end(); ++it)
-				{
-					send(it->second->get_Socket(), sent_msg.c_str(), sent_msg.length(), 0);
+					for (std::map<std::string, Clients *>::iterator it = (*currIt)->getConnUsers().begin(); it != (*currIt)->getConnUsers().end(); ++it)
+					{
+						std::cout << sent_msg << std::endl;
+						std::cout << sent_msg.length() << std::endl;
+						std::cout << it->second->get_Socket() << std::endl;
+						send(it->second->get_Socket(), sent_msg.c_str(), sent_msg.length(), 0);
+					}
+					return ;
 				}
 			}
 		}
@@ -456,6 +451,7 @@ void	Server::join(Clients &client, std::istringstream &lineStream, int client_so
 		// End of the list
 		std::string endNamesMessage = ":I.R.SIUSIU 366 " + client.get_Nickname() + " " + channelName + " :End of /NAMES list.\n";
 		send(client_socket, endNamesMessage.c_str(), endNamesMessage.length(), 0);
+		std::cout << _Channel[channelName] << std::endl << std::endl;
 	}
 	else
 	{

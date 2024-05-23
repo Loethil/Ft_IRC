@@ -45,3 +45,5 @@ class Clients
 		status					_Status;
 		std::vector<Channel *>	_currConnected;
 };
+
+std::ostream	&operator<<(std::ostream &o, Clients &rhs);

@@ -1,6 +1,7 @@
 #pragma once
 # include "libs.hpp"
-# include "Clients.hpp"
+
+class Clients;
 
 class Channel
 {
@@ -21,4 +22,4 @@ class Channel
         std::string                         getTopic();
 };
 
-std::ostream	&operator<<(std::ostream &o, Clients &rhs);
+std::ostream	&operator<<(std::ostream &o, Channel &rhs);
