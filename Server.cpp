@@ -188,6 +188,8 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 				msg(client, lineStream, client_socket, _clients);
 			else if (command == "PART")
 				part(client, lineStream, client_socket, _clients);
+			else if (command == "KICK")
+				kick();
             else if (valread == 0)
             {
                 close(client_socket);
@@ -211,6 +213,12 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
         }
     }
 }
+
+void Server::kick()
+{
+	
+}
+
 
 void Server::part(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients> &_clients)
 {
@@ -305,54 +313,6 @@ void Server::msg(Clients &client, std::istringstream &lineStream, int client_soc
 		send(client_socket, errMsg.c_str(), msgSize, 0);
 	}
 }
-
-// void Server::join(Clients &client, std::istringstream &lineStream, int client_socket)
-// {
-//     std::string channelName;
-//     if (lineStream >> channelName)
-//     {
-//         client.set_Channel(channelName);
-// 		//verifie si le channelName existe sinon le cree
-// 		std::map<std::string, Channel>::iterator it = _Channel.find(channelName);
-// 		if (it == _Channel.end()) //le channelName n'existe pas
-// 		{
-// 			Channel		new_channel(channelName);
-
-// 			_Channel[channelName] = new_channel;
-// 			std::cout << "New Channel created :" << _Channel[channelName].getChanName() << std::endl;
-// 		}
-// 		_Channel[channelName].get_connUsers()[client.get_Nickname()] = &client;
-//         // Informer tous les clients du canal qu'un nouveau client a rejoint
-//         std::string joinMessage = ":" + client.get_Nickname() + "!" + client.get_Username() + "@I.R.SIUSIU JOIN " + channelName + "\n";
-// 		std::cout <<  "CLIENTS : " << _Channel[channelName].get_connUsers()[client.get_Nickname()]->get_Nickname() << std::endl;
-//      	// Utiliser une référence pour éviter la destruction de l'objet temporaire
-//         std::map<std::string, Clients*>& connUsers = _Channel[channelName].get_connUsers();
-//         for (std::map<std::string, Clients*>::iterator it = connUsers.begin(); it != connUsers.end(); ++it)
-//         {
-//             send(it->second->get_Socket(), joinMessage.c_str(), joinMessage.length(), 0);
-//         }
-//         // Envoyer la liste des utilisateurs du canal au nouveau client
-//         std::string namesMessage = ":I.R.SIUSIU 353 " + client.get_Nickname() + " = " + channelName + " :";
-//          for (std::map<std::string, Clients*>::iterator it = connUsers.begin(); it != connUsers.end(); ++it)
-//         {
-//             if (it->first == channelName)
-//             {
-//                 namesMessage += it->second->get_Nickname() + " ";
-//             }
-//         }
-//         namesMessage += "\n";
-//         send(client_socket, namesMessage.c_str(), namesMessage.length(), 0);
-
-//         // Fin de la liste des noms
-//         std::string endNamesMessage = ":I.R.SIUSIU 366 " + client.get_Nickname() + " " + channelName + " :End of /NAMES list.\n";
-//         send(client_socket, endNamesMessage.c_str(), endNamesMessage.length(), 0);
-//     }
-//     else
-//     {
-//         std::string errorMessage = "Usage: JOIN <channelName>\n";
-//         send(client_socket, errorMessage.c_str(), errorMessage.length(), 0);
-//     }
-// }
 
 void Server::join(Clients &client, std::istringstream &lineStream, int client_socket)
 {
