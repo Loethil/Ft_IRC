@@ -44,6 +44,7 @@ class Server
 		void	join(Clients &client, std::istringstream &lineStream, int client_socket);
 		void	msg(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients>  _clients);
         void    run();
+		void	kick(std::map<int, Clients> &_clients);
         void    part(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients> & _clients);
         void    topic(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients> &_clients);
 

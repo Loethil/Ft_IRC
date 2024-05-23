@@ -189,7 +189,7 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 			else if (command == "PART")
 				part(client, lineStream, client_socket, _clients);
 			else if (command == "KICK")
-				kick();
+				kick(_clients);
 			else if (command == "TOPIC")
 				topic(client, lineStream, client_socket, _clients);
             else if (valread == 0)
@@ -216,9 +216,9 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
     }
 }
 
-void Server::kick()
+void Server::kick(std::map<int, Clients> &_clients)
 {
-	
+	 (void)_clients;
 }
 ////////////stocker le topic dans une map ?
 void Server::topic(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients> &_clients)
