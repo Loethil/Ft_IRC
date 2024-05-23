@@ -6,7 +6,7 @@
 /*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:24:31 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/22 14:31:11 by llaigle          ###   ########.fr       */
+/*   Updated: 2024/05/22 18:42:47 by llaigle          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,7 @@ class Server
 		void	msg(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients>  _clients);
         void    run();
         void    part(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients> & _clients);
+        void    topic(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients> &_clients);
 
 
         // class bindException : public std::exception
@@ -54,6 +55,7 @@ class Server
         // };
 
         std::string getPwd();
+        
 
         void    setPwd(std::string pwd);
         void    setPort(int port);

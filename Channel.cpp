@@ -17,18 +17,16 @@ std::string   Channel::getChanName()
     return _chanName;
 }
 
-std::string	Channel::get_Topic(void)
-{
-	return (this->_Topic);
-}
-
-void	Channel::set_Topic(std::string new_Topic)
-{
-	this->_Topic = new_Topic;
-	return ;
-}
-
 std::map<std::string, Clients *>	&Channel::get_connUsers(void)
 {
 	return (this->_connUsers);
+}
+std::string Channel::getTopic()
+{
+	return _topic;
+}
+
+void	Channel::setTopic(std::string topic)
+{
+	_topic = topic;
 }
