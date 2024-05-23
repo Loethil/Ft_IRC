@@ -6,7 +6,7 @@
 /*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:23:59 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/23 15:57:09 by llaigle          ###   ########.fr       */
+/*   Updated: 2024/05/23 16:28:27 by llaigle          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -215,6 +215,176 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
         }
     }
 }
+
+///////////////////////////////a revoir celle la elle est bancale un peu
+void Server::mode(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients> &_clients, std::map<std::string, Channel> &channels)
+{
+    std::string target;
+    std::string modes;
+    std::string modeParams;
+
+    // Lire le nom de la cible (canal ou utilisateur)
+    if (lineStream >> target)
+    {
+        // Vérifier si la cible est un canal ou un utilisateur
+        if (target[0] == '#') // Cible est un canal
+        {
+            std::map<std::string, Channel>::iterator chanIt = channels.find(target);
+            if (chanIt != channels.end())
+            {
+                Channel &channel = chanIt->second;
+
+                // Lire les modes et les paramètres de mode
+                if (lineStream >> modes)
+                {
+                    std::getline(lineStream, modeParams);
+                    if (!modeParams.empty() && modeParams[0] == ' ')
+                        modeParams.erase(0, 1);
+
+                    // Appliquer les changements de mode
+                    std::string result;
+                    bool adding = true;
+                    for (size_t i = 0; i < modes.size(); ++i)
+                    {
+                        char mode = modes[i];
+                        if (mode == '+')
+                        {
+                            adding = true;
+                        }
+                        else if (mode == '-')
+                        {
+                            adding = false;
+                        }
+                        else
+                        {
+                            if (channel.changeMode(mode, adding))
+                            {
+                                result += (adding ? "+" : "-") + std::string(1, mode);
+                            }
+                            else
+                            {
+                                // Mode non reconnu ou non applicable, envoyer un message d'erreur au client
+                                std::string errMsg = "Unknown mode: " + std::string(1, mode) + "\n";
+                                send(client_socket, errMsg.c_str(), errMsg.length(), 0);
+                            }
+                        }
+                    }
+
+                    // Informer les membres du canal des changements de mode
+                    if (!result.empty())
+                    {
+                        std::string fullModeMessage = ":" + client.get_Nickname() + "!" + client.get_Username() + "@I.R.SIUSIU MODE " + target + " " + result;
+                        if (!modeParams.empty())
+                        {
+                            fullModeMessage += " " + modeParams;
+                        }
+                        fullModeMessage += "\n";
+
+                        for (std::map<int, Clients>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+                        {
+                            if (it->second.get_Channel() == target)
+                            {
+                                send(it->first, fullModeMessage.c_str(), fullModeMessage.length(), 0);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // Afficher les modes actuels du canal
+                    std::string currentModes = channel.getModes();
+                    std::string modeMessage = "Current modes for " + target + ": " + currentModes + "\n";
+                    send(client_socket, modeMessage.c_str(), modeMessage.length(), 0);
+                }
+            }
+            else
+            {
+                // Le canal n'existe pas, envoyer un message d'erreur au client
+                std::string errMsg = "No such channel: " + target + "\n";
+                send(client_socket, errMsg.c_str(), errMsg.length(), 0);
+            }
+        }
+        else // Cible est un utilisateur
+        {
+            // Implémentation des modes utilisateur (similaire à celle des canaux, mais appliquée à l'utilisateur)
+            std::map<int, Clients>::iterator userIt;
+            bool found = false;
+            for (userIt = _clients.begin(); userIt != _clients.end(); ++userIt)
+            {
+                if (userIt->second.get_Nickname() == target)
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (found)
+            {
+                Clients &targetUser = userIt->second;
+                if (lineStream >> modes)
+                {
+                    // Appliquer les changements de mode pour l'utilisateur
+                    std::string result;
+                    bool adding = true;
+                    for (size_t i = 0; i < modes.size(); ++i)
+                    {
+                        char mode = modes[i];
+                        if (mode == '+')
+                        {
+                            adding = true;
+                        }
+                        else if (mode == '-')
+                        {
+                            adding = false;
+                        }
+                        else
+                        {
+                            if (targetUser.changeMode(mode, adding))
+                            {
+                                result += (adding ? "+" : "-") + std::string(1, mode);
+                            }
+                            else
+                            {
+                                // Mode non reconnu ou non applicable, envoyer un message d'erreur au client
+                                std::string errMsg = "Unknown mode: " + std::string(1, mode) + "\n";
+                                send(client_socket, errMsg.c_str(), errMsg.length(), 0);
+                            }
+                        }
+                    }
+
+                    // Informer l'utilisateur des changements de mode
+                    if (!result.empty())
+                    {
+                        std::string fullModeMessage = ":" + client.get_Nickname() + "!" + client.get_Username() + "@I.R.SIUSIU MODE " + target + " " + result + "\n";
+                        send(userIt->first, fullModeMessage.c_str(), fullModeMessage.length(), 0);
+                    }
+                }
+                else
+                {
+                    // Afficher les modes actuels de l'utilisateur
+                    std::string currentModes = targetUser.getModes();
+                    std::string modeMessage = "Current modes for " + target + ": " + currentModes + "\n";
+                    send(client_socket, modeMessage.c_str(), modeMessage.length(), 0);
+                }
+            }
+            else
+            {
+                // L'utilisateur n'existe pas, envoyer un message d'erreur au client
+                std::string errMsg = "No such user: " + target + "\n";
+                send(client_socket, errMsg.c_str(), errMsg.length(), 0);
+            }
+        }
+    }
+    else
+    {
+        // La commande MODE est mal formée, envoyer un message d'erreur au client
+        std::string errMsg = "MODE command error. Use: MODE <target> [modes]\n";
+        send(client_socket, errMsg.c_str(), errMsg.length(), 0);
+    }
+}
+
+
+
 /////////////////////////fonction qui gere les invitations
 void Server::invite(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients> &_clients)
 {
@@ -270,7 +440,6 @@ void Server::invite(Clients &client, std::istringstream &lineStream, int client_
         send(client_socket, errMsg.c_str(), errMsg.length(), 0);
     }
 }
-
 
 ////////////stocker le topic dans une map ?
 void Server::topic(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients> &_clients)
