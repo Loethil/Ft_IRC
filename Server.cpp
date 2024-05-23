@@ -6,7 +6,7 @@
 /*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:23:59 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/22 18:42:18 by llaigle          ###   ########.fr       */
+/*   Updated: 2024/05/23 15:57:09 by llaigle          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -190,6 +190,8 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 				part(client, lineStream, client_socket, _clients);
 			else if (command == "TOPIC")
 				topic(client, lineStream, client_socket, _clients);
+            else if (command == "INVITE")
+                invite(client, lineStream, client_socket, _clients);
             else if (valread == 0)
             {
                 close(client_socket);
@@ -211,6 +213,61 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
                 }
             }
         }
+    }
+}
+/////////////////////////fonction qui gere les invitations
+void Server::invite(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients> &_clients)
+{
+    std::string inv;
+    std::string channel;
+    
+    // Lire le nom de l'utilisateur invité et le nom du canal
+    if (lineStream >> inv >> channel)
+    {
+        // Vérifier si le client est dans le canal
+        if (client.get_Channel() == channel)
+        {
+            // Rechercher l'utilisateur invité dans la liste des clients
+            std::map<int, Clients>::iterator inv_it;
+            bool found = false;
+            for (inv_it = _clients.begin(); inv_it != _clients.end(); ++inv_it)
+            {
+                if (inv_it->second.get_Nickname() == inv)
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (found)
+            {
+                // Informer l'utilisateur invité de l'invitation
+                std::string inviteMsg = ":" + client.get_Nickname() + "!" + client.get_Username() + "@I.R.SIUSIU INVITE " + inv + " :" + channel + "\n";
+                send(inv_it->first, inviteMsg.c_str(), inviteMsg.length(), 0);
+
+                // Informer l'utilisateur qui invite que l'invitation a été envoyée
+                std::string confirmMsg = "You invited " + inv + " to join " + channel + "\n";
+                send(client_socket, confirmMsg.c_str(), confirmMsg.length(), 0);
+            }
+            else
+            {
+                // Envoyer un message d'erreur si l'utilisateur invité n'existe pas
+                std::string errMsg = "User '" + inv + "' doesn't exist.\n";
+                send(client_socket, errMsg.c_str(), errMsg.length(), 0);
+            }
+        }
+        else
+        {
+            // Envoyer un message d'erreur si le client n'est pas dans le canal
+            std::string errMsg = "You're not on that channel\n";
+            send(client_socket, errMsg.c_str(), errMsg.length(), 0);
+        }
+    }
+    else
+    {
+        // La commande INVITE est mal formée, envoyer un message d'erreur au client
+        std::string errMsg = "INVITE command error. Use : INVITE <nickname> <channel>\n";
+        send(client_socket, errMsg.c_str(), errMsg.length(), 0);
     }
 }
 
