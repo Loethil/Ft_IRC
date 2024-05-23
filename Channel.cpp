@@ -5,7 +5,7 @@ Channel::Channel(std::string & chanName): _chanName(chanName)
     // std::cout << "Channel " << chanName << " was created" << std::endl;
 }
 
-Channel::Channel(void) {}
+Channel::Channel() {}
 
 Channel::~Channel()
 {
@@ -17,18 +17,18 @@ std::string   Channel::getChanName()
     return _chanName;
 }
 
-std::string	Channel::get_Topic(void)
+std::string	Channel::getTopic()
 {
-	return (this->_Topic);
+	return (this->_topic);
 }
 
-void	Channel::set_Topic(std::string new_Topic)
+void	Channel::setTopic(std::string new_topic)
 {
-	this->_Topic = new_Topic;
+	this->_topic = new_topic;
 	return ;
 }
 
-std::map<std::string, Clients *>	&Channel::get_connUsers(void)
+std::map<std::string, Clients *>	&Channel::getConnUsers()
 {
 	return (this->_connUsers);
 }

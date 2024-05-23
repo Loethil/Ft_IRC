@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
+/*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:23:59 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/22 15:58:50 by llaigle          ###   ########.fr       */
+/*   Updated: 2024/05/23 15:09:04 by scarpent         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -368,7 +368,7 @@ void Server::join(Clients &client, std::istringstream &lineStream, int client_so
             std::cout << "New Channel created: " << channelName << std::endl;
         }
         // Ajoute le client au canal
-        std::map<std::string, Clients*>& connUsers = _Channel[channelName].get_connUsers();
+        std::map<std::string, Clients*>& connUsers = _Channel[channelName].getConnUsers();
         connUsers[client.get_Nickname()] = &client;
         // Informer tous les clients du canal qu'un nouveau client a rejoint
         std::string joinMessage = ":" + client.get_Nickname() + "!" + client.get_Username() + "@I.R.SIUSIU JOIN " + channelName + "\n";
@@ -395,7 +395,6 @@ void Server::join(Clients &client, std::istringstream &lineStream, int client_so
         send(client_socket, errorMessage.c_str(), errorMessage.length(), 0);
     }
 }
-
 
 //fonction permettant de verifier le mot de passe
 bool	Server::pass(Clients &client, std::istringstream &lineStream, int client_socket)
@@ -468,4 +467,3 @@ void Server::sendWelcomeMessages(int client_socket, Clients &client)
     send(client_socket, motdEnd.c_str(), motdEnd.size(), 0);
     std::cout << "Sent MOTD end: " << motdEnd;
 }
-
