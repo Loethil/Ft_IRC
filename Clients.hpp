@@ -6,7 +6,7 @@
 /*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 15:50:02 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/23 16:27:21 by llaigle          ###   ########.fr       */
+/*   Updated: 2024/05/23 16:41:51 by llaigle          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,6 @@ class Clients
 		void		set_Status(status new_Status);
 		std::string get_Channel(void);
 		void		set_Channel(std::string new_Channel);
-        bool        changeMode(char mode, bool adding);
-        std::string getModes() const;
 		
 	private:
 		int						_Socket;
@@ -46,6 +44,5 @@ class Clients
 		std::string				_Realname;
 		status					_Status;
 		std::string 			_channel;
-		std::map<char, bool>	_modes;
 		///stocker les modes du client dans un tableau / conteneur
 };

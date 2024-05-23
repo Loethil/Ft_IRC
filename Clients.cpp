@@ -6,7 +6,7 @@
 /*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 15:49:54 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/23 16:27:25 by llaigle          ###   ########.fr       */
+/*   Updated: 2024/05/23 16:41:59 by llaigle          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,24 +79,4 @@ std::string		Clients::get_Channel(void)
 void		Clients::set_Channel(std::string new_Channel)
 {
 	this->_channel = new_Channel;
-}
-
-bool Clients::changeMode(char mode, bool adding)
-{
-    if (adding)
-        _modes[mode] = true;
-    else
-        _modes[mode] = false;
-    return true;
-}
-
-std::string Clients::getModes() const
-{
-    std::string modeStr;
-    for (std::map<char, bool>::const_iterator it = _modes.begin(); it != _modes.end(); ++it)
-    {
-        if (it->second)
-            modeStr += it->first;
-    }
-    return modeStr;
 }
