@@ -20,3 +20,5 @@ class Channel
         void                                setTopic(std::string topic);
         std::string                         getTopic();
 };
+
+std::ostream	&operator<<(std::ostream &o, Channel &rhs);

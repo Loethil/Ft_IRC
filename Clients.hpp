@@ -44,3 +44,5 @@ class Clients
 		status		_Status;
 		std::string _channel;
 };
+
+std::ostream	&operator<<(std::ostream &o, Clients &rhs);

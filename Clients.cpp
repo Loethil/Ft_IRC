@@ -80,3 +80,14 @@ void		Clients::set_Channel(std::string new_Channel)
 {
 	this->_channel = new_Channel;
 }
+
+std::ostream	&operator<<(std::ostream &o, Clients &rhs)
+{
+	o << "Username : " << rhs.get_Username();
+	o << "Nickname : " << rhs.get_Nickname();
+	o << "Realname : " << rhs.get_Realname();
+	o << "Socket : " << rhs.get_Socket();
+	o << "status : " << rhs.get_Status();
+	//channel map
+	return (o);
+}

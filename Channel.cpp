@@ -30,3 +30,14 @@ void	Channel::setTopic(std::string topic)
 {
 	_topic = topic;
 }
+
+std::ostream	&operator<<(std::ostream &o, Channel &rhs)
+{
+	o << "ChanName : " << rhs.getChanName() << std::endl;
+	o << "Topic : " << rhs.getTopic() << std::endl;
+	for (std::map<std::string, Clients*>::iterator it = rhs.get_connUsers().begin(); it != rhs.get_connUsers().end(); ++it)
+	{
+		o << "Connected Users on this channel : " << it->second->get_Nickname() << std::endl;
+	}
+	return (o);
+}
