@@ -15,10 +15,10 @@ class Channel
         ~Channel();
 
         std::string 						getChanName();
-		std::map<std::string, Clients *>	&get_connUsers(void);
+		std::map<std::string, Clients *>	&getConnUsers(void);
 
         void                                setTopic(std::string topic);
         std::string                         getTopic();
 };
 
-std::ostream	&operator<<(std::ostream &o, Channel &rhs);
+std::ostream	&operator<<(std::ostream &o, Clients &rhs);

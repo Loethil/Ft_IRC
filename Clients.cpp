@@ -6,7 +6,7 @@
 /*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 15:49:54 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/20 16:20:45 by scarpent         ###   ########.fr       */
+/*   Updated: 2024/05/23 17:07:36 by scarpent         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,23 +71,12 @@ void		Clients::set_Status(status new_status)
 	return ;
 }
 
-std::string		Clients::get_Channel(void)
+std::vector<Channel *>&		Clients::getCurrConnected(void)
 {
-	return (this->_channel);
+	return (this->_currConnected);
 }
 
-void		Clients::set_Channel(std::string new_Channel)
+void		Clients::setCurrConnected(std::vector<Channel *>& newCurrConnected)
 {
-	this->_channel = new_Channel;
-}
-
-std::ostream	&operator<<(std::ostream &o, Clients &rhs)
-{
-	o << "Username : " << rhs.get_Username();
-	o << "Nickname : " << rhs.get_Nickname();
-	o << "Realname : " << rhs.get_Realname();
-	o << "Socket : " << rhs.get_Socket();
-	o << "status : " << rhs.get_Status();
-	//channel map
-	return (o);
+	this->_currConnected = newCurrConnected;
 }

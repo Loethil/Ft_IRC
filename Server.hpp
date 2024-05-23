@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
+/*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:24:31 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/22 18:42:47 by llaigle          ###   ########.fr       */
+/*   Updated: 2024/05/23 17:17:27 by scarpent         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,16 +44,8 @@ class Server
 		void	join(Clients &client, std::istringstream &lineStream, int client_socket);
 		void	msg(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients>  _clients);
         void    run();
-		// void	kick(std::map<int, Clients> &_clients, std::istringstream &lineStream, int client_socket);
-        // void    part(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients> & _clients);
-        // void    topic(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients> &_clients);
-
-
-        // class bindException : public std::exception
-        // {
-        // public:
-        //     virtual const char *what() const throw();
-        // };
+        void    part(Clients &client, std::istringstream &lineStream, int client_socket);
+        void    topic(Clients &client, std::istringstream &lineStream, int client_socket);
 
         std::string getPwd();
         
