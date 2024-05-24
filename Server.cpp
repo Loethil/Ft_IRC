@@ -205,10 +205,10 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 								msg = ":" + client.get_Nickname() + " " + msg;
 								for (std::map<std::string, Clients *>::iterator it = (*currIt)->getConnUsers().begin(); it != (*currIt)->getConnUsers().end(); ++it)
 								{
-									std::cout << "message will be sent to : " << it->second->get_Socket() << std::endl;
+									if (it->second->get_Socket() == client.get_Socket())
+										return ;
 									send(it->second->get_Socket(), msg.c_str(), msg.length(), 0);
 								}
-								return ;
 							}
 						}
 					}
