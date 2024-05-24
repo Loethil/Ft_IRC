@@ -42,7 +42,7 @@ class Server
 		void	nick(Clients &client, std::istringstream &lineStream);
 		bool	pass(Clients &client, std::istringstream &lineStream, int client_socket);
 		void	join(Clients &client, std::istringstream &lineStream, int client_socket);
-		void	msg(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients>  _clients);
+		void 	msg(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients> &_clients);
         void    run();
         void    part(Clients &client, std::istringstream &lineStream, int client_socket);
         void    topic(Clients &client, std::istringstream &lineStream, int client_socket);

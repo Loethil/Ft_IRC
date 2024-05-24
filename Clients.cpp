@@ -80,3 +80,14 @@ void		Clients::setCurrConnected(std::vector<Channel *>& newCurrConnected)
 {
 	this->_currConnected = newCurrConnected;
 }
+
+std::ostream	&operator<<(std::ostream &o, Clients &rhs)
+{
+	o << "Username : " << rhs.get_Username() << std::endl;
+	o << "Nickname : " << rhs.get_Nickname() << std::endl;
+	o << "Realname : " << rhs.get_Realname() << std::endl;
+	o << "Socket : " << rhs.get_Socket() << std::endl;
+	o << "status : " << rhs.get_Status() << std::endl;
+	//channel map
+	return (o);
+}
