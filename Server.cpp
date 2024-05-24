@@ -6,7 +6,7 @@
 /*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:23:59 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/24 17:42:23 by scarpent         ###   ########.fr       */
+/*   Updated: 2024/05/24 18:13:37 by scarpent         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -225,7 +225,6 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 		}
 	}
 }
-
 
 void	Server::topic(Clients *client, std::istringstream &lineStream, int client_socket)
 {
