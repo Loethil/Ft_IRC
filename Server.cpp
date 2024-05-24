@@ -6,7 +6,7 @@
 /*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:23:59 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/24 14:55:35 by scarpent         ###   ########.fr       */
+/*   Updated: 2024/05/24 15:00:23 by scarpent         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -213,30 +213,31 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 						}
 					}
 				}
-			else
+			}
+		}
+		else
+		{
+			// Récupérer le nom du destinataire et le contenu du message
+			std::string dest;
+			std::string msg;
+			if (lineStream >> dest && std::getline(lineStream, msg))
 			{
-				// Récupérer le nom du destinataire et le contenu du message
-				std::string dest;
-				std::string msg;
-				if (lineStream >> dest && std::getline(lineStream, msg))
+				if (dest.find("#") < dest.size())
 				{
-					if (dest.find("#") < dest.size())
+					if (!msg.empty() && msg[0] == ' ' && msg[1] == ':')
+						msg.erase(0, 2);
+					std::cout << "msg: " << msg << std::endl;
+					std::string sent_msg;
+					for (std::vector<Channel *>::iterator currIt = client.getCurrConnected().begin(); currIt != client.getCurrConnected().end(); ++currIt)
 					{
-						if (!msg.empty() && msg[0] == ' ' && msg[1] == ':')
-							msg.erase(0, 2);
-						std::cout << "msg: " << msg << std::endl;
-						std::string sent_msg;
-						for (std::vector<Channel *>::iterator currIt = client.getCurrConnected().begin(); currIt != client.getCurrConnected().end(); ++currIt)
+						if (dest == (*currIt)->getChanName())
 						{
-							if (dest == (*currIt)->getChanName())
+							sent_msg = ":" + client.get_Nickname() + " " + msg;
+							for (std::map<std::string, Clients *>::iterator it = (*currIt)->getConnUsers().begin(); it != (*currIt)->getConnUsers().end(); ++it)
 							{
-								sent_msg = ":" + client.get_Nickname() + " " + msg;
-								for (std::map<std::string, Clients *>::iterator it = (*currIt)->getConnUsers().begin(); it != (*currIt)->getConnUsers().end(); ++it)
-								{
-									send(it->second->get_Socket(), sent_msg.c_str(), sent_msg.length(), 0);
-								}
-								return ;
+								send(it->second->get_Socket(), sent_msg.c_str(), sent_msg.length(), 0);
 							}
+							return ;
 						}
 					}
 				}
@@ -246,7 +247,7 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 }
 
 
-void Server::topic(Clients &client, std::istringstream &lineStream, int client_socket)
+void	Server::topic(Clients &client, std::istringstream &lineStream, int client_socket)
 {
     std::string channelName;
     std::string newTopic;
@@ -269,7 +270,6 @@ void Server::topic(Clients &client, std::istringstream &lineStream, int client_s
             if ((*iter)->getChanName() == channelName)
             {
                 it = iter;
-                break;
             }
         }
 
