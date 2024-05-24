@@ -6,7 +6,7 @@
 /*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:23:59 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/24 17:18:43 by scarpent         ###   ########.fr       */
+/*   Updated: 2024/05/24 17:42:23 by scarpent         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -181,6 +181,10 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 				join(client, lineStream, client_socket);
 			else if (command == "MSG")
 				msg(client, lineStream, client_socket, _clients);
+			else if (command == "TOPIC")
+				topic(client, lineStream, client_socket);
+			// else if (command == "PART")
+			// 	part(client, lineStream);
 			else if (valread == 0)
 			{
 				close(client_socket);
@@ -188,32 +192,6 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 				std::cout << "Client disconnected" << std::endl;
 				return;
 			}
-			// else
-			// {
-			// 	std::string dest;
-			// 	std::string msg = buffer;
-			// 	if (lineStream >> dest)
-			// 	{
-			// 		if (!msg.empty() && msg[0] == ' ' && msg[1] == ':')
-			// 			msg.erase(0, 2);
-			// 		if (dest.find("#") < dest.size())
-			// 		{
-			// 			for (std::vector<Channel *>::iterator currIt = client->getCurrConnected().begin(); currIt != client->getCurrConnected().end(); ++currIt)
-			// 			{
-			// 				if (dest == (*currIt)->getChanName())
-			// 				{
-			// 					msg = ":" + client->get_Nickname() + " " + msg;
-			// 					for (std::map<std::string, Clients *>::iterator it = (*currIt)->getConnUsers().begin(); it != (*currIt)->getConnUsers().end(); ++it)
-			// 					{
-			// 						std::cout << "message will be sent to : " << it->second->get_Socket() << std::endl;
-			// 						send(it->second->get_Socket(), msg.c_str(), msg.length(), 0);
-			// 					}
-			// 					return ;
-			// 				}
-			// 			}
-			// 		}
-			// 	}
-			// }
 			else
 			{
 				// Récupérer le nom du destinataire et le contenu du message
@@ -266,7 +244,10 @@ void	Server::topic(Clients *client, std::istringstream &lineStream, int client_s
 		else
 		{
 			if (_Channel[channelName].getTopic().size() > 0)
-				send(client->get_Socket(), _Channel[channelName].getTopic().c_str(), _Channel[channelName].getTopic().length(), 0);
+			{
+				std::string fullTopicMessage = ":" + client->get_Nickname() + "!" + client->get_Username() + "@I.R.SIUSIU TOPIC " + channelName + " " + newTopic + "\n";
+				send(client->get_Socket(), fullTopicMessage.c_str(), _Channel[channelName].getTopic().length(), 0);
+			}
 			return ;
 		}
 
@@ -289,9 +270,7 @@ void	Server::topic(Clients *client, std::istringstream &lineStream, int client_s
             // Notify all members of the channel about the topic change
             std::string fullTopicMessage = ":" + client->get_Nickname() + "!" + client->get_Username() + "@I.R.SIUSIU TOPIC " + channelName + " " + newTopic + "\n";
             for (std::map<std::string, Clients*>::iterator connIt = _Channel[channelName].getConnUsers().begin(); connIt != _Channel[channelName].getConnUsers().end(); ++connIt)
-            {
                 send(connIt->second->get_Socket(), fullTopicMessage.c_str(), fullTopicMessage.length(), 0);
-            }
         }
         else
         {
