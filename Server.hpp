@@ -6,7 +6,7 @@
 /*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:24:31 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/23 17:17:27 by scarpent         ###   ########.fr       */
+/*   Updated: 2024/05/24 17:06:36 by scarpent         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ class Server
         int                                 _port;
         std::string                         _pwd;
         std::string                         _server_name;
-        std::map<int , Clients>             _clients;
+        std::map<int , Clients *>           _clients;
         struct sockaddr_in                  _cli_adr;
         struct sockaddr_in                  _serv_adr;
 		std::map<std::string, Channel>		_Channel;
@@ -37,15 +37,15 @@ class Server
         void    start(int port);
         void    acceptNewConnection();
         void	handleClientMessage(int client_socket, Clients::status status);
-        void    sendWelcomeMessages(int client_socket, Clients &client);
-		void	user(Clients &client, std::istringstream &lineStream, int client_socket);
-		void	nick(Clients &client, std::istringstream &lineStream);
-		bool	pass(Clients &client, std::istringstream &lineStream, int client_socket);
-		void	join(Clients &client, std::istringstream &lineStream, int client_socket);
-		void 	msg(Clients &client, std::istringstream &lineStream, int client_socket, std::map<int, Clients> &_clients);
+        void    sendWelcomeMessages(int client_socket, Clients *client);
+		void	user(Clients *client, std::istringstream &lineStream, int client_socket);
+		void	nick(Clients *client, std::istringstream &lineStream);
+		bool	pass(Clients *client, std::istringstream &lineStream, int client_socket);
+		void	join(Clients *client, std::istringstream &lineStream, int client_socket);
+		void 	msg(Clients *client, std::istringstream &lineStream, int client_socket, std::map<int, Clients *> &_clients);
         void    run();
-        void    part(Clients &client, std::istringstream &lineStream, int client_socket);
-        void    topic(Clients &client, std::istringstream &lineStream, int client_socket);
+        void    part(Clients *client, std::istringstream &lineStream);
+        void    topic(Clients *client, std::istringstream &lineStream, int client_socket);
 
         std::string getPwd();
         

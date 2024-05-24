@@ -28,7 +28,7 @@ std::string Channel::getTopic()
 	return _topic;
 }
 
-void	Channel::setTopic(std::string new_topic)
+void	Channel::setTopic(std::string& new_topic)
 {
 	_topic = new_topic;
 }

@@ -18,7 +18,7 @@ class Channel
         std::string 						getChanName();
 		std::map<std::string, Clients *>	&getConnUsers(void);
 
-        void                                setTopic(std::string topic);
+        void                                setTopic(std::string& topic);
         std::string                         getTopic();
 };
 

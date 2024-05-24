@@ -6,7 +6,7 @@
 /*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 15:49:54 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/23 17:07:36 by scarpent         ###   ########.fr       */
+/*   Updated: 2024/05/24 17:02:25 by scarpent         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,9 @@
 
 Clients::Clients(void) {}
 
-Clients::~Clients(void) {}
+Clients::~Clients(void) {
+	std::cout << "Killed client (" << _Socket << ")" << std::endl;
+}
 
 int	Clients::get_Socket(void)
 {
