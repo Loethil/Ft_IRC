@@ -1,16 +1,20 @@
 #include "Channel.hpp"
 #include "Clients.hpp"
 
-Channel::Channel(std::string & chanName): _chanName(chanName), _topic("")
-{
-    // std::cout << "Channel " << chanName << " was created" << std::endl;
-}
+Channel::Channel(std::string & chanName): _chanName(chanName), _topic("") {}
 
 Channel::Channel():_chanName(""), _topic("") {}
 
 Channel::~Channel()
 {
-    // std::cout << "Channel " << _chanName << " was destroyed" << std::endl;
+	if (!_connUsers.empty())
+	{
+		for (std::map<std::string, Clients *>::iterator delIt = _connUsers.begin(); delIt != _connUsers.end(); ++delIt)
+		{
+			delete delIt->second;
+		}
+		_connUsers.clear();
+	}
 }
 
 std::string   Channel::getChanName()

@@ -6,7 +6,7 @@
 /*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:23:59 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/27 12:02:11 by scarpent         ###   ########.fr       */
+/*   Updated: 2024/05/27 13:56:59 by scarpent         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,14 @@ Server::~Server()
 		close(_server_fd);
 	for (size_t i = 0; i < _clients.size(); ++i)
 		close(_clients[i]->get_Socket());
+	if (!_clients.empty())
+	{
+		for (std::map<int, Clients *>::iterator delIt = _clients.begin(); delIt != _clients.end(); ++delIt)
+		{
+			delete delIt->second;
+		}
+		_clients.clear();
+	}
 }
 
 std::string Server::getPwd()
@@ -59,8 +67,8 @@ void	Server::start(int port)
 	}
 	if (listen(_server_fd, 3) < 0)
 	{
-		throw std::runtime_error("Listen failed");
 		close(_server_fd);
+		throw std::runtime_error("Listen failed");
 		exit(EXIT_FAILURE);
 	}
 	std::cout << "The server started with success !" << std::endl;
@@ -113,7 +121,7 @@ void	Server::run()
 	}
 }
 
-//fonction permettant d'accepter de nouveau clents et de lui donner ses bons parametres
+//fonction permettant d'accepter de nouveau clients et de lui donner ses bons parametres
 void	Server::acceptNewConnection()
 {
 	socklen_t addrlen = sizeof(_cli_adr);
@@ -183,12 +191,17 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 				msg(client, lineStream, client_socket, _clients);
 			else if (command == "TOPIC")
 				topic(client, lineStream, client_socket);
-			// else if (command == "PART")
-			// 	part(client, lineStream);
+			else if (command == "PART")
+				part(client, lineStream);
 			else if (valread == 0)
 			{
 				close(client_socket);
-				_clients.erase(client_socket);
+				std::map<int, Clients*>::iterator it = _clients.find(client_socket);
+				if (it != _clients.end())
+				{
+					delete it->second;
+					_clients.erase(it);
+				}
 				std::cout << "Client disconnected" << std::endl;
 				return;
 			}
@@ -200,25 +213,24 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 
 				if (lineStream >> dest)
 				{
-					if (dest.find("#") < dest.size())
+					if (dest.find("#") >= dest.size())
+						continue ;
+					if (!msg.empty() && msg[0] == ' ' && msg[1] == ':')
+						msg.erase(0, 2);
+					std::cout << "msg: " << msg << std::endl;
+					std::string sent_msg;
+					for (std::vector<Channel *>::iterator currIt = client->getCurrConnected().begin(); currIt != client->getCurrConnected().end(); ++currIt)
 					{
-						if (!msg.empty() && msg[0] == ' ' && msg[1] == ':')
-							msg.erase(0, 2);
-						std::cout << "msg: " << msg << std::endl;
-						std::string sent_msg;
-						for (std::vector<Channel *>::iterator currIt = client->getCurrConnected().begin(); currIt != client->getCurrConnected().end(); ++currIt)
+						if (dest != (*currIt)->getChanName())
+							continue ;
+						sent_msg = ":" + client->get_Nickname() + " " + msg;
+						for (std::map<std::string, Clients *>::iterator it = (*currIt)->getConnUsers().begin(); it != (*currIt)->getConnUsers().end(); ++it)
 						{
-							if (dest != (*currIt)->getChanName())
-								continue ;
-							sent_msg = ":" + client->get_Nickname() + " " + msg;
-							for (std::map<std::string, Clients *>::iterator it = (*currIt)->getConnUsers().begin(); it != (*currIt)->getConnUsers().end(); ++it)
-							{
-								std::cout << "\e[0;33m" << it->first << " on port " << it->second->get_Socket() << "\e[0;0m" << std::endl;
-								if (it->second->get_Socket() != client->get_Socket())
-									send(it->second->get_Socket(), sent_msg.c_str(), sent_msg.length(), 0);
-							}
-							return ;
+							std::cout << "\e[0;33m" << it->first << " on port " << it->second->get_Socket() << "\e[0;0m" << std::endl;
+							if (it->second->get_Socket() != client->get_Socket())
+								send(it->second->get_Socket(), sent_msg.c_str(), sent_msg.length(), 0);
 						}
+						return ;
 					}
 				}
 			}
@@ -244,7 +256,8 @@ void	Server::topic(Clients *client, std::istringstream &lineStream, int client_s
 		{
 			if (_Channel[channelName].getTopic().size() > 0)
 			{
-				std::string fullTopicMessage = ":" + client->get_Nickname() + "!" + client->get_Username() + "@I.R.SIUSIU TOPIC " + channelName + " " + newTopic + "\n";
+				//std::string fullTopicMessage = ":" + client->get_Nickname() + "!" + client->get_Username() + "@I.R.SIUSIU TOPIC " + channelName + " " + newTopic + "\n";
+				std::string fullTopicMessage = ":I.R.SIUSIU 332 " + client->get_Nickname() + " " + channelName + " :" + _Channel[channelName].getTopic() + "\n";
 				send(client->get_Socket(), fullTopicMessage.c_str(), _Channel[channelName].getTopic().length(), 0);
 			}
 			return ;
@@ -396,34 +409,41 @@ void	Server::part(Clients *client, std::istringstream &lineStream)
 				break;
 			}
 		}
-		        if (it != connectedChannels.end())
-        {
-            // Remove the client from the channel's connected users
-            _Channel[channelName].getConnUsers().erase(client->get_Nickname());
-            connectedChannels.erase(it);
+		if (it != connectedChannels.end())
+		{
+			std::string partMessageFull;
+			// Remove the client from the channel's connected users
+			_Channel[channelName].getConnUsers().erase(client->get_Nickname());
+			connectedChannels.erase(it);
 
-            // Notify all clients in the channel about the part
-            std::string partMessageFull = ":" + client->get_Nickname() + "!" + client->get_Username() + "@I.R.SIUSIU PART " + channelName + " :" + partMessage + "\n";
-            for (std::map<std::string, Clients*>::iterator connIt = _Channel[channelName].getConnUsers().begin(); connIt != _Channel[channelName].getConnUsers().end(); ++connIt)
-            {
-                send(connIt->second->get_Socket(), partMessageFull.c_str(), partMessageFull.length(), 0);
-            }
+			// Notify all clients in the channel about the part
+			if (!partMessage.empty())
+				partMessageFull = ":" + client->get_Nickname() + "!" + client->get_Username() + "@I.R.SIUSIU PART " + channelName + " :" + partMessage + "\n";
+			else
+				partMessageFull = ":" + client->get_Nickname() + "!" + client->get_Username() + "@I.R.SIUSIU PART " + channelName + " :\n";
+			for (std::map<std::string, Clients*>::iterator connIt = _Channel[channelName].getConnUsers().begin(); connIt != _Channel[channelName].getConnUsers().end(); ++connIt)
+			{
+				send(connIt->second->get_Socket(), partMessageFull.c_str(), partMessageFull.length(), 0);
+			}
 
-            // Optionally: Remove the channel if no users left
-            if (_Channel[channelName].getConnUsers().empty())
-                _Channel.erase(channelName);
-        }
-        else
-        {
-            std::string errMsg = "You're not on that channel\n";
-            send(client->get_Socket(), errMsg.c_str(), errMsg.length(), 0);
-        }
-    }
-    else
-    {
-        std::string errMsg = "Usage: PART <channelName> [message]\n";
-        send(client->get_Socket(), errMsg.c_str(), errMsg.length(), 0);
-    }
+			// Optionally: Remove the channel if no users left
+			if (_Channel[channelName].getConnUsers().empty())
+				_Channel.erase(channelName);
+
+			// notifier irssi de la deconnection du client
+			send(client->get_Socket(), partMessageFull.c_str(), partMessageFull.length(), 0);
+		}
+		else
+		{
+			std::string errMsg = "You're not on that channel\n";
+			send(client->get_Socket(), errMsg.c_str(), errMsg.length(), 0);
+		}
+	}
+	else
+	{
+		std::string errMsg = "Usage: PART <channelName> [message]\n";
+		send(client->get_Socket(), errMsg.c_str(), errMsg.length(), 0);
+	}
 }
 
 //fonction permettant de verifier le mot de passe
@@ -440,6 +460,7 @@ bool	Server::pass(Clients *client, std::istringstream &lineStream, int client_so
 	{
 		send(client_socket, "Invalid password, try again...\n", 32, 0);
 		close(client_socket);
+		delete _clients[client_socket];
 		_clients.erase(client_socket);
 		return (false);
 	}
@@ -477,7 +498,7 @@ void Server::sendWelcomeMessages(int client_socket, Clients *client)
     send(client_socket, welcomeMsg.c_str(), welcomeMsg.size(), 0);
     std::cout << "Sent welcome message: " << welcomeMsg;
 
-    std::string yourHost = ":I.R.SIUSIU 002 " + client->get_Nickname() + " :Your host is I.R.SIUSIU, running version 1.0\n";
+    std::string yourHost = ":I.R.SIUSIU 002 " + client->get_Nickname() + " :Your host is I.R.SIUSIU, running version 42.42\n";
     send(client_socket, yourHost.c_str(), yourHost.size(), 0);
     std::cout << "Sent yourHost message: " << yourHost;
 

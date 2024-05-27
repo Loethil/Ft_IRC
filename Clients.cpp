@@ -6,7 +6,7 @@
 /*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 15:49:54 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/24 17:02:25 by scarpent         ###   ########.fr       */
+/*   Updated: 2024/05/27 12:15:00 by scarpent         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,16 @@
 
 Clients::Clients(void) {}
 
-Clients::~Clients(void) {
-	std::cout << "Killed client (" << _Socket << ")" << std::endl;
+Clients::~Clients(void)
+{
+	if (!_currConnected.empty())
+	{
+		for (std::vector<Channel *>::iterator delIt = _currConnected.begin(); delIt != _currConnected.end(); ++delIt)
+		{
+			delete *delIt;
+		}
+		_currConnected.clear();
+	}
 }
 
 int	Clients::get_Socket(void)
