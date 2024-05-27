@@ -256,3 +256,25 @@ void	Server::user(Clients *client, std::istringstream &lineStream, int client_so
 	std::cout << "Realname set to: " << client->get_Realname() << std::endl;
 	sendWelcomeMessages(client_socket, client);
 }
+
+void	Server::pong(Clients *client)
+{
+	std::cout << BLUE "PONG I.R.SIUSIU" RESET << std::endl;
+	send(client->get_Socket(), "PONG I.R.SIUSIU\r\n", 18, 0);
+}
+
+void	Server::quit(Clients *client, std::istringstream &lineStream)
+{
+	// Segfault sur ca :(
+	// std::map<int, Clients*>::iterator it = _clients.find(client->get_Socket());
+	// if (it != _clients.end())
+	// {
+	// 	if (it->second != NULL)
+	// 		delete it->second;
+	// 	_clients.erase(it);
+	// }
+
+	std::vector<Channel *>& connectedChannels = client->getCurrConnected();
+	for (std::vector<Channel *>::iterator iter = connectedChannels.begin(); iter != connectedChannels.end(); ++iter)
+		part(client, lineStream);
+}

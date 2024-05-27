@@ -6,7 +6,7 @@
 /*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:23:59 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/27 14:25:18 by scarpent         ###   ########.fr       */
+/*   Updated: 2024/05/27 17:13:15 by scarpent         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,13 +62,13 @@ void	Server::start(int port)
 	if (bind(_server_fd, (struct sockaddr *)&_serv_adr, sizeof(_serv_adr)) < 0)
 	{
 		close(_server_fd);
-		throw std::runtime_error("Bind failed");
+		throw std::runtime_error(RED "Bind failed" RESET);
 		exit(EXIT_FAILURE);
 	}
 	if (listen(_server_fd, 3) < 0)
 	{
 		close(_server_fd);
-		throw std::runtime_error("Listen failed");
+		throw std::runtime_error(RED "Listen failed" RESET);
 		exit(EXIT_FAILURE);
 	}
 	std::cout << "The server started with success !" << std::endl;
@@ -79,7 +79,7 @@ void	Server::run()
 {
 	if (_server_fd == -1)
 	{
-		throw std::runtime_error("Server not initialized");
+		throw std::runtime_error(RED "Server not initialized" RESET);
 		return;
 	}
 
@@ -95,7 +95,7 @@ void	Server::run()
 		int poll_count = poll(pollfds.data(), pollfds.size(), -1);
 		if (poll_count < 0)
 		{
-			throw std::runtime_error("Poll error");
+			throw std::runtime_error(RED "Poll error" RESET);
 			exit(EXIT_FAILURE);
 		}
 		for (size_t i = 0; i < pollfds.size(); ++i)
@@ -193,14 +193,17 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 				topic(client, lineStream, client_socket);
 			else if (command == "PART")
 				part(client, lineStream);
+			else if (command == "PING")
+				pong(client);
+			else if (command == "QUIT")
+				quit(client, lineStream);
 			else if (valread == 0)
 			{
-				close(client_socket);
 				std::map<int, Clients*>::iterator it = _clients.find(client_socket);
 				if (it != _clients.end())
 				{
 					delete it->second;
-					_clients.erase(it);
+					_clients.erase(it->first);
 				}
 				std::cout << "Client disconnected" << std::endl;
 				return;
