@@ -34,7 +34,6 @@ int	Clients::get_Socket(void)
 void	Clients::set_Socket(int new_Socket)
 {
 	this->_Socket = new_Socket;
-	return ;
 }
 
 std::string	Clients::get_Realname(void)
@@ -55,7 +54,6 @@ std::string Clients::get_Nickname(void)
 void	Clients::set_Nickname(std::string new_Nickname)
 {
 	this->_Nickname = new_Nickname;
-	return ;
 }
 
 std::string	Clients::get_Username(void)
@@ -66,7 +64,6 @@ std::string	Clients::get_Username(void)
 void	Clients::set_Username(std::string new_Username)
 {
 	this->_Username = new_Username;
-	return ;
 }
 
 
@@ -78,7 +75,6 @@ Clients::status		Clients::get_Status(void)
 void		Clients::set_Status(status new_status)
 {
 	this->_Status = new_status;
-	return ;
 }
 
 std::vector<Channel *>&		Clients::getCurrConnected(void)

@@ -136,7 +136,6 @@ void	Server::acceptNewConnection()
 	newClient->set_Socket(new_socket);
 	newClient->set_Status(Clients::USERNAME); //modif
 	_clients[new_socket] = newClient;
-	std::cout << _clients[new_socket] << std::endl;
 	std::cout << "New connection accepted: " << new_socket << std::endl;
 }
 
@@ -167,9 +166,9 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 
 		std::string command;
 		lineStream >> command;
-		std::cout << "Command: " << command << std::endl;
+		// std::cout << "Command: " << command << std::endl;
 		std::cout << "read buffer: " << buffer << std::endl;
-		std::cout << "Client Status: " << client->get_Status() << std::endl;
+		// std::cout << "Client Status: " << client->get_Status() << std::endl;
 
 		if (status == Clients::USERNAME)
 		{
@@ -193,6 +192,8 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 				topic(client, lineStream, client_socket);
 			else if (command == "PART")
 				part(client, lineStream);
+			else if (command == "MODE")
+				mode(client, lineStream);
 			else if (valread == 0)
 			{
 				close(client_socket);
@@ -200,7 +201,7 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 				if (it != _clients.end())
 				{
 					delete it->second;
-					_clients.erase(it);
+					_clients.erase(it->first);
 				}
 				std::cout << "Client disconnected" << std::endl;
 				return;

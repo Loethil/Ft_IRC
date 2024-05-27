@@ -24,7 +24,6 @@ void	Server::topic(Clients *client, std::istringstream &lineStream, int client_s
 			}
 			return ;
 		}
-
 		// Check if the client is in the channel
 		std::vector<Channel *> &connectedChannels = client->getCurrConnected();
 		std::vector<Channel *>::iterator it = connectedChannels.end();
@@ -36,7 +35,6 @@ void	Server::topic(Clients *client, std::istringstream &lineStream, int client_s
 				break ;
 			}
 		}
-
 		if (it != connectedChannels.end())
 		{
 			// Stocks the topic in the channel instance
@@ -116,6 +114,7 @@ void	Server::join(Clients *client, std::istringstream &lineStream, int client_so
 			_Channel[channelName] = new_channel;
 			std::cout << "New Channel created: " << channelName << std::endl;
 		}
+
 		// Add the client to the channel's connected users
 		_Channel[channelName].getConnUsers()[client->get_Nickname()] = client;
 		client->getCurrConnected().push_back(&_Channel[channelName]);
@@ -212,6 +211,26 @@ void	Server::part(Clients *client, std::istringstream &lineStream)
 	}
 }
 
+void	Server::mode(Clients *client, std::istringstream &lineStream)
+{
+	std::string chan;
+	std::string mode;
+	lineStream >> chan;
+	lineStream >> mode;
+
+	std::cout << "chan : " << chan << std::endl;
+	std::cout << "mode : " << mode << std::endl;
+	if (chan.find("#") < chan.size())
+	{
+
+	}
+	else
+	{
+
+	}
+	(void)client;
+}
+
 //fonction permettant de verifier le mot de passe
 bool	Server::pass(Clients *client, std::istringstream &lineStream, int client_socket)
 {
@@ -224,7 +243,8 @@ bool	Server::pass(Clients *client, std::istringstream &lineStream, int client_so
 	}
 	else
 	{
-		send(client_socket, "Invalid password, try again...\n", 32, 0);
+		std::string errormsg = ":I.R.SIUSIU 300 " + client->get_Nickname() + " :Invalid password, try again...\n";
+		send(client_socket, errormsg.c_str(), errormsg.size(), 0);
 		close(client_socket);
 		delete _clients[client_socket];
 		_clients.erase(client_socket);

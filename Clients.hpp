@@ -26,7 +26,7 @@ class Clients
 			COMPLETED,
 		}					status;
 		int			get_Socket(void);
-		void		set_Socket(int new_Socket);
+		void		set_Socket(int	new_Socket);
 		std::string get_Nickname(void);
 		void		set_Nickname(std::string new_Nickname);
 		std::string get_Username(void);
@@ -34,7 +34,7 @@ class Clients
 		std::string	get_Realname(void);
 		void		set_Realname(std::string new_Realname);
 		status		get_Status(void);
-		void		set_Status(status new_Status);
+		void		set_Status(status	new_Status);
 		std::vector<Channel *>& getCurrConnected(void);
 		void		setCurrConnected(std::vector<Channel *>& newCurrConnected);
 	private:
