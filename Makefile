@@ -6,7 +6,7 @@
 #    By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/05/16 15:51:04 by llaigle           #+#    #+#              #
-#    Updated: 2024/05/16 17:18:52 by scarpent         ###   ########.fr        #
+#    Updated: 2024/05/27 14:05:14 by scarpent         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,7 +14,8 @@ NAME = ircserv
 CPP = main.cpp\
 	Clients.cpp\
 	Server.cpp\
-	Channel.cpp
+	Channel.cpp\
+	Commands.cpp
 
 OOO = $(CPP:.cpp=.o)
 
