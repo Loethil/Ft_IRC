@@ -166,9 +166,7 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 
 		std::string command;
 		lineStream >> command;
-		// std::cout << "Command: " << command << std::endl;
 		std::cout << "read buffer: " << buffer << std::endl;
-		// std::cout << "Client Status: " << client->get_Status() << std::endl;
 
 		if (status == Clients::USERNAME)
 		{
@@ -186,10 +184,13 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 		{
 			if (command == "JOIN")
 				join(client, lineStream, client_socket);
-			else if (command == "MSG")
-				msg(client, lineStream, client_socket, _clients);
+			else if (command == "PRIVMSG") // ne marche pas
+				// msg(client, lineStream, client_socket, _clients);
+				;
 			else if (command == "TOPIC")
 				topic(client, lineStream, client_socket);
+			else if (command == "NICK")
+				nick(client, lineStream);
 			else if (command == "PART")
 				part(client, lineStream);
 			else if (command == "MODE")
@@ -207,34 +208,7 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 				return;
 			}
 			else
-			{
-				// Récupérer le nom du destinataire et le contenu du message
-				std::string dest;
-				std::string msg = buffer;
-
-				if (lineStream >> dest)
-				{
-					if (dest.find("#") >= dest.size())
-						continue ;
-					if (!msg.empty() && msg[0] == ' ' && msg[1] == ':')
-						msg.erase(0, 2);
-					std::cout << "msg: " << msg << std::endl;
-					std::string sent_msg;
-					for (std::vector<Channel *>::iterator currIt = client->getCurrConnected().begin(); currIt != client->getCurrConnected().end(); ++currIt)
-					{
-						if (dest != (*currIt)->getChanName())
-							continue ;
-						sent_msg = ":" + client->get_Nickname() + " " + msg;
-						for (std::map<std::string, Clients *>::iterator it = (*currIt)->getConnUsers().begin(); it != (*currIt)->getConnUsers().end(); ++it)
-						{
-							std::cout << "\e[0;33m" << it->first << " on port " << it->second->get_Socket() << "\e[0;0m" << std::endl;
-							if (it->second->get_Socket() != client->get_Socket())
-								send(it->second->get_Socket(), sent_msg.c_str(), sent_msg.length(), 0);
-						}
-						return ;
-					}
-				}
-			}
+				regularChat(client, lineStream, buffer);
 		}
 	}
 }

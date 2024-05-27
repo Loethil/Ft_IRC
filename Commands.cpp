@@ -276,3 +276,34 @@ void	Server::user(Clients *client, std::istringstream &lineStream, int client_so
 	std::cout << "Realname set to: " << client->get_Realname() << std::endl;
 	sendWelcomeMessages(client_socket, client);
 }
+
+//fonction permettant de gerer les messages classiques dans un channel
+void Server::regularChat(Clients *client, std::istringstream &lineStream, char *buffer)
+{
+	// Récupérer le nom du destinataire et le contenu du message
+	std::string dest;
+	std::string msg = buffer;
+
+	if (lineStream >> dest)
+	{
+		if (dest.find("#") >= dest.size())
+			return ;
+		if (!msg.empty() && msg[0] == ' ' && msg[1] == ':')
+			msg.erase(0, 2);
+		std::cout << "msg: " << msg << std::endl;
+		std::string sent_msg;
+		for (std::vector<Channel *>::iterator currIt = client->getCurrConnected().begin(); currIt != client->getCurrConnected().end(); ++currIt)
+		{
+			if (dest != (*currIt)->getChanName())
+				continue ;
+			sent_msg = ":" + client->get_Nickname() + " " + msg;
+			for (std::map<std::string, Clients *>::iterator it = (*currIt)->getConnUsers().begin(); it != (*currIt)->getConnUsers().end(); ++it)
+			{
+				std::cout << "\e[0;33m" << it->first << " on port " << it->second->get_Socket() << "\e[0;0m" << std::endl;
+				if (it->second->get_Socket() != client->get_Socket())
+					send(it->second->get_Socket(), sent_msg.c_str(), sent_msg.length(), 0);
+			}
+			return ;
+		}
+	}
+}

@@ -55,6 +55,7 @@ class Server
 		void	join(Clients *client, std::istringstream &lineStream, int client_socket);
 		void 	msg(Clients *client, std::istringstream &lineStream, int client_socket, std::map<int, Clients *> &_clients);
         void    run();
+		void	regularChat(Clients *client, std::istringstream &lineStream, char *buffer);
 		void	mode(Clients *client, std::istringstream &lineStream);
         void    part(Clients *client, std::istringstream &lineStream);
         void    topic(Clients *client, std::istringstream &lineStream, int client_socket);
