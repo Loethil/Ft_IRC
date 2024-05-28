@@ -1,6 +1,7 @@
 #pragma once
 # include "libs.hpp"
-# include "Clients.hpp"
+
+class Clients;
 
 class Channel
 {
@@ -8,7 +9,7 @@ class Channel
        	std::string              			_chanName;
 		std::string							_topic;
         std::map<std::string, Clients *>	_connUsers;
-        std::map<char, bool>                _modes;
+		bool								_mode[4];
 
     public:
         Channel(std::string & chanName);
@@ -16,11 +17,13 @@ class Channel
         ~Channel();
 
         std::string 						getChanName();
-		std::map<std::string, Clients *>	&get_connUsers(void);
+		std::map<std::string, Clients *>	&getConnUsers(void);
 
-        void                                setTopic(std::string topic);
+        void                                setTopic(std::string& topic);
         std::string                         getTopic();
 
-        bool                                changeMode(char mode, bool adding);
-        std::string                         getModes() const;
+		void								setMode(bool new_Mode, int i);
+		bool								getMode(int i);
 };
+
+std::ostream	&operator<<(std::ostream &o, Channel &rhs);

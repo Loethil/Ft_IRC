@@ -1,15 +1,20 @@
 #include "Channel.hpp"
+#include "Clients.hpp"
 
-Channel::Channel(std::string & chanName): _chanName(chanName)
-{
-    // std::cout << "Channel " << chanName << " was created" << std::endl;
-}
+Channel::Channel(std::string & chanName): _chanName(chanName), _topic("") {}
 
-Channel::Channel(void) {}
+Channel::Channel():_chanName(""), _topic("") {}
 
 Channel::~Channel()
 {
-    // std::cout << "Channel " << _chanName << " was destroyed" << std::endl;
+	if (!_connUsers.empty())
+	{
+		for (std::map<std::string, Clients *>::iterator delIt = _connUsers.begin(); delIt != _connUsers.end(); ++delIt)
+		{
+			delete delIt->second;
+		}
+		_connUsers.clear();
+	}
 }
 
 std::string   Channel::getChanName()
@@ -17,37 +22,38 @@ std::string   Channel::getChanName()
     return _chanName;
 }
 
-std::map<std::string, Clients *>	&Channel::get_connUsers(void)
+std::map<std::string, Clients *>	&Channel::getConnUsers(void)
 {
 	return (this->_connUsers);
 }
+
 std::string Channel::getTopic()
 {
 	return _topic;
 }
 
-void	Channel::setTopic(std::string topic)
+void	Channel::setTopic(std::string& new_topic)
 {
-	_topic = topic;
+	_topic = new_topic;
 }
 
-
-bool Channel::changeMode(char mode, bool adding)
+void	Channel::setMode(bool newMode, int i)
 {
-    if (adding)
-        _modes[mode] = true;
-    else
-        _modes[mode] = false;
-    return true;
+	this->_mode[i] = newMode;
 }
 
-std::string Channel::getModes() const
+bool	Channel::getMode(int i)
 {
-    std::string modeStr;
-    for (std::map<char, bool>::const_iterator it = _modes.begin(); it != _modes.end(); ++it)
-    {
-        if (it->second)
-            modeStr += it->first;
-    }
-    return modeStr;
+	return (this->_mode[i]);
+}
+
+std::ostream	&operator<<(std::ostream &o, Channel &rhs)
+{
+	o << "ChanName : " << rhs.getChanName() << std::endl;
+	o << "Topic : " << rhs.getTopic() << std::endl;
+	for (std::map<std::string, Clients*>::iterator it = rhs.getConnUsers().begin(); it != rhs.getConnUsers().end(); ++it)
+	{
+		o << "Connected Users on this channel : " << it->second->get_Nickname() << std::endl;
+	}
+	return (o);
 }
