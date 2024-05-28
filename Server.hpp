@@ -15,7 +15,6 @@
 # include "Clients.hpp"
 # include "Channel.hpp"
 
-#define MAX_CLIENTS 10
 #define BUFFER_SIZE 1024
 
 // ANSI escape codes for text colors

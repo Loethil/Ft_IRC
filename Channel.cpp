@@ -37,15 +37,86 @@ void	Channel::setTopic(std::string& new_topic)
 	_topic = new_topic;
 }
 
-void	Channel::setMode(bool newMode, int i)
+bool	Channel::get_invit(void)
 {
-	this->_mode[i] = newMode;
+	return (this->_invit);
 }
 
-bool	Channel::getMode(int i)
+void	Channel::set_invit(bool key)
 {
-	return (this->_mode[i]);
+	this->_invit = key;
 }
+
+bool	Channel::get_topic_mode(void)
+{
+	return (this->_topic_mode);
+}
+
+void	Channel::set_topic_mode(bool key)
+{
+	this->_topic_mode = key;
+}
+
+std::string		Channel::get_pwd(void)
+{
+	return (this->_pwd);
+}
+
+void	Channel::set_pwd(std::string new_pwd)
+{
+	this->_pwd = new_pwd;
+}
+
+int		Channel::get_max_user(void)
+{
+	return (this->_max_user);
+}
+
+void	Channel::set_max_user(int new_max_user)
+{
+	this->_max_user = new_max_user;
+}
+
+bool	Channel::get_operator(std::string op)
+{
+	std::vector<std::string>::iterator it;
+	for (it = this->_operator.begin(); it != this->_operator.end(); ++it)
+	{
+		if ((*it) == op)
+			return (true); // the user is an operator
+	}
+	return (false);
+}
+
+bool Channel::set_operator(std::string new_op, bool key)
+{
+    std::vector<std::string>::iterator it;
+	if (key) 
+	{
+		for (it = this->_operator.begin(); it != this->_operator.end(); ++it) 
+		{
+			if (*it == new_op)
+				return false; // user already operator
+		}
+		this->_operator.push_back(new_op);
+		std::cout << "User " << new_op << " is now operator" << std::endl;
+		return true; // the user is successfully added
+	}
+	else 
+	{
+		for (it = this->_operator.begin(); it != this->_operator.end(); ++it) 
+		{
+			if (*it == new_op) 
+			{
+				this->_operator.erase(it);
+				std::cout << "User " << new_op << " isn't an operator anymore" << std::endl;
+				return true; // user has been removed from operators
+			}
+		}
+		return false; // the user was not an operator
+	}
+}
+
 
 std::ostream	&operator<<(std::ostream &o, Channel &rhs)
 {
