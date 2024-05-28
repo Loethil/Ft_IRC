@@ -1,5 +1,50 @@
 #include "Server.hpp"
 
+void 	Server::msg(Clients *client, std::istringstream &lineStream, char *buffer)
+{
+	// Récupérer le nom du destinataire et le contenu du message
+	std::string dest;
+	std::string msg = buffer;
+
+	if (lineStream >> dest)
+	{
+		if (dest.find("#") < dest.size())
+		{
+			if (!msg.empty() && msg[0] == ' ' && msg[1] == ':')
+				msg.erase(0, 2);
+			std::string sent_msg;
+			for (std::vector<Channel *>::iterator currIt = client->getCurrConnected().begin(); currIt != client->getCurrConnected().end(); ++currIt)
+			{
+				if (dest != (*currIt)->getChanName())
+					continue ;
+				sent_msg = ":" + client->get_Nickname() + " " + msg;
+				for (std::map<std::string, Clients *>::iterator it = (*currIt)->getConnUsers().begin(); it != (*currIt)->getConnUsers().end(); ++it)
+				{
+					if (it->second->get_Socket() != client->get_Socket())
+						send(it->second->get_Socket(), sent_msg.c_str(), sent_msg.length(), 0);
+				}
+				return ;
+			}
+		}
+		else
+		{
+			if (!msg.empty() && msg[0] == ' ' && msg[1] == ':')
+				msg.erase(0, 2);
+			std::string send_msg;
+			for (std::map<int, Clients*>::iterator iter = _clients.begin(); iter != _clients.end(); ++iter)
+			{
+				if (iter->second->get_Nickname() == dest)
+				{
+					send_msg = ":" + client->get_Nickname() + " " + msg;
+					send(iter->second->get_Socket(), send_msg.c_str(), send_msg.size(), 0);
+					return ;
+				}
+			}
+			throw std::runtime_error(RED"User doesn't exist"RESET);
+		}
+	}
+}
+
 void	Server::topic(Clients *client, std::istringstream &lineStream, int client_socket)
 {
 	std::string channelName;
@@ -59,51 +104,6 @@ void	Server::topic(Clients *client, std::istringstream &lineStream, int client_s
 	}
 }
 
-void Server::msg(Clients *client, std::istringstream &lineStream, int client_socket, std::map<int, Clients *> &_clients)
-{
-	std::string dest;
-	std::string msg;
-	if (lineStream >> dest && std::getline(lineStream, msg))
-	{
-		// Supprimer les espaces en trop
-		if (!msg.empty() && msg[0] == ' ' && msg[1] == ':')
-			msg.erase(0, 2);
-		// Recherche du destinataire dans la liste des clients
-		bool found = false;
-		int rSocket = -1;
-		for (std::map<int, Clients *>::iterator it = _clients.begin(); it != _clients.end(); ++it)
-		{
-			if (it->second->get_Nickname() == dest)
-			{
-				found = true;
-				rSocket = it->first;
-				break;
-			}
-		}
-		if (found)
-		{
-			// Envoyer le message au destinataire
-			std::string fullMsg = "MSG " + client->get_Nickname() + ": " + msg + "\n";
-			ssize_t msgSize = fullMsg.length();
-			send(rSocket, fullMsg.c_str(), msgSize, 0);
-		}
-		else
-		{
-			// Le destinataire n'a pas été trouvé, envoyer un message d'erreur au client
-			std::string errMsg = "User '" + dest + "' doesn't exist.\n";
-			ssize_t msgSize = errMsg.length();
-			send(client_socket, errMsg.c_str(), msgSize, 0);
-		}
-	}
-	else
-	{
-		// La commande MSG est mal formée, envoyer un message d'erreur au client
-		std::string errMsg = "MSG command error. Use : MSG <destinataire> <message>\n";
-		ssize_t msgSize = errMsg.length();
-		send(client_socket, errMsg.c_str(), msgSize, 0);
-	}
-}
-
 void	Server::join(Clients *client, std::istringstream &lineStream, int client_socket)
 {
 	std::string channelName;
@@ -154,7 +154,7 @@ void	Server::part(Clients *client, std::istringstream &lineStream)
 {
 	std::string channelName;
 	std::string partMessage;
-	
+
 	if (lineStream >> channelName)
 	{
 		// Read optional part message

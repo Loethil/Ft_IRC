@@ -6,7 +6,7 @@
 /*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:24:31 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/27 17:12:02 by scarpent         ###   ########.fr       */
+/*   Updated: 2024/05/28 18:19:09 by scarpent         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ class Server
 		void	nick(Clients *client, std::istringstream &lineStream);
 		bool	pass(Clients *client, std::istringstream &lineStream, int client_socket);
 		void	join(Clients *client, std::istringstream &lineStream, int client_socket);
-		void 	msg(Clients *client, std::istringstream &lineStream, int client_socket, std::map<int, Clients *> &_clients);
+		void 	msg(Clients *client, std::istringstream &lineStream, char *buffer);
         void	pong(Clients *client);
         void    run();
         void    part(Clients *client, std::istringstream &lineStream);
