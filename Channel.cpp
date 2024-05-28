@@ -37,6 +37,16 @@ void	Channel::setTopic(std::string& new_topic)
 	_topic = new_topic;
 }
 
+void	Channel::setMode(bool newMode, int i)
+{
+	this->_mode[i] = newMode;
+}
+
+bool	Channel::getMode(int i)
+{
+	return (this->_mode[i]);
+}
+
 std::ostream	&operator<<(std::ostream &o, Channel &rhs)
 {
 	o << "ChanName : " << rhs.getChanName() << std::endl;

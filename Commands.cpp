@@ -1,50 +1,5 @@
 #include "Server.hpp"
 
-void 	Server::msg(Clients *client, std::istringstream &lineStream, char *buffer)
-{
-	// Récupérer le nom du destinataire et le contenu du message
-	std::string dest;
-	std::string msg = buffer;
-
-	if (lineStream >> dest)
-	{
-		if (dest.find("#") < dest.size())
-		{
-			if (!msg.empty() && msg[0] == ' ' && msg[1] == ':')
-				msg.erase(0, 2);
-			std::string sent_msg;
-			for (std::vector<Channel *>::iterator currIt = client->getCurrConnected().begin(); currIt != client->getCurrConnected().end(); ++currIt)
-			{
-				if (dest != (*currIt)->getChanName())
-					continue ;
-				sent_msg = ":" + client->get_Nickname() + " " + msg;
-				for (std::map<std::string, Clients *>::iterator it = (*currIt)->getConnUsers().begin(); it != (*currIt)->getConnUsers().end(); ++it)
-				{
-					if (it->second->get_Socket() != client->get_Socket())
-						send(it->second->get_Socket(), sent_msg.c_str(), sent_msg.length(), 0);
-				}
-				return ;
-			}
-		}
-		else
-		{
-			if (!msg.empty() && msg[0] == ' ' && msg[1] == ':')
-				msg.erase(0, 2);
-			std::string send_msg;
-			for (std::map<int, Clients*>::iterator iter = _clients.begin(); iter != _clients.end(); ++iter)
-			{
-				if (iter->second->get_Nickname() == dest)
-				{
-					send_msg = ":" + client->get_Nickname() + " " + msg;
-					send(iter->second->get_Socket(), send_msg.c_str(), send_msg.size(), 0);
-					return ;
-				}
-			}
-			throw std::runtime_error(RED"User doesn't exist"RESET);
-		}
-	}
-}
-
 void	Server::topic(Clients *client, std::istringstream &lineStream, int client_socket)
 {
 	std::string channelName;
@@ -69,7 +24,6 @@ void	Server::topic(Clients *client, std::istringstream &lineStream, int client_s
 			}
 			return ;
 		}
-
 		// Check if the client is in the channel
 		std::vector<Channel *> &connectedChannels = client->getCurrConnected();
 		std::vector<Channel *>::iterator it = connectedChannels.end();
@@ -81,7 +35,6 @@ void	Server::topic(Clients *client, std::istringstream &lineStream, int client_s
 				break ;
 			}
 		}
-
 		if (it != connectedChannels.end())
 		{
 			// Stocks the topic in the channel instance
@@ -104,6 +57,60 @@ void	Server::topic(Clients *client, std::istringstream &lineStream, int client_s
 	}
 }
 
+void Server::msg(Clients *client, std::istringstream &lineStream, char *buffer)
+{
+    std::string dest;
+    std::string msg = buffer;
+
+    std::cerr << "Msg command received from client: " << client->get_Nickname() << std::endl;
+
+    if (lineStream >> dest)
+    {
+        if (dest.find("#") < dest.size())
+        {
+            if (!msg.empty() && msg[0] == ' ' && msg[1] == ':')
+                msg.erase(0, 2);
+            std::string sent_msg;
+            for (std::vector<Channel *>::iterator currIt = client->getCurrConnected().begin(); currIt != client->getCurrConnected().end(); ++currIt)
+            {
+                if (dest != (*currIt)->getChanName())
+                    continue ;
+                sent_msg = ":" + client->get_Nickname() + " " + msg;
+                for (std::map<std::string, Clients *>::iterator it = (*currIt)->getConnUsers().begin(); it != (*currIt)->getConnUsers().end(); ++it)
+                {
+                    if (it->second->get_Socket() != client->get_Socket())
+                        send(it->second->get_Socket(), sent_msg.c_str(), sent_msg.length(), 0);
+                }
+                return ;
+            }
+        }
+        else
+        {
+            if (!msg.empty() && msg[0] == ' ' && msg[1] == ':')
+                msg.erase(0, 2);
+            std::string send_msg;
+            for (std::map<int, Clients*>::iterator iter = _clients.begin(); iter != _clients.end(); ++iter)
+            {
+                if (iter->second->get_Nickname() == dest)
+                {
+                    send_msg = ":" + client->get_Nickname() + " " + msg;
+                    send(iter->second->get_Socket(), send_msg.c_str(), send_msg.size(), 0);
+                    return ;
+                }
+            }
+            std::cerr << "User doesn't exist: " << dest << std::endl;
+            std::string errMsg = "User '" + dest + "' doesn't exist.\n";
+            send(client->get_Socket(), errMsg.c_str(), errMsg.size(), 0);
+        }
+    }
+    else
+    {
+        std::string errMsg = "MSG command error. Use : MSG <destinataire> <message>\n";
+        send(client->get_Socket(), errMsg.c_str(), errMsg.size(), 0);
+    }
+}
+
+
 void	Server::join(Clients *client, std::istringstream &lineStream, int client_socket)
 {
 	std::string channelName;
@@ -116,6 +123,7 @@ void	Server::join(Clients *client, std::istringstream &lineStream, int client_so
 			_Channel[channelName] = new_channel;
 			std::cout << "New Channel created: " << channelName << std::endl;
 		}
+
 		// Add the client to the channel's connected users
 		_Channel[channelName].getConnUsers()[client->get_Nickname()] = client;
 		client->getCurrConnected().push_back(&_Channel[channelName]);
@@ -150,66 +158,86 @@ void	Server::join(Clients *client, std::istringstream &lineStream, int client_so
 	}
 }
 
-void	Server::part(Clients *client, std::istringstream &lineStream)
+void Server::part(Clients *client, std::istringstream &lineStream)
 {
-	std::string channelName;
-	std::string partMessage;
+    std::string channelName;
+    std::string partMessage;
+    
+    std::cerr << "Part command received from client: " << client->get_Nickname() << std::endl;
 
-	if (lineStream >> channelName)
+    if (lineStream >> channelName)
+    {
+        std::cerr << "Channel to part: " << channelName << std::endl;
+        if (std::getline(lineStream, partMessage))
+        {
+            if (!partMessage.empty() && partMessage[0] == ' ' && partMessage[1] == ':')
+                partMessage.erase(0, 2);
+        }
+
+        std::vector<Channel *> &connectedChannels = client->getCurrConnected();
+        std::vector<Channel *>::iterator it = connectedChannels.end();
+        for (std::vector<Channel *>::iterator iter = connectedChannels.begin(); iter != connectedChannels.end(); ++iter)
+        {
+            if ((*iter)->getChanName() == channelName)
+            {
+                it = iter;
+                break;
+            }
+        }
+        if (it != connectedChannels.end())
+        {
+            std::cerr << "Client found in channel: " << channelName << std::endl;
+            std::string partMessageFull;
+            _Channel[channelName].getConnUsers().erase(client->get_Nickname());
+            connectedChannels.erase(it);
+
+            if (!partMessage.empty())
+                partMessageFull = ":" + client->get_Nickname() + "!" + client->get_Username() + "@I.R.SIUSIU PART " + channelName + " :" + partMessage + "\n";
+            else
+                partMessageFull = ":" + client->get_Nickname() + "!" + client->get_Username() + "@I.R.SIUSIU PART " + channelName + " :\n";
+            for (std::map<std::string, Clients*>::iterator connIt = _Channel[channelName].getConnUsers().begin(); connIt != _Channel[channelName].getConnUsers().end(); ++connIt)
+            {
+                send(connIt->second->get_Socket(), partMessageFull.c_str(), partMessageFull.length(), 0);
+            }
+
+            if (_Channel[channelName].getConnUsers().empty())
+                _Channel.erase(channelName);
+
+            send(client->get_Socket(), partMessageFull.c_str(), partMessageFull.length(), 0);
+        }
+        else
+        {
+            std::cerr << "Client not found in channel: " << channelName << std::endl;
+            std::string errMsg = "You're not on that channel\n";
+            send(client->get_Socket(), errMsg.c_str(), errMsg.length(), 0);
+        }
+    }
+    else
+    {
+        std::string errMsg = "Usage: PART <channelName> [message]\n";
+        send(client->get_Socket(), errMsg.c_str(), errMsg.length(), 0);
+    }
+}
+
+
+void	Server::mode(Clients *client, std::istringstream &lineStream)
+{
+	std::string chan;
+	std::string mode;
+	lineStream >> chan;
+	lineStream >> mode;
+
+	std::cout << "chan : " << chan << std::endl;
+	std::cout << "mode : " << mode << std::endl;
+	if (chan.find("#") < chan.size())
 	{
-		// Read optional part message
-		if (std::getline(lineStream, partMessage))
-		{
-			if (!partMessage.empty() && partMessage[0] == ' ' && partMessage[1] == ':')
-				partMessage.erase(0, 2);
-		}
 
-		// Check if the client is in the channel
-		std::vector<Channel *> &connectedChannels = client->getCurrConnected();
-		std::vector<Channel *>::iterator it = connectedChannels.end();
-		for (std::vector<Channel *>::iterator iter = connectedChannels.begin(); iter != connectedChannels.end(); ++iter)
-		{
-			if ((*iter)->getChanName() == channelName)
-			{
-				it = iter;
-				break;
-			}
-		}
-		if (it != connectedChannels.end())
-		{
-			std::string partMessageFull;
-			// Remove the client from the channel's connected users
-			_Channel[channelName].getConnUsers().erase(client->get_Nickname());
-			connectedChannels.erase(it);
-
-			// Notify all clients in the channel about the part
-			if (!partMessage.empty())
-				partMessageFull = ":" + client->get_Nickname() + "!" + client->get_Username() + "@I.R.SIUSIU PART " + channelName + " :" + partMessage + "\n";
-			else
-				partMessageFull = ":" + client->get_Nickname() + "!" + client->get_Username() + "@I.R.SIUSIU PART " + channelName + " :\n";
-			for (std::map<std::string, Clients*>::iterator connIt = _Channel[channelName].getConnUsers().begin(); connIt != _Channel[channelName].getConnUsers().end(); ++connIt)
-			{
-				send(connIt->second->get_Socket(), partMessageFull.c_str(), partMessageFull.length(), 0);
-			}
-
-			// Optionally: Remove the channel if no users left
-			if (_Channel[channelName].getConnUsers().empty())
-				_Channel.erase(channelName);
-
-			// notifier irssi de la deconnection du client
-			send(client->get_Socket(), partMessageFull.c_str(), partMessageFull.length(), 0);
-		}
-		else
-		{
-			std::string errMsg = "You're not on that channel\n";
-			send(client->get_Socket(), errMsg.c_str(), errMsg.length(), 0);
-		}
 	}
 	else
 	{
-		std::string errMsg = "Usage: PART <channelName> [message]\n";
-		send(client->get_Socket(), errMsg.c_str(), errMsg.length(), 0);
+
 	}
+	(void)client;
 }
 
 //fonction permettant de verifier le mot de passe
@@ -224,7 +252,8 @@ bool	Server::pass(Clients *client, std::istringstream &lineStream, int client_so
 	}
 	else
 	{
-		send(client_socket, "Invalid password, try again...\n", 32, 0);
+		std::string errormsg = ":I.R.SIUSIU 300 " + client->get_Nickname() + " :Invalid password, try again...\n";
+		send(client_socket, errormsg.c_str(), errormsg.size(), 0);
 		close(client_socket);
 		delete _clients[client_socket];
 		_clients.erase(client_socket);
@@ -257,24 +286,33 @@ void	Server::user(Clients *client, std::istringstream &lineStream, int client_so
 	sendWelcomeMessages(client_socket, client);
 }
 
-void	Server::pong(Clients *client)
+//fonction permettant de gerer les messages classiques dans un channel
+void Server::regularChat(Clients *client, std::istringstream &lineStream, char *buffer)
 {
-	std::cout << BLUE "PONG I.R.SIUSIU" RESET << std::endl;
-	send(client->get_Socket(), "PONG I.R.SIUSIU\r\n", 18, 0);
-}
+	// Récupérer le nom du destinataire et le contenu du message
+	std::string dest;
+	std::string msg = buffer;
 
-void	Server::quit(Clients *client, std::istringstream &lineStream)
-{
-	// Segfault sur ca :(
-	// std::map<int, Clients*>::iterator it = _clients.find(client->get_Socket());
-	// if (it != _clients.end())
-	// {
-	// 	if (it->second != NULL)
-	// 		delete it->second;
-	// 	_clients.erase(it);
-	// }
-
-	std::vector<Channel *>& connectedChannels = client->getCurrConnected();
-	for (std::vector<Channel *>::iterator iter = connectedChannels.begin(); iter != connectedChannels.end(); ++iter)
-		part(client, lineStream);
+	if (lineStream >> dest)
+	{
+		if (dest.find("#") >= dest.size())
+			return ;
+		if (!msg.empty() && msg[0] == ' ' && msg[1] == ':')
+			msg.erase(0, 2);
+		std::cout << "msg: " << msg << std::endl;
+		std::string sent_msg;
+		for (std::vector<Channel *>::iterator currIt = client->getCurrConnected().begin(); currIt != client->getCurrConnected().end(); ++currIt)
+		{
+			if (dest != (*currIt)->getChanName())
+				continue ;
+			sent_msg = ":" + client->get_Nickname() + " " + msg;
+			for (std::map<std::string, Clients *>::iterator it = (*currIt)->getConnUsers().begin(); it != (*currIt)->getConnUsers().end(); ++it)
+			{
+				std::cout << "\e[0;33m" << it->first << " on port " << it->second->get_Socket() << "\e[0;0m" << std::endl;
+				if (it->second->get_Socket() != client->get_Socket())
+					send(it->second->get_Socket(), sent_msg.c_str(), sent_msg.length(), 0);
+			}
+			return ;
+		}
+	}
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
+/*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:23:59 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/28 18:22:57 by scarpent         ###   ########.fr       */
+/*   Updated: 2024/05/28 18:58:12 by llaigle          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,13 +62,13 @@ void	Server::start(int port)
 	if (bind(_server_fd, (struct sockaddr *)&_serv_adr, sizeof(_serv_adr)) < 0)
 	{
 		close(_server_fd);
-		throw std::runtime_error(RED "Bind failed" RESET);
+		throw std::runtime_error("Bind failed");
 		exit(EXIT_FAILURE);
 	}
 	if (listen(_server_fd, 3) < 0)
 	{
 		close(_server_fd);
-		throw std::runtime_error(RED "Listen failed" RESET);
+		throw std::runtime_error("Listen failed");
 		exit(EXIT_FAILURE);
 	}
 	std::cout << "The server started with success !" << std::endl;
@@ -79,7 +79,7 @@ void	Server::run()
 {
 	if (_server_fd == -1)
 	{
-		throw std::runtime_error(RED "Server not initialized" RESET);
+		throw std::runtime_error("Server not initialized");
 		return;
 	}
 
@@ -95,7 +95,7 @@ void	Server::run()
 		int poll_count = poll(pollfds.data(), pollfds.size(), -1);
 		if (poll_count < 0)
 		{
-			throw std::runtime_error(RED "Poll error" RESET);
+			throw std::runtime_error("Poll error");
 			exit(EXIT_FAILURE);
 		}
 		for (size_t i = 0; i < pollfds.size(); ++i)
@@ -136,7 +136,6 @@ void	Server::acceptNewConnection()
 	newClient->set_Socket(new_socket);
 	newClient->set_Status(Clients::USERNAME); //modif
 	_clients[new_socket] = newClient;
-	std::cout << _clients[new_socket] << std::endl;
 	std::cout << "New connection accepted: " << new_socket << std::endl;
 }
 
@@ -167,9 +166,7 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 
 		std::string command;
 		lineStream >> command;
-		std::cout << "Command: " << command << std::endl;
 		std::cout << "read buffer: " << buffer << std::endl;
-		std::cout << "Client Status: " << client->get_Status() << std::endl;
 
 		if (status == Clients::USERNAME)
 		{
@@ -191,14 +188,15 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 				msg(client, lineStream, buffer);
 			else if (command == "TOPIC")
 				topic(client, lineStream, client_socket);
+			else if (command == "NICK")
+				nick(client, lineStream);
 			else if (command == "PART")
 				part(client, lineStream);
-			else if (command == "PING")
-				pong(client);
-			else if (command == "QUIT")
-				quit(client, lineStream);
+			else if (command == "MODE")
+				mode(client, lineStream);
 			else if (valread == 0)
 			{
+				close(client_socket);
 				std::map<int, Clients*>::iterator it = _clients.find(client_socket);
 				if (it != _clients.end())
 				{
@@ -209,7 +207,7 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 				return;
 			}
 			else
-				;
+				regularChat(client, lineStream, buffer);
 		}
 	}
 }
