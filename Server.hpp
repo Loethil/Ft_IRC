@@ -6,7 +6,7 @@
 /*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:24:31 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/28 18:42:26 by llaigle          ###   ########.fr       */
+/*   Updated: 2024/05/28 18:55:19 by llaigle          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ class Server
 		void	nick(Clients *client, std::istringstream &lineStream);
 		bool	pass(Clients *client, std::istringstream &lineStream, int client_socket);
 		void	join(Clients *client, std::istringstream &lineStream, int client_socket);
-		void 	msg(Clients *client, std::istringstream &lineStream, int client_socket, std::map<int, Clients *> &_clients);
+        void    msg(Clients *client, std::istringstream &lineStream, char *buffer);
         void    run();
 		void	regularChat(Clients *client, std::istringstream &lineStream, char *buffer);
 		void	mode(Clients *client, std::istringstream &lineStream);

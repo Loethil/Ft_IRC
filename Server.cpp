@@ -6,7 +6,7 @@
 /*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:23:59 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/28 18:42:14 by llaigle          ###   ########.fr       */
+/*   Updated: 2024/05/28 18:58:12 by llaigle          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -184,9 +184,8 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 		{
 			if (command == "JOIN")
 				join(client, lineStream, client_socket);
-			else if (command == "PRIVMSG") // ne marche pas
-				// msg(client, lineStream, client_socket, _clients);
-				;
+			else if (command == "PRIVMSG")
+				msg(client, lineStream, buffer);
 			else if (command == "TOPIC")
 				topic(client, lineStream, client_socket);
 			else if (command == "NICK")
