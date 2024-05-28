@@ -6,7 +6,7 @@
 /*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 15:49:54 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/27 12:15:00 by scarpent         ###   ########.fr       */
+/*   Updated: 2024/05/27 16:07:28 by scarpent         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ Clients::~Clients(void)
 		}
 		_currConnected.clear();
 	}
+	close(_Socket);
 }
 
 int	Clients::get_Socket(void)
