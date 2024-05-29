@@ -43,6 +43,7 @@ class Channel
         bool                                isInvited(const std::string& nickname);
 		bool								get_operator(std::string op);
 		bool								set_operator(std::string new_op, bool key);
+        std::vector<std::string>&           getInvitedUsers(void);
 };
 
 std::ostream	&operator<<(std::ostream &o, Channel &rhs);
