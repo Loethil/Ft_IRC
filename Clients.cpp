@@ -82,7 +82,7 @@ std::vector<Channel *>&		Clients::getCurrConnected(void)
 	return (this->_currConnected);
 }
 
-void		Clients::setCurrConnected(std::vector<Channel *>& newCurrConnected)
+void	Clients::setCurrConnected(std::vector<Channel *>& newCurrConnected)
 {
 	this->_currConnected = newCurrConnected;
 }
