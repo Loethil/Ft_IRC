@@ -284,7 +284,6 @@ void Server::part(Clients *client, std::istringstream &lineStream)
             }
 			if (_Channel[channelName].getConnUsers().empty())
                 _Channel.erase(channelName);
-
             send(client->get_Socket(), partMessageFull.c_str(), partMessageFull.length(), 0);
         }
         else
