@@ -134,7 +134,6 @@ void Server::invite(Clients *client, std::istringstream &lineStream, int client_
                     break;
                 }
             }
-
             if (invitedClient != NULL)
             {
                 // Ajouter l'utilisateur à la liste des invitations du canal
