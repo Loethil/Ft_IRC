@@ -6,7 +6,7 @@
 /*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:24:31 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/29 17:17:06 by scarpent         ###   ########.fr       */
+/*   Updated: 2024/05/29 18:06:01 by scarpent         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,7 @@ class Server
         void    part(Clients *client, std::istringstream &lineStream);
         void    topic(Clients *client, std::istringstream &lineStream, int client_socket);
         void	invite(Clients *client, std::istringstream &lineStream, int client_socket);
+        void	joinChannel(Clients *client, std::string channelName);
 
         std::string getPwd();
         

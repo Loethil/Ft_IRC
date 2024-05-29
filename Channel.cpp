@@ -169,3 +169,8 @@ bool Channel::isInvited(const std::string& nickname)
 {
     return std::find(_invitedUsers.begin(), _invitedUsers.end(), nickname) != _invitedUsers.end();
 }
+
+std::vector<std::string>	&Channel::getInvitedUsers()
+{
+	return (_invitedUsers);
+}

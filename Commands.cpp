@@ -138,14 +138,13 @@ void Server::invite(Clients *client, std::istringstream &lineStream, int client_
                     break;
                 }
             }
-
             if (invitedClient != NULL)
             {
                 // Ajouter l'utilisateur à la liste des invitations du canal
                 channel.addInvite(nickname);
 
                 // Envoyer un message à l'utilisateur invité
-                std::string inviteMessage = ":" + client->get_Nickname() + "!" + client->get_Username() + "@I.R.SIUSIU INVITE " + nickname + " :" + channelName + "\n";
+                std::string inviteMessage = ":I.R.SIUSIU 341 " + client->get_Nickname() + " " + nickname + " " + channelName + "\n";
                 send(invitedClient->get_Socket(), inviteMessage.c_str(), inviteMessage.length(), 0);
 
                 // Informer l'utilisateur qui envoie l'invitation du succès
@@ -174,6 +173,37 @@ void Server::invite(Clients *client, std::istringstream &lineStream, int client_
     }
 }
 
+void	Server::joinChannel(Clients *client, std::string channelName)
+{
+	// Add the client to the channel's connected users
+	_Channel[channelName].getConnUsers()[client->get_Nickname()] = client;
+	client->getCurrConnected().push_back(&_Channel[channelName]);
+
+
+	// Notify all clients in the channel
+	std::string joinMessage = ":" + client->get_Nickname() + "!" + client->get_Username() + "@I.R.SIUSIU JOIN " + channelName + "\n";
+	for (std::map<std::string, Clients*>::iterator it = _Channel[channelName].getConnUsers().begin(); it != _Channel[channelName].getConnUsers().end(); ++it)
+		send(it->second->get_Socket(), joinMessage.c_str(), joinMessage.length(), 0);
+
+	// Send the current topic to the new client
+	if (!_Channel[channelName].getTopic().empty())
+	{
+		std::string topicMessage = ":I.R.SIUSIU 332 " + client->get_Nickname() + " " + channelName + " :" + _Channel[channelName].getTopic() + "\n";
+		send(client->get_Socket(), topicMessage.c_str(), topicMessage.length(), 0);
+	}
+
+	// Send the list of users in the channel to the new client
+	std::string namesMessage = ":I.R.SIUSIU 353 " + client->get_Nickname() + " = " + channelName + " :";
+	for (std::map<std::string, Clients*>::iterator it = _Channel[channelName].getConnUsers().begin(); it != _Channel[channelName].getConnUsers().end(); ++it)
+		namesMessage += it->first + " ";
+	namesMessage += "\n";
+	send(client->get_Socket(), namesMessage.c_str(), namesMessage.length(), 0);
+
+	// End of the list
+	std::string endNamesMessage = ":I.R.SIUSIU 366 " + client->get_Nickname() + " " + channelName + " :End of /NAMES list.\n";
+	send(client->get_Socket(), endNamesMessage.c_str(), endNamesMessage.length(), 0);
+}
+
 void	Server::join(Clients *client, std::istringstream &lineStream, int client_socket)
 {
 	std::string channelName;
@@ -187,34 +217,22 @@ void	Server::join(Clients *client, std::istringstream &lineStream, int client_so
 			std::cout << "New Channel created: " << channelName << std::endl;
 			// Make the first client to connect the operator of the channel
 		}
-
-		// Add the client to the channel's connected users
-		_Channel[channelName].getConnUsers()[client->get_Nickname()] = client;
-		client->getCurrConnected().push_back(&_Channel[channelName]);
-
-
-		// Notify all clients in the channel
-		std::string joinMessage = ":" + client->get_Nickname() + "!" + client->get_Username() + "@I.R.SIUSIU JOIN " + channelName + "\n";
-		for (std::map<std::string, Clients*>::iterator it = _Channel[channelName].getConnUsers().begin(); it != _Channel[channelName].getConnUsers().end(); ++it)
-			send(it->second->get_Socket(), joinMessage.c_str(), joinMessage.length(), 0);
-
-		// Send the current topic to the new client
-		if (!_Channel[channelName].getTopic().empty())
+		if (_Channel[channelName].get_invit() == false)
+			joinChannel(client, channelName);
+		else 
 		{
-			std::string topicMessage = ":I.R.SIUSIU 332 " + client->get_Nickname() + " " + channelName + " :" + _Channel[channelName].getTopic() + "\n";
-			send(client_socket, topicMessage.c_str(), topicMessage.length(), 0);
+			std::vector<std::string>::iterator invIt;
+			for(invIt = _Channel[channelName].getInvitedUsers().begin(); invIt != _Channel[channelName].getInvitedUsers().end(); ++invIt)
+			{
+				if ((*invIt).compare(client->get_Nickname()) == 0)
+					joinChannel(client, channelName);
+			}
+			if (invIt == _Channel[channelName].getInvitedUsers().end())
+			{
+				std::string errMsg = ":I.R.SIUSIU 473 " + client->get_Nickname() + " " + channelName + "\n";
+				send(client->get_Socket(), errMsg.c_str(), errMsg.size(), 0);
+			}
 		}
-
-		// Send the list of users in the channel to the new client
-		std::string namesMessage = ":I.R.SIUSIU 353 " + client->get_Nickname() + " = " + channelName + " :";
-		for (std::map<std::string, Clients*>::iterator it = _Channel[channelName].getConnUsers().begin(); it != _Channel[channelName].getConnUsers().end(); ++it)
-			namesMessage += it->first + " ";
-		namesMessage += "\n";
-		send(client_socket, namesMessage.c_str(), namesMessage.length(), 0);
-
-		// End of the list
-		std::string endNamesMessage = ":I.R.SIUSIU 366 " + client->get_Nickname() + " " + channelName + " :End of /NAMES list.\n";
-		send(client_socket, endNamesMessage.c_str(), endNamesMessage.length(), 0);
 	}
 	else
 	{
