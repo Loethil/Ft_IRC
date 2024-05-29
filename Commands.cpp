@@ -215,21 +215,68 @@ void	Server::join(Clients *client, std::istringstream &lineStream, int client_so
 			Channel new_channel(channelName);
 			_Channel[channelName] = new_channel;
 			std::cout << "New Channel created: " << channelName << std::endl;
-			// Make the first client to connect the operator of the channel
 		}
-		if (_Channel[channelName].getInvite() == false)
-			joinChannel(client, channelName);
+
+		Channel& channel = _Channel[channelName];
+
+		if (channel.getInvite() == false)
+		{
+			if (channel.getPwd().empty())
+				joinChannel(client, channelName);
+			else
+			{
+				std::string pwd;
+				if (lineStream >> pwd)
+				{
+					if (pwd.compare(channel.getPwd()) == 0)
+						joinChannel(client, channelName);
+					else
+					{
+						std::string errMsg = ":I.R.SIUSIU 475 " + client->getNickname() + " " + channelName + " :Incorrect channel key\n";
+						send(client->getSocket(), errMsg.c_str(), errMsg.size(), 0);
+					}
+				}
+				else
+				{
+					std::string errMsg = ":I.R.SIUSIU 475 " + client->getNickname() + " " + channelName + " :No channel key provided\n";
+					send(client->getSocket(), errMsg.c_str(), errMsg.size(), 0);
+				}
+			}
+		}
 		else 
 		{
 			std::vector<std::string>::iterator invIt;
-			for(invIt = _Channel[channelName].getInvitedUsers().begin(); invIt != _Channel[channelName].getInvitedUsers().end(); ++invIt)
+			for(invIt = channel.getInvitedUsers().begin(); invIt != channel.getInvitedUsers().end(); ++invIt)
 			{
 				if ((*invIt).compare(client->getNickname()) == 0)
-					joinChannel(client, channelName);
+				{
+					if (channel.getPwd().empty())
+						joinChannel(client, channelName);
+					else
+					{
+						std::string pwd;
+						if (lineStream >> pwd)
+						{
+							if (pwd.compare(channel.getPwd()) == 0)
+								joinChannel(client, channelName);
+							else
+							{
+								std::string errMsg = ":I.R.SIUSIU 475 " + client->getNickname() + " " + channelName + " :Incorrect channel key (+k)\n";
+								send(client->getSocket(), errMsg.c_str(), errMsg.size(), 0);
+							}
+						}
+						else
+						{
+							std::string errMsg = ":I.R.SIUSIU 475 " + client->getNickname() + " " + channelName + " :No channel key provided (+k)\n";
+							send(client->getSocket(), errMsg.c_str(), errMsg.size(), 0);
+						}
+					}
+					return;
+				}
 			}
-			if (invIt == _Channel[channelName].getInvitedUsers().end())
+			if (invIt == channel.getInvitedUsers().end())
 			{
-				std::string errMsg = ":I.R.SIUSIU 473 " + client->getNickname() + " " + channelName + "\n";
+				std::string errMsg = ":I.R.SIUSIU 473 " + client->getNickname() + " " + channelName + " :Cannot join channel (+i)\n";
 				send(client->getSocket(), errMsg.c_str(), errMsg.size(), 0);
 			}
 		}
@@ -308,9 +355,7 @@ void	Server::mode(Clients *client, std::istringstream &lineStream)
 	std::string name;
 	std::vector<Channel *>::iterator currIt;
 
-	lineStream >> chan;
-	lineStream >> mode;
-	lineStream >> name;
+	lineStream >> chan >> mode >> name;
 	std::cout << "chan : " << chan << std::endl;
 	std::cout << "mode : " << mode << std::endl;
 	std::cout << "name : " << name << std::endl;
@@ -332,64 +377,93 @@ void	Server::mode(Clients *client, std::istringstream &lineStream)
 		if (chan == client->getNickname())
 			return ;
 		std::string errMsg = "This channel does not exist\n";
-        send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
+		send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
 		return ;
 	}
-	// if (mode.length() > 2)
-	// {
-	// 	std::string errMsg = "Only one option mode at a time\n";
-    //     send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
-	// 	return ;
-	// }
+	if (mode.empty() == true)
+	{
+		std::string errMsg = "No mode specified\n";
+		send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
+		return;
+	}
 	if (mode[0] == '+' || mode[0] == '-')
 	{
 		bool type = (mode[0] == '+') ? true : false;
-		if (mode.find('i') < mode.length())
+		for (size_t i = 1; i < mode.size(); ++i)
 		{
-			if (type == true)
-				(*currIt)->setInvite(true);
-			else
-				(*currIt)->setInvite(false);
-		}
-		if (mode.find('t') < mode.length())
-		{
-			if (type == true)
-				(*currIt)->setTopicMode(true);
-			else
-				(*currIt)->setTopicMode(false);
-		}
-		if (mode.find('k') < mode.length())
-		{
-			if (type == true)
+			char modeChar = mode[i];
+			switch (modeChar)
 			{
-
-				return ;
+			case 'i':
+				(*currIt)->setInvite(type);
+				break;
+			case 't':
+				(*currIt)->setTopicMode(type);
+				break;
+			case 'k':
+					if (type)
+					{
+						std::string pwd;
+						if (lineStream >> pwd)
+						{
+							if (!pwd.empty())
+							{
+								(*currIt)->setPwd(pwd);
+								std::cout << BLUE << (*currIt)->getPwd() << RESET << std::endl;
+							}
+						}
+						else
+						{
+							std::string errMsg = "No password specified for +k mode\n";
+							send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
+						}
+					}
+					else
+						(*currIt)->setPwd("");
+					break;
+				case 'o':
+					{
+						std::string opNick = name;
+						if (!opNick.empty())
+							(*currIt)->setOperator(opNick, type);
+						else
+						{
+							std::string errMsg = (type ? "No operator specified for +o mode\n" : "No operator specified for -o mode\n");
+							send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
+						}
+					}
+					break;
+				// case 'l':
+				// 	if (type)
+				// 	{
+				// 		int userLimit;
+				// 		lineStream >> userLimit;
+				// 		if (lineStream.fail())
+				// 		{
+				// 			std::string errMsg = "No user limit specified for +l mode\n";
+				// 			send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
+				// 			lineStream.clear();
+				// 		}
+				// 		else
+				// 			(*currIt)->setUserLimit(userLimit);
+				// 	}
+				// 	else
+				// 		(*currIt)->setUserLimit(0);
+				// 	break;
+				default:
+					{
+						std::string errMsg = "This option is not handled, see IRC subject\n";
+						send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
+					}
+					break;
 			}
-
-		}
-		if (mode.find('o') < mode.length())
-		{
-			if (type == true)
-				(*currIt)->setOperator(name, true);
-			else
-				(*currIt)->setOperator(name, false);
-		}
-		if (mode.find('l') < mode.length())
-		{
-			if (type == true)
-			{
-
-				return ;
-			}
-
-		}
-		else
-		{
-			std::string errMsg = "This option is not handle, see IRC subject\n";
-			send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
 		}
 	}
-	(void)client;
+	else
+	{
+		std::string errMsg = "Invalid mode string\n";
+		send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
+	}
 }
 
 //fonction permettant de verifier le mot de passe
