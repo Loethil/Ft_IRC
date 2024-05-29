@@ -3,7 +3,7 @@
 
 Channel::Channel(std::string & chanName): _chanName(chanName), _topic("") {}
 
-Channel::Channel():_chanName(""), _topic("") {}
+Channel::Channel():_chanName(""), _topic("") , _invit(false), _topic_mode(false) {}
 
 Channel::~Channel()
 {
@@ -44,6 +44,20 @@ bool	Channel::get_invit(void)
 
 void	Channel::set_invit(bool key)
 {
+	if (this->_invit == true && key == false)
+		std::cout << this->getChanName() << " is set on 'invit only'" << std::endl;
+	else if (this->_invit == false && key == true)
+		std::cout << this->getChanName() << " is set on 'no invit only'" << std::endl;
+	else if (this->_invit == true && key == true)
+	{
+		std::cout << this->getChanName() << " is already set on 'invit only'" << std::endl;
+		return ;
+	}
+	else if (this->_invit == false && key == false)
+	{
+		std::cout << this->getChanName() << " is already set on 'no invit only'" << std::endl;
+		return ;
+	}
 	this->_invit = key;
 }
 
@@ -54,6 +68,20 @@ bool	Channel::get_topic_mode(void)
 
 void	Channel::set_topic_mode(bool key)
 {
+	if (this->_topic_mode == true && key == false)
+		std::cout << this->getChanName() << " is set on 'topic for operator only'" << std::endl;
+	else if (this->_topic_mode == false && key == true)
+		std::cout << this->getChanName() << " is set on 'topic for everyone'" << std::endl;
+	else if (this->_topic_mode == true && key == true)
+	{
+		std::cout << this->getChanName() << " is already set on 'topic for operator only'" << std::endl;
+		return ;
+	}
+	else if (this->_topic_mode == false && key == false)
+	{
+		std::cout << this->getChanName() << " is already set on 'topic for everyone'" << std::endl;
+		return ;
+	}
 	this->_topic_mode = key;
 }
 
@@ -96,7 +124,10 @@ bool Channel::set_operator(std::string new_op, bool key)
 		for (it = this->_operator.begin(); it != this->_operator.end(); ++it) 
 		{
 			if (*it == new_op)
+			{
+				std::cout << "User " << new_op << " is already an operator" << std::endl;
 				return false; // user already operator
+			}
 		}
 		this->_operator.push_back(new_op);
 		std::cout << "User " << new_op << " is now operator" << std::endl;
@@ -113,10 +144,10 @@ bool Channel::set_operator(std::string new_op, bool key)
 				return true; // user has been removed from operators
 			}
 		}
+		std::cout << "User " << new_op << " was not an operator" << std::endl;
 		return false; // the user was not an operator
 	}
 }
-
 
 std::ostream	&operator<<(std::ostream &o, Channel &rhs)
 {

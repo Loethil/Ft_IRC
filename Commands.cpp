@@ -226,16 +226,27 @@ void	Server::mode(Clients *client, std::istringstream &lineStream)
 {
 	std::string chan;
 	std::string mode;
+	std::string name;
 	std::vector<Channel *>::iterator currIt;
+
 	lineStream >> chan;
 	lineStream >> mode;
-
+	lineStream >> name;
 	std::cout << "chan : " << chan << std::endl;
 	std::cout << "mode : " << mode << std::endl;
+	std::cout << "name : " << name << std::endl;
 	for (currIt = client->getCurrConnected().begin(); currIt != client->getCurrConnected().end(); ++currIt)
 	{
 		if (chan == (*currIt)->getChanName())
+		{
+			if ((*currIt)->getConnUsers().find(name) == (*currIt)->getConnUsers().end() && !name.empty())
+			{
+				std::string errMsg = ":I.R.SIUSIU 401 " + client->get_Nickname() + " " + chan + " :" RED "No such user\n" RESET;
+				send(client->get_Socket(), errMsg.c_str(), errMsg.length(), 0);
+				return ;
+			}
 			break ;
+		}
 	}
 	if (currIt == client->getCurrConnected().end() && mode != "+o")
 	{
@@ -245,25 +256,30 @@ void	Server::mode(Clients *client, std::istringstream &lineStream)
         send(client->get_Socket(), errMsg.c_str(), errMsg.length(), 0);
 		return ;
 	}
-	if (mode.length() > 2)
-	{
-		std::string errMsg = "Only one option mode at a time\n";
-        send(client->get_Socket(), errMsg.c_str(), errMsg.length(), 0);
-		return ;
-	}
+	// if (mode.length() > 2)
+	// {
+	// 	std::string errMsg = "Only one option mode at a time\n";
+    //     send(client->get_Socket(), errMsg.c_str(), errMsg.length(), 0);
+	// 	return ;
+	// }
 	if (mode[0] == '+' || mode[0] == '-')
 	{
 		bool type = (mode[0] == '+') ? true : false;
 		if (mode.find('i') < mode.length())
 		{
 			if (type == true)
-			{
-
-				return ;
-			}
-
+				(*currIt)->set_invit(true);
+			else
+				(*currIt)->set_invit(false);
 		}
-		else if (mode.find('t') < mode.length())
+		if (mode.find('t') < mode.length())
+		{
+			if (type == true)
+				(*currIt)->set_topic_mode(true);
+			else
+				(*currIt)->set_topic_mode(false);
+		}
+		if (mode.find('k') < mode.length())
 		{
 			if (type == true)
 			{
@@ -272,26 +288,14 @@ void	Server::mode(Clients *client, std::istringstream &lineStream)
 			}
 
 		}
-		else if (mode.find('k') < mode.length())
+		if (mode.find('o') < mode.length())
 		{
 			if (type == true)
-			{
-
-				return ;
-			}
-
+				(*currIt)->set_operator(name, true);
+			else
+				(*currIt)->set_operator(name, false);
 		}
-		else if (mode.find('o') < mode.length())
-		{
-			if (type == true)
-			{
-				std::cout << chan << std::endl;
-				(*currIt)->set_operator(chan, true);
-				return ;
-			}
-
-		}
-		else if (mode.find('l') < mode.length())
+		if (mode.find('l') < mode.length())
 		{
 			if (type == true)
 			{
