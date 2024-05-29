@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
+/*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:23:59 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/28 18:58:12 by llaigle          ###   ########.fr       */
+/*   Updated: 2024/05/29 16:29:35 by scarpent         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,7 +136,6 @@ void	Server::acceptNewConnection()
 	newClient->set_Socket(new_socket);
 	newClient->set_Status(Clients::USERNAME); //modif
 	_clients[new_socket] = newClient;
-	std::cout << "New connection accepted: " << new_socket << std::endl;
 }
 
 //fonction qui gere toutes les entrees de l'utilisateur 
@@ -203,11 +202,10 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 					delete it->second;
 					_clients.erase(it->first);
 				}
-				std::cout << "Client disconnected" << std::endl;
 				return;
 			}
 			else
-				regularChat(client, lineStream, buffer);
+				std::string errmsg = ":I.R.SIUSIU 421 " + client->get_Nickname() + " " + command + " :" RED "The command " + command + "doesn't exist\n" RESET;
 		}
 	}
 }
@@ -215,30 +213,30 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 //fonction permettant d'afficher les messages de bienvenu a l'utilisateur
 void Server::sendWelcomeMessages(int client_socket, Clients *client)
 {
+	std::string truncatedNick = client->get_Nickname().substr(0, 9); // Tronque le pseudo à 9 caractères
+	std::string paddedNick = truncatedNick;
+	if (truncatedNick.size() < 9)
+		paddedNick += std::string(9 - truncatedNick.size(), ' ');
+
 	std::string welcomeMsg = ":I.R.SIUSIU 001 " + client->get_Nickname() + " :" GREEN "Welcome to the IRC server, " + client->get_Realname() + RESET "\n";
 	send(client_socket, welcomeMsg.c_str(), welcomeMsg.size(), 0);
-	std::cout << "Sent welcome message: " << welcomeMsg;
 
 	std::string yourHost = ":I.R.SIUSIU 002 " + client->get_Nickname() + " :" GREEN "Your host is I.R.SIUSIU, running version 1.0" RESET "\n";
 	send(client_socket, yourHost.c_str(), yourHost.size(), 0);
-	std::cout << "Sent yourHost message: " << yourHost;
 
 	std::string created = ":I.R.SIUSIU 003 " + client->get_Nickname() + "\n";
 	send(client_socket, created.c_str(), created.size(), 0);
-	std::cout << "Sent created message: " << created;
 
 	std::string myInfo = ":I.R.SIUSIU 004 " + client->get_Nickname() + "\n";
 	send(client_socket, myInfo.c_str(), myInfo.size(), 0);
-	std::cout << "Sent myInfo message: " << myInfo;
 
 	std::string motdStart = ":I.R.SIUSIU 375 " + client->get_Nickname() + " :" YELLOW "------ I.R.SIUSIU Message of the Day ------" RESET "\n";
 	send(client_socket, motdStart.c_str(), motdStart.size(), 0);
-	std::cout << "Sent MOTD start: " << motdStart;
 
 	std::string motdSpaces = ":I.R.SIUSIU 372 " + client->get_Nickname() + " :" YELLOW "|                                         |" RESET "\n";
 	send(client_socket, motdSpaces.c_str(), motdSpaces.size(), 0);
 
-	std::string motd = ":I.R.SIUSIU 372 " + client->get_Nickname() + " :" YELLOW "| Enjoy our Internet Relay chat " + client->get_Nickname() + " ! |" RESET "\n";
+	std::string motd = ":I.R.SIUSIU 372 " + client->get_Nickname() + " :" YELLOW "| Enjoy our Internet Relay chat " + paddedNick + " |" RESET "\n";
 	send(client_socket, motd.c_str(), motd.size(), 0);
 
 	send(client_socket, motdSpaces.c_str(), motdSpaces.size(), 0);
@@ -248,5 +246,4 @@ void Server::sendWelcomeMessages(int client_socket, Clients *client)
 
 	std::string motdEnd = ":I.R.SIUSIU 376 " + client->get_Nickname() + " :End of Message Of The Day\n";
 	send(client_socket, motdEnd.c_str(), motdEnd.size(), 0);
-	std::cout << "Sent MOTD end: " << motdEnd;
 }

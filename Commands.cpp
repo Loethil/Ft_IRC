@@ -18,7 +18,6 @@ void	Server::topic(Clients *client, std::istringstream &lineStream, int client_s
 		{
 			if (_Channel[channelName].getTopic().size() > 0)
 			{
-				//std::string fullTopicMessage = ":" + client->get_Nickname() + "!" + client->get_Username() + "@I.R.SIUSIU TOPIC " + channelName + " " + newTopic + "\n";
 				std::string fullTopicMessage = ":I.R.SIUSIU 332 " + client->get_Nickname() + " " + channelName + " :" + _Channel[channelName].getTopic() + "\n";
 				send(client->get_Socket(), fullTopicMessage.c_str(), _Channel[channelName].getTopic().length(), 0);
 			}
@@ -46,13 +45,13 @@ void	Server::topic(Clients *client, std::istringstream &lineStream, int client_s
 		}
 		else
 		{
-			std::string errMsg = "You're not on that channel\n";
-			send(client_socket, errMsg.c_str(), errMsg.length(), 0);
+			std::string send_msg = ":I.R.SIUSIU 442 " + client->get_Nickname() + channelName + " :" RED "You are not connected to that channel.\n" RESET;
+			send(client->get_Socket(), send_msg.c_str(), send_msg.size(), 0);
 		}
 	}
 	else
 	{
-		std::string errMsg = "TOPIC command error. Use : TOPIC <channelName> [new_topic]\n";
+		std::string errMsg = ":I.R.SIUSIU " + client->get_Nickname() + "TOPIC " + channelName + " :" RED "Command error. Use : TOPIC <channelName> [new_topic]\n" RESET;
 		send(client_socket, errMsg.c_str(), errMsg.length(), 0);
 	}
 }
@@ -71,18 +70,24 @@ void Server::msg(Clients *client, std::istringstream &lineStream, char *buffer)
             if (!msg.empty() && msg[0] == ' ' && msg[1] == ':')
                 msg.erase(0, 2);
             std::string sent_msg;
-            for (std::vector<Channel *>::iterator currIt = client->getCurrConnected().begin(); currIt != client->getCurrConnected().end(); ++currIt)
+			std::vector<Channel *>::iterator currIt;
+            for (currIt = client->getCurrConnected().begin(); currIt != client->getCurrConnected().end(); ++currIt)
             {
                 if (dest != (*currIt)->getChanName())
-                    continue ;
-                sent_msg = ":" + client->get_Nickname() + " " + msg;
-                for (std::map<std::string, Clients *>::iterator it = (*currIt)->getConnUsers().begin(); it != (*currIt)->getConnUsers().end(); ++it)
-                {
-                    if (it->second->get_Socket() != client->get_Socket())
-                        send(it->second->get_Socket(), sent_msg.c_str(), sent_msg.length(), 0);
-                }
-                return ;
+					continue ;
+				sent_msg = ":" + client->get_Nickname() + " " + msg;
+				for (std::map<std::string, Clients *>::iterator it = (*currIt)->getConnUsers().begin(); it != (*currIt)->getConnUsers().end(); ++it)
+				{
+					if (it->second->get_Socket() != client->get_Socket())
+						send(it->second->get_Socket(), sent_msg.c_str(), sent_msg.length(), 0);
+				}
+				return ;
             }
+			if (currIt == client->getCurrConnected().end())
+			{
+				std::string send_msg = ":I.R.SIUSIU 442 " + client->get_Nickname() + dest + " :" RED "You are not connected to that channel.\n" RESET;
+				send(client->get_Socket(), send_msg.c_str(), send_msg.size(), 0);
+			}
         }
         else
         {
@@ -98,18 +103,11 @@ void Server::msg(Clients *client, std::istringstream &lineStream, char *buffer)
                     return ;
                 }
             }
-            std::cerr << "User doesn't exist: " << dest << std::endl;
-            std::string errMsg = "User '" + dest + "' doesn't exist.\n";
+            std::string errMsg = ":I.R.SIUSIU 401 " + client->get_Nickname() + " " + dest + " :" RED "No such user\n" RESET;
             send(client->get_Socket(), errMsg.c_str(), errMsg.size(), 0);
         }
     }
-    else
-    {
-        std::string errMsg = "MSG command error. Use : MSG <destinataire> <message>\n";
-        send(client->get_Socket(), errMsg.c_str(), errMsg.size(), 0);
-    }
 }
-
 
 void	Server::join(Clients *client, std::istringstream &lineStream, int client_socket)
 {
@@ -207,9 +205,8 @@ void Server::part(Clients *client, std::istringstream &lineStream)
         }
         else
         {
-            std::cerr << "Client not found in channel: " << channelName << std::endl;
-            std::string errMsg = "You're not on that channel\n";
-            send(client->get_Socket(), errMsg.c_str(), errMsg.length(), 0);
+            std::string send_msg = ":I.R.SIUSIU 442 " + client->get_Nickname() + channelName + " :" RED "You are not connected to that channel.\n" RESET;
+			send(client->get_Socket(), send_msg.c_str(), send_msg.size(), 0);
         }
     }
     else
@@ -218,7 +215,6 @@ void Server::part(Clients *client, std::istringstream &lineStream)
         send(client->get_Socket(), errMsg.c_str(), errMsg.length(), 0);
     }
 }
-
 
 void	Server::mode(Clients *client, std::istringstream &lineStream)
 {
@@ -284,35 +280,4 @@ void	Server::user(Clients *client, std::istringstream &lineStream, int client_so
 	std::cout << "Username set to: " << client->get_Username() << std::endl;
 	std::cout << "Realname set to: " << client->get_Realname() << std::endl;
 	sendWelcomeMessages(client_socket, client);
-}
-
-//fonction permettant de gerer les messages classiques dans un channel
-void Server::regularChat(Clients *client, std::istringstream &lineStream, char *buffer)
-{
-	// Récupérer le nom du destinataire et le contenu du message
-	std::string dest;
-	std::string msg = buffer;
-
-	if (lineStream >> dest)
-	{
-		if (dest.find("#") >= dest.size())
-			return ;
-		if (!msg.empty() && msg[0] == ' ' && msg[1] == ':')
-			msg.erase(0, 2);
-		std::cout << "msg: " << msg << std::endl;
-		std::string sent_msg;
-		for (std::vector<Channel *>::iterator currIt = client->getCurrConnected().begin(); currIt != client->getCurrConnected().end(); ++currIt)
-		{
-			if (dest != (*currIt)->getChanName())
-				continue ;
-			sent_msg = ":" + client->get_Nickname() + " " + msg;
-			for (std::map<std::string, Clients *>::iterator it = (*currIt)->getConnUsers().begin(); it != (*currIt)->getConnUsers().end(); ++it)
-			{
-				std::cout << "\e[0;33m" << it->first << " on port " << it->second->get_Socket() << "\e[0;0m" << std::endl;
-				if (it->second->get_Socket() != client->get_Socket())
-					send(it->second->get_Socket(), sent_msg.c_str(), sent_msg.length(), 0);
-			}
-			return ;
-		}
-	}
 }
