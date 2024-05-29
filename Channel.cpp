@@ -155,7 +155,7 @@ std::ostream	&operator<<(std::ostream &o, Channel &rhs)
 	o << "Topic : " << rhs.getTopic() << std::endl;
 	for (std::map<std::string, Clients*>::iterator it = rhs.getConnUsers().begin(); it != rhs.getConnUsers().end(); ++it)
 	{
-		o << "Connected Users on this channel : " << it->second->get_Nickname() << std::endl;
+		o << "Connected Users on this channel : " << it->second->getNickname() << std::endl;
 	}
 	return (o);
 }
