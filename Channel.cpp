@@ -45,17 +45,17 @@ bool	Channel::get_invit(void)
 void	Channel::set_invit(bool key)
 {
 	if (this->_invit == true && key == false)
-		std::cout << this->getChanName() << " is set on 'invit only'" << std::endl;
+		std::cout << this->getChanName() << " is set on 'no invite only'" << std::endl;
 	else if (this->_invit == false && key == true)
-		std::cout << this->getChanName() << " is set on 'no invit only'" << std::endl;
+		std::cout << this->getChanName() << " is set on 'invite only'" << std::endl;
 	else if (this->_invit == true && key == true)
 	{
-		std::cout << this->getChanName() << " is already set on 'invit only'" << std::endl;
+		std::cout << this->getChanName() << " is already set on 'invite only'" << std::endl;
 		return ;
 	}
 	else if (this->_invit == false && key == false)
 	{
-		std::cout << this->getChanName() << " is already set on 'no invit only'" << std::endl;
+		std::cout << this->getChanName() << " is already set on 'no invite only'" << std::endl;
 		return ;
 	}
 	this->_invit = key;
@@ -130,7 +130,7 @@ bool Channel::set_operator(std::string new_op, bool key)
 			}
 		}
 		this->_operator.push_back(new_op);
-		std::cout << "User " << new_op << " is now operator" << std::endl;
+		std::cout << "User " << new_op << " is now an operator" << std::endl;
 		return true; // the user is successfully added
 	}
 	else 
@@ -144,7 +144,7 @@ bool Channel::set_operator(std::string new_op, bool key)
 				return true; // user has been removed from operators
 			}
 		}
-		std::cout << "User " << new_op << " was not an operator" << std::endl;
+		std::cout << "User " << new_op << " wasn't an operator" << std::endl;
 		return false; // the user was not an operator
 	}
 }
