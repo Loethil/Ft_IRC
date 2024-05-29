@@ -107,6 +107,71 @@ void Server::msg(Clients *client, std::istringstream &lineStream, char *buffer)
             send(client->get_Socket(), errMsg.c_str(), errMsg.size(), 0);
         }
     }
+    else
+    {
+        std::string errMsg = "MSG command error. Use : MSG <destinataire> <message>\n";
+        send(client->get_Socket(), errMsg.c_str(), errMsg.size(), 0);
+    }
+}
+
+void Server::invite(Clients *client, std::istringstream &lineStream, int client_socket)
+{
+    std::string nickname;
+    std::string channelName;
+
+    // Lire le nom de l'utilisateur à inviter et le canal
+    if (lineStream >> nickname >> channelName)
+    {
+        std::map<std::string, Channel>::iterator chanIt = _Channel.find(channelName);
+        if (chanIt != _Channel.end())
+        {
+            Channel &channel = chanIt->second;
+            
+            // Vérifier si l'utilisateur qui envoie l'invitation est dans le canal
+            // Vérifier si l'utilisateur à inviter existe
+            Clients* invitedClient = NULL;
+            for(std::map<int, Clients*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+            {
+                if (it->second->get_Nickname() == nickname)
+                {
+                    invitedClient = it->second;
+                    break;
+                }
+            }
+
+            if (invitedClient != NULL)
+            {
+                // Ajouter l'utilisateur à la liste des invitations du canal
+                channel.addInvite(nickname);
+
+                // Envoyer un message à l'utilisateur invité
+                std::string inviteMessage = ":" + client->get_Nickname() + "!" + client->get_Username() + "@I.R.SIUSIU INVITE " + nickname + " :" + channelName + "\n";
+                send(invitedClient->get_Socket(), inviteMessage.c_str(), inviteMessage.length(), 0);
+
+                // Informer l'utilisateur qui envoie l'invitation du succès
+                std::string successMsg = "You invited " + nickname + " to " + channelName + "\n";
+                send(client_socket, successMsg.c_str(), successMsg.length(), 0);
+            }
+            else
+            {
+                // L'utilisateur à inviter n'existe pas
+                std::string errMsg = "User " + nickname + " does not exist\n";
+                send(client_socket, errMsg.c_str(), errMsg.length(), 0);
+            }
+        }
+        else
+        {
+            // Le canal n'existe pas
+            std::string errMsg = "No such channel: " + channelName + "\n";
+            send(client_socket, errMsg.c_str(), errMsg.length(), 0);
+        }
+    }
+    else
+    {
+        // La commande INVITE est mal formée
+        std::string errMsg = "INVITE command error. Use: INVITE <nickname> <channel>\n";
+        send(client_socket, errMsg.c_str(), errMsg.length(), 0);
+    }
 }
 
 void	Server::join(Clients *client, std::istringstream &lineStream, int client_socket)
@@ -120,11 +185,13 @@ void	Server::join(Clients *client, std::istringstream &lineStream, int client_so
 			Channel new_channel(channelName);
 			_Channel[channelName] = new_channel;
 			std::cout << "New Channel created: " << channelName << std::endl;
+			// Make the first client to connect the operator of the channel
 		}
 
 		// Add the client to the channel's connected users
 		_Channel[channelName].getConnUsers()[client->get_Nickname()] = client;
 		client->getCurrConnected().push_back(&_Channel[channelName]);
+
 
 		// Notify all clients in the channel
 		std::string joinMessage = ":" + client->get_Nickname() + "!" + client->get_Username() + "@I.R.SIUSIU JOIN " + channelName + "\n";
@@ -197,16 +264,16 @@ void Server::part(Clients *client, std::istringstream &lineStream)
             {
                 send(connIt->second->get_Socket(), partMessageFull.c_str(), partMessageFull.length(), 0);
             }
-
-            if (_Channel[channelName].getConnUsers().empty())
+			if (_Channel[channelName].getConnUsers().empty())
                 _Channel.erase(channelName);
 
             send(client->get_Socket(), partMessageFull.c_str(), partMessageFull.length(), 0);
         }
         else
         {
-            std::string send_msg = ":I.R.SIUSIU 442 " + client->get_Nickname() + channelName + " :" RED "You are not connected to that channel.\n" RESET;
-			send(client->get_Socket(), send_msg.c_str(), send_msg.size(), 0);
+            std::cerr << "Client not found in channel: " << channelName << std::endl;
+            std::string errMsg = "You're not on that channel\n";
+            send(client->get_Socket(), errMsg.c_str(), errMsg.length(), 0);
         }
     }
     else
@@ -220,18 +287,89 @@ void	Server::mode(Clients *client, std::istringstream &lineStream)
 {
 	std::string chan;
 	std::string mode;
+	std::string name;
+	std::vector<Channel *>::iterator currIt;
+
 	lineStream >> chan;
 	lineStream >> mode;
-
+	lineStream >> name;
 	std::cout << "chan : " << chan << std::endl;
 	std::cout << "mode : " << mode << std::endl;
-	if (chan.find("#") < chan.size())
+	std::cout << "name : " << name << std::endl;
+	for (currIt = client->getCurrConnected().begin(); currIt != client->getCurrConnected().end(); ++currIt)
 	{
-
+		if (chan == (*currIt)->getChanName())
+		{
+			if ((*currIt)->getConnUsers().find(name) == (*currIt)->getConnUsers().end() && !name.empty())
+			{
+				std::string errMsg = ":I.R.SIUSIU 401 " + client->get_Nickname() + " " + chan + " :" RED "No such user\n" RESET;
+				send(client->get_Socket(), errMsg.c_str(), errMsg.length(), 0);
+				return ;
+			}
+			break ;
+		}
 	}
-	else
+	if (currIt == client->getCurrConnected().end() && mode != "+o")
 	{
+		if (chan == client->get_Nickname())
+			return ;
+		std::string errMsg = "This channel does not exist\n";
+        send(client->get_Socket(), errMsg.c_str(), errMsg.length(), 0);
+		return ;
+	}
+	// if (mode.length() > 2)
+	// {
+	// 	std::string errMsg = "Only one option mode at a time\n";
+    //     send(client->get_Socket(), errMsg.c_str(), errMsg.length(), 0);
+	// 	return ;
+	// }
+	if (mode[0] == '+' || mode[0] == '-')
+	{
+		bool type = (mode[0] == '+') ? true : false;
+		if (mode.find('i') < mode.length())
+		{
+			if (type == true)
+				(*currIt)->set_invit(true);
+			else
+				(*currIt)->set_invit(false);
+		}
+		if (mode.find('t') < mode.length())
+		{
+			if (type == true)
+				(*currIt)->set_topic_mode(true);
+			else
+				(*currIt)->set_topic_mode(false);
+		}
+		if (mode.find('k') < mode.length())
+		{
+			if (type == true)
+			{
 
+				return ;
+			}
+
+		}
+		if (mode.find('o') < mode.length())
+		{
+			if (type == true)
+				(*currIt)->set_operator(name, true);
+			else
+				(*currIt)->set_operator(name, false);
+		}
+		if (mode.find('l') < mode.length())
+		{
+			if (type == true)
+			{
+
+				return ;
+			}
+
+		}
+		else
+		{
+			std::string errMsg = "This option is not handle, see IRC subject\n";
+			send(client->get_Socket(), errMsg.c_str(), errMsg.length(), 0);
+		}
 	}
 	(void)client;
 }

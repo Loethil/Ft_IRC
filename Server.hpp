@@ -6,7 +6,7 @@
 /*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:24:31 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/29 16:00:41 by scarpent         ###   ########.fr       */
+/*   Updated: 2024/05/29 17:17:06 by scarpent         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 # include "Clients.hpp"
 # include "Channel.hpp"
 
-#define MAX_CLIENTS 10
 #define BUFFER_SIZE 1024
 
 // ANSI escape codes for text colors
@@ -58,6 +57,7 @@ class Server
 		void	mode(Clients *client, std::istringstream &lineStream);
         void    part(Clients *client, std::istringstream &lineStream);
         void    topic(Clients *client, std::istringstream &lineStream, int client_socket);
+        void	invite(Clients *client, std::istringstream &lineStream, int client_socket);
 
         std::string getPwd();
         
