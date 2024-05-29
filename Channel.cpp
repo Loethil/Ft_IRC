@@ -3,7 +3,7 @@
 
 Channel::Channel(std::string & chanName): _chanName(chanName), _topic("") {}
 
-Channel::Channel():_chanName(""), _topic("") , _invite(false), _topicMode(false) {}
+Channel::Channel():_chanName(""), _topic("") , _invite(false), _topicMode(false) , _pwd(""){}
 
 Channel::~Channel()
 {
