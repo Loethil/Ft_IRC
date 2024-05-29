@@ -217,7 +217,7 @@ void	Server::join(Clients *client, std::istringstream &lineStream, int client_so
 			std::cout << "New Channel created: " << channelName << std::endl;
 			// Make the first client to connect the operator of the channel
 		}
-		if (_Channel[channelName].get_invit() == false)
+		if (_Channel[channelName].getInvite() == false)
 			joinChannel(client, channelName);
 		else 
 		{
@@ -347,16 +347,16 @@ void	Server::mode(Clients *client, std::istringstream &lineStream)
 		if (mode.find('i') < mode.length())
 		{
 			if (type == true)
-				(*currIt)->set_invit(true);
+				(*currIt)->setInvite(true);
 			else
-				(*currIt)->set_invit(false);
+				(*currIt)->setInvite(false);
 		}
 		if (mode.find('t') < mode.length())
 		{
 			if (type == true)
-				(*currIt)->set_topic_mode(true);
+				(*currIt)->setTopicMode(true);
 			else
-				(*currIt)->set_topic_mode(false);
+				(*currIt)->setTopicMode(false);
 		}
 		if (mode.find('k') < mode.length())
 		{
@@ -370,9 +370,9 @@ void	Server::mode(Clients *client, std::istringstream &lineStream)
 		if (mode.find('o') < mode.length())
 		{
 			if (type == true)
-				(*currIt)->set_operator(name, true);
+				(*currIt)->setOperator(name, true);
 			else
-				(*currIt)->set_operator(name, false);
+				(*currIt)->setOperator(name, false);
 		}
 		if (mode.find('l') < mode.length())
 		{
