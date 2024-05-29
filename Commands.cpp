@@ -18,8 +18,8 @@ void	Server::topic(Clients *client, std::istringstream &lineStream, int client_s
 		{
 			if (_Channel[channelName].getTopic().size() > 0)
 			{
-				std::string fullTopicMessage = ":I.R.SIUSIU 332 " + client->get_Nickname() + " " + channelName + " :" + _Channel[channelName].getTopic() + "\n";
-				send(client->get_Socket(), fullTopicMessage.c_str(), _Channel[channelName].getTopic().length(), 0);
+				std::string fullTopicMessage = ":I.R.SIUSIU 332 " + client->getNickname() + " " + channelName + " :" + _Channel[channelName].getTopic() + "\n";
+				send(client->getSocket(), fullTopicMessage.c_str(), _Channel[channelName].getTopic().length(), 0);
 			}
 			return ;
 		}
@@ -39,19 +39,19 @@ void	Server::topic(Clients *client, std::istringstream &lineStream, int client_s
 			// Stocks the topic in the channel instance
 			(*it)->setTopic(newTopic);
 			// Notify all members of the channel about the topic change
-			std::string fullTopicMessage = ":" + client->get_Nickname() + "!" + client->get_Username() + "@I.R.SIUSIU TOPIC " + channelName + " " + newTopic + "\n";
+			std::string fullTopicMessage = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU TOPIC " + channelName + " " + newTopic + "\n";
 			for (std::map<std::string, Clients*>::iterator connIt = _Channel[channelName].getConnUsers().begin(); connIt != _Channel[channelName].getConnUsers().end(); ++connIt)
-				send(connIt->second->get_Socket(), fullTopicMessage.c_str(), fullTopicMessage.length(), 0);
+				send(connIt->second->getSocket(), fullTopicMessage.c_str(), fullTopicMessage.length(), 0);
 		}
 		else
 		{
-			std::string send_msg = ":I.R.SIUSIU 442 " + client->get_Nickname() + channelName + " :" RED "You are not connected to that channel.\n" RESET;
-			send(client->get_Socket(), send_msg.c_str(), send_msg.size(), 0);
+			std::string send_msg = ":I.R.SIUSIU 442 " + client->getNickname() + channelName + " :" RED "You are not connected to that channel.\n" RESET;
+			send(client->getSocket(), send_msg.c_str(), send_msg.size(), 0);
 		}
 	}
 	else
 	{
-		std::string errMsg = ":I.R.SIUSIU " + client->get_Nickname() + "TOPIC " + channelName + " :" RED "Command error. Use : TOPIC <channelName> [new_topic]\n" RESET;
+		std::string errMsg = ":I.R.SIUSIU " + client->getNickname() + "TOPIC " + channelName + " :" RED "Command error. Use : TOPIC <channelName> [new_topic]\n" RESET;
 		send(client_socket, errMsg.c_str(), errMsg.length(), 0);
 	}
 }
@@ -61,7 +61,7 @@ void Server::msg(Clients *client, std::istringstream &lineStream, char *buffer)
     std::string dest;
     std::string msg = buffer;
 
-    std::cerr << "Msg command received from client: " << client->get_Nickname() << std::endl;
+    std::cerr << "Msg command received from client: " << client->getNickname() << std::endl;
 
     if (lineStream >> dest)
     {
@@ -75,18 +75,18 @@ void Server::msg(Clients *client, std::istringstream &lineStream, char *buffer)
             {
                 if (dest != (*currIt)->getChanName())
 					continue ;
-				sent_msg = ":" + client->get_Nickname() + " " + msg;
+				sent_msg = ":" + client->getNickname() + " " + msg;
 				for (std::map<std::string, Clients *>::iterator it = (*currIt)->getConnUsers().begin(); it != (*currIt)->getConnUsers().end(); ++it)
 				{
-					if (it->second->get_Socket() != client->get_Socket())
-						send(it->second->get_Socket(), sent_msg.c_str(), sent_msg.length(), 0);
+					if (it->second->getSocket() != client->getSocket())
+						send(it->second->getSocket(), sent_msg.c_str(), sent_msg.length(), 0);
 				}
 				return ;
             }
 			if (currIt == client->getCurrConnected().end())
 			{
-				std::string send_msg = ":I.R.SIUSIU 442 " + client->get_Nickname() + dest + " :" RED "You are not connected to that channel.\n" RESET;
-				send(client->get_Socket(), send_msg.c_str(), send_msg.size(), 0);
+				std::string send_msg = ":I.R.SIUSIU 442 " + client->getNickname() + dest + " :" RED "You are not connected to that channel.\n" RESET;
+				send(client->getSocket(), send_msg.c_str(), send_msg.size(), 0);
 			}
         }
         else
@@ -96,21 +96,21 @@ void Server::msg(Clients *client, std::istringstream &lineStream, char *buffer)
             std::string send_msg;
             for (std::map<int, Clients*>::iterator iter = _clients.begin(); iter != _clients.end(); ++iter)
             {
-                if (iter->second->get_Nickname() == dest)
+                if (iter->second->getNickname() == dest)
                 {
-                    send_msg = ":" + client->get_Nickname() + " " + msg;
-                    send(iter->second->get_Socket(), send_msg.c_str(), send_msg.size(), 0);
+                    send_msg = ":" + client->getNickname() + " " + msg;
+                    send(iter->second->getSocket(), send_msg.c_str(), send_msg.size(), 0);
                     return ;
                 }
             }
-            std::string errMsg = ":I.R.SIUSIU 401 " + client->get_Nickname() + " " + dest + " :" RED "No such user\n" RESET;
-            send(client->get_Socket(), errMsg.c_str(), errMsg.size(), 0);
+            std::string errMsg = ":I.R.SIUSIU 401 " + client->getNickname() + " " + dest + " :" RED "No such user\n" RESET;
+            send(client->getSocket(), errMsg.c_str(), errMsg.size(), 0);
         }
     }
     else
     {
         std::string errMsg = "MSG command error. Use : MSG <destinataire> <message>\n";
-        send(client->get_Socket(), errMsg.c_str(), errMsg.size(), 0);
+        send(client->getSocket(), errMsg.c_str(), errMsg.size(), 0);
     }
 }
 
@@ -132,7 +132,7 @@ void Server::invite(Clients *client, std::istringstream &lineStream, int client_
             Clients* invitedClient = NULL;
             for(std::map<int, Clients*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
             {
-                if (it->second->get_Nickname() == nickname)
+                if (it->second->getNickname() == nickname)
                 {
                     invitedClient = it->second;
                     break;
@@ -144,8 +144,8 @@ void Server::invite(Clients *client, std::istringstream &lineStream, int client_
                 channel.addInvite(nickname);
 
                 // Envoyer un message à l'utilisateur invité
-                std::string inviteMessage = ":I.R.SIUSIU 341 " + client->get_Nickname() + " " + nickname + " " + channelName + "\n";
-                send(invitedClient->get_Socket(), inviteMessage.c_str(), inviteMessage.length(), 0);
+                std::string inviteMessage = ":I.R.SIUSIU 341 " + client->getNickname() + " " + nickname + " " + channelName + "\n";
+                send(invitedClient->getSocket(), inviteMessage.c_str(), inviteMessage.length(), 0);
 
                 // Informer l'utilisateur qui envoie l'invitation du succès
                 std::string successMsg = "You invited " + nickname + " to " + channelName + "\n";
@@ -176,32 +176,32 @@ void Server::invite(Clients *client, std::istringstream &lineStream, int client_
 void	Server::joinChannel(Clients *client, std::string channelName)
 {
 	// Add the client to the channel's connected users
-	_Channel[channelName].getConnUsers()[client->get_Nickname()] = client;
+	_Channel[channelName].getConnUsers()[client->getNickname()] = client;
 	client->getCurrConnected().push_back(&_Channel[channelName]);
 
 
 	// Notify all clients in the channel
-	std::string joinMessage = ":" + client->get_Nickname() + "!" + client->get_Username() + "@I.R.SIUSIU JOIN " + channelName + "\n";
+	std::string joinMessage = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU JOIN " + channelName + "\n";
 	for (std::map<std::string, Clients*>::iterator it = _Channel[channelName].getConnUsers().begin(); it != _Channel[channelName].getConnUsers().end(); ++it)
-		send(it->second->get_Socket(), joinMessage.c_str(), joinMessage.length(), 0);
+		send(it->second->getSocket(), joinMessage.c_str(), joinMessage.length(), 0);
 
 	// Send the current topic to the new client
 	if (!_Channel[channelName].getTopic().empty())
 	{
-		std::string topicMessage = ":I.R.SIUSIU 332 " + client->get_Nickname() + " " + channelName + " :" + _Channel[channelName].getTopic() + "\n";
-		send(client->get_Socket(), topicMessage.c_str(), topicMessage.length(), 0);
+		std::string topicMessage = ":I.R.SIUSIU 332 " + client->getNickname() + " " + channelName + " :" + _Channel[channelName].getTopic() + "\n";
+		send(client->getSocket(), topicMessage.c_str(), topicMessage.length(), 0);
 	}
 
 	// Send the list of users in the channel to the new client
-	std::string namesMessage = ":I.R.SIUSIU 353 " + client->get_Nickname() + " = " + channelName + " :";
+	std::string namesMessage = ":I.R.SIUSIU 353 " + client->getNickname() + " = " + channelName + " :";
 	for (std::map<std::string, Clients*>::iterator it = _Channel[channelName].getConnUsers().begin(); it != _Channel[channelName].getConnUsers().end(); ++it)
 		namesMessage += it->first + " ";
 	namesMessage += "\n";
-	send(client->get_Socket(), namesMessage.c_str(), namesMessage.length(), 0);
+	send(client->getSocket(), namesMessage.c_str(), namesMessage.length(), 0);
 
 	// End of the list
-	std::string endNamesMessage = ":I.R.SIUSIU 366 " + client->get_Nickname() + " " + channelName + " :End of /NAMES list.\n";
-	send(client->get_Socket(), endNamesMessage.c_str(), endNamesMessage.length(), 0);
+	std::string endNamesMessage = ":I.R.SIUSIU 366 " + client->getNickname() + " " + channelName + " :End of /NAMES list.\n";
+	send(client->getSocket(), endNamesMessage.c_str(), endNamesMessage.length(), 0);
 }
 
 void	Server::join(Clients *client, std::istringstream &lineStream, int client_socket)
@@ -217,20 +217,20 @@ void	Server::join(Clients *client, std::istringstream &lineStream, int client_so
 			std::cout << "New Channel created: " << channelName << std::endl;
 			// Make the first client to connect the operator of the channel
 		}
-		if (_Channel[channelName].get_invit() == false)
+		if (_Channel[channelName].getInvite() == false)
 			joinChannel(client, channelName);
 		else 
 		{
 			std::vector<std::string>::iterator invIt;
 			for(invIt = _Channel[channelName].getInvitedUsers().begin(); invIt != _Channel[channelName].getInvitedUsers().end(); ++invIt)
 			{
-				if ((*invIt).compare(client->get_Nickname()) == 0)
+				if ((*invIt).compare(client->getNickname()) == 0)
 					joinChannel(client, channelName);
 			}
 			if (invIt == _Channel[channelName].getInvitedUsers().end())
 			{
-				std::string errMsg = ":I.R.SIUSIU 473 " + client->get_Nickname() + " " + channelName + "\n";
-				send(client->get_Socket(), errMsg.c_str(), errMsg.size(), 0);
+				std::string errMsg = ":I.R.SIUSIU 473 " + client->getNickname() + " " + channelName + "\n";
+				send(client->getSocket(), errMsg.c_str(), errMsg.size(), 0);
 			}
 		}
 	}
@@ -246,7 +246,7 @@ void Server::part(Clients *client, std::istringstream &lineStream)
     std::string channelName;
     std::string partMessage;
     
-    std::cerr << "Part command received from client: " << client->get_Nickname() << std::endl;
+    std::cerr << "Part command received from client: " << client->getNickname() << std::endl;
 
     if (lineStream >> channelName)
     {
@@ -271,32 +271,33 @@ void Server::part(Clients *client, std::istringstream &lineStream)
         {
             std::cerr << "Client found in channel: " << channelName << std::endl;
             std::string partMessageFull;
-            _Channel[channelName].getConnUsers().erase(client->get_Nickname());
+            _Channel[channelName].getConnUsers().erase(client->getNickname());
             connectedChannels.erase(it);
 
             if (!partMessage.empty())
-                partMessageFull = ":" + client->get_Nickname() + "!" + client->get_Username() + "@I.R.SIUSIU PART " + channelName + " :" + partMessage + "\n";
+                partMessageFull = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU PART " + channelName + " :" + partMessage + "\n";
             else
-                partMessageFull = ":" + client->get_Nickname() + "!" + client->get_Username() + "@I.R.SIUSIU PART " + channelName + " :\n";
+                partMessageFull = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU PART " + channelName + " :\n";
             for (std::map<std::string, Clients*>::iterator connIt = _Channel[channelName].getConnUsers().begin(); connIt != _Channel[channelName].getConnUsers().end(); ++connIt)
             {
-                send(connIt->second->get_Socket(), partMessageFull.c_str(), partMessageFull.length(), 0);
+                send(connIt->second->getSocket(), partMessageFull.c_str(), partMessageFull.length(), 0);
             }
 			if (_Channel[channelName].getConnUsers().empty())
                 _Channel.erase(channelName);
-            send(client->get_Socket(), partMessageFull.c_str(), partMessageFull.length(), 0);
+
+            send(client->getSocket(), partMessageFull.c_str(), partMessageFull.length(), 0);
         }
         else
         {
             std::cerr << "Client not found in channel: " << channelName << std::endl;
             std::string errMsg = "You're not on that channel\n";
-            send(client->get_Socket(), errMsg.c_str(), errMsg.length(), 0);
+            send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
         }
     }
     else
     {
         std::string errMsg = "Usage: PART <channelName> [message]\n";
-        send(client->get_Socket(), errMsg.c_str(), errMsg.length(), 0);
+        send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
     }
 }
 
@@ -319,8 +320,8 @@ void	Server::mode(Clients *client, std::istringstream &lineStream)
 		{
 			if ((*currIt)->getConnUsers().find(name) == (*currIt)->getConnUsers().end() && !name.empty())
 			{
-				std::string errMsg = ":I.R.SIUSIU 401 " + client->get_Nickname() + " " + chan + " :" RED "No such user\n" RESET;
-				send(client->get_Socket(), errMsg.c_str(), errMsg.length(), 0);
+				std::string errMsg = ":I.R.SIUSIU 401 " + client->getNickname() + " " + chan + " :" RED "No such user\n" RESET;
+				send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
 				return ;
 			}
 			break ;
@@ -328,16 +329,16 @@ void	Server::mode(Clients *client, std::istringstream &lineStream)
 	}
 	if (currIt == client->getCurrConnected().end() && mode != "+o")
 	{
-		if (chan == client->get_Nickname())
+		if (chan == client->getNickname())
 			return ;
 		std::string errMsg = "This channel does not exist\n";
-        send(client->get_Socket(), errMsg.c_str(), errMsg.length(), 0);
+        send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
 		return ;
 	}
 	// if (mode.length() > 2)
 	// {
 	// 	std::string errMsg = "Only one option mode at a time\n";
-    //     send(client->get_Socket(), errMsg.c_str(), errMsg.length(), 0);
+    //     send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
 	// 	return ;
 	// }
 	if (mode[0] == '+' || mode[0] == '-')
@@ -346,16 +347,16 @@ void	Server::mode(Clients *client, std::istringstream &lineStream)
 		if (mode.find('i') < mode.length())
 		{
 			if (type == true)
-				(*currIt)->set_invit(true);
+				(*currIt)->setInvite(true);
 			else
-				(*currIt)->set_invit(false);
+				(*currIt)->setInvite(false);
 		}
 		if (mode.find('t') < mode.length())
 		{
 			if (type == true)
-				(*currIt)->set_topic_mode(true);
+				(*currIt)->setTopicMode(true);
 			else
-				(*currIt)->set_topic_mode(false);
+				(*currIt)->setTopicMode(false);
 		}
 		if (mode.find('k') < mode.length())
 		{
@@ -369,9 +370,9 @@ void	Server::mode(Clients *client, std::istringstream &lineStream)
 		if (mode.find('o') < mode.length())
 		{
 			if (type == true)
-				(*currIt)->set_operator(name, true);
+				(*currIt)->setOperator(name, true);
 			else
-				(*currIt)->set_operator(name, false);
+				(*currIt)->setOperator(name, false);
 		}
 		if (mode.find('l') < mode.length())
 		{
@@ -385,7 +386,7 @@ void	Server::mode(Clients *client, std::istringstream &lineStream)
 		else
 		{
 			std::string errMsg = "This option is not handle, see IRC subject\n";
-			send(client->get_Socket(), errMsg.c_str(), errMsg.length(), 0);
+			send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
 		}
 	}
 	(void)client;
@@ -398,12 +399,12 @@ bool	Server::pass(Clients *client, std::istringstream &lineStream, int client_so
 	lineStream >> pass;
 	if (pass == _pwd)
 	{
-		client->set_Status(Clients::USERNAME);
+		client->setStatus(Clients::USERNAME);
 		return (true);
 	}
 	else
 	{
-		std::string errormsg = ":I.R.SIUSIU 300 " + client->get_Nickname() + " :Invalid password, try again...\n";
+		std::string errormsg = ":I.R.SIUSIU 300 " + client->getNickname() + " :Invalid password, try again...\n";
 		send(client_socket, errormsg.c_str(), errormsg.size(), 0);
 		close(client_socket);
 		delete _clients[client_socket];
@@ -417,8 +418,8 @@ void	Server::nick(Clients *client, std::istringstream &lineStream)
 {
 	std::string nick;
 	lineStream >> nick;
-	client->set_Nickname(nick);
-	std::cout << "Nickname set to: " << client->get_Nickname() << std::endl;
+	client->setNickname(nick);
+	std::cout << "Nickname set to: " << client->getNickname() << std::endl;
 }
 
 //fonction permettant de set l'Username, le Realname et le status de l'utilisateur
@@ -429,10 +430,10 @@ void	Server::user(Clients *client, std::istringstream &lineStream, int client_so
 	std::getline(lineStream, realname);
 	if (!realname.empty() && realname[0] == ' ' && realname[1] == ':')
 		realname.erase(0, 2);
-	client->set_Username(user);
-	client->set_Realname(realname);
-	client->set_Status(Clients::COMPLETED);
-	std::cout << "Username set to: " << client->get_Username() << std::endl;
-	std::cout << "Realname set to: " << client->get_Realname() << std::endl;
+	client->setUsername(user);
+	client->setRealname(realname);
+	client->setStatus(Clients::COMPLETED);
+	std::cout << "Username set to: " << client->getUsername() << std::endl;
+	std::cout << "Realname set to: " << client->getRealname() << std::endl;
 	sendWelcomeMessages(client_socket, client);
 }

@@ -6,7 +6,7 @@
 /*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 15:50:02 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/29 17:13:14 by scarpent         ###   ########.fr       */
+/*   Updated: 2024/05/29 18:49:25 by scarpent         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,16 +25,16 @@ class Clients
 			USERNAME,
 			COMPLETED,
 		}					status;
-		int						get_Socket(void);
-		void					set_Socket(int	new_Socket);
-		std::string 			get_Nickname(void);
-		void					set_Nickname(std::string new_Nickname);
-		std::string				get_Username(void);
-		void					set_Username(std::string new_Username);
-		std::string				get_Realname(void);
-		void					set_Realname(std::string new_Realname);
-		status					get_Status(void);
-		void					set_Status(status new_Status);
+		int						getSocket(void);
+		void					setSocket(int	newSocket);
+		std::string 			getNickname(void);
+		void					setNickname(std::string newNickname);
+		std::string				getUsername(void);
+		void					setUsername(std::string newUsername);
+		std::string				getRealname(void);
+		void					setRealname(std::string newRealname);
+		status					getStatus(void);
+		void					setStatus(status newStatus);
 		std::vector<Channel *>& getCurrConnected(void);
 		void					setCurrConnected(std::vector<Channel *>& newCurrConnected);
 	private:
