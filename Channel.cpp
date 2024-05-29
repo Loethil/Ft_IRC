@@ -3,7 +3,7 @@
 
 Channel::Channel(std::string & chanName): _chanName(chanName), _topic("") {}
 
-Channel::Channel():_chanName(""), _topic("") , _invit(false), _topic_mode(false) {}
+Channel::Channel():_chanName(""), _topic("") , _invit(false), _topic_mode(false), _max_user(0) {}
 
 Channel::~Channel()
 {
@@ -45,9 +45,9 @@ bool	Channel::get_invit(void)
 void	Channel::set_invit(bool key)
 {
 	if (this->_invit == true && key == false)
-		std::cout << this->getChanName() << " is set on 'invit only'" << std::endl;
-	else if (this->_invit == false && key == true)
 		std::cout << this->getChanName() << " is set on 'no invit only'" << std::endl;
+	else if (this->_invit == false && key == true)
+		std::cout << this->getChanName() << " is set on 'invit only'" << std::endl;
 	else if (this->_invit == true && key == true)
 	{
 		std::cout << this->getChanName() << " is already set on 'invit only'" << std::endl;
