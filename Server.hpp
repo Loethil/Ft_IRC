@@ -6,7 +6,7 @@
 /*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:24:31 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/28 18:55:19 by llaigle          ###   ########.fr       */
+/*   Updated: 2024/05/29 16:01:28 by llaigle          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,8 @@ class Server
 		void	mode(Clients *client, std::istringstream &lineStream);
         void    part(Clients *client, std::istringstream &lineStream);
         void    topic(Clients *client, std::istringstream &lineStream, int client_socket);
+        void	invite(Clients *client, std::istringstream &lineStream, int client_socket);
+        void    addInvite(const std::string& nickname);
 
         std::string getPwd();
         

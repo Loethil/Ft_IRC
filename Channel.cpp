@@ -57,3 +57,13 @@ std::ostream	&operator<<(std::ostream &o, Channel &rhs)
 	}
 	return (o);
 }
+
+void Channel::addInvite(const std::string& nickname)
+{
+    _invitedUsers.push_back(nickname);
+}
+
+bool Channel::isInvited(const std::string& nickname)
+{
+    return std::find(_invitedUsers.begin(), _invitedUsers.end(), nickname) != _invitedUsers.end();
+}

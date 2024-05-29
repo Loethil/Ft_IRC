@@ -10,6 +10,7 @@ class Channel
 		std::string							_topic;
         std::map<std::string, Clients *>	_connUsers;
 		bool								_mode[4];
+        std::vector<std::string>            _invitedUsers;
 
     public:
         Channel(std::string & chanName);
@@ -24,6 +25,8 @@ class Channel
 
 		void								setMode(bool new_Mode, int i);
 		bool								getMode(int i);
+        void                                addInvite(const std::string& nickname);
+        bool                                isInvited(const std::string& nickname);
 };
 
 std::ostream	&operator<<(std::ostream &o, Channel &rhs);

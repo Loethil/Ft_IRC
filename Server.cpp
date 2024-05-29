@@ -6,7 +6,7 @@
 /*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:23:59 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/28 18:58:12 by llaigle          ###   ########.fr       */
+/*   Updated: 2024/05/29 15:26:43 by llaigle          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -194,6 +194,8 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 				part(client, lineStream);
 			else if (command == "MODE")
 				mode(client, lineStream);
+			else if (command == "INVITE")
+				invite(client, lineStream, client_socket);
 			else if (valread == 0)
 			{
 				close(client_socket);
