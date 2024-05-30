@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Clients.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
+/*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 15:49:54 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/29 18:50:31 by scarpent         ###   ########.fr       */
+/*   Updated: 2024/05/30 15:18:14 by llaigle          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,11 +19,10 @@ Clients::~Clients(void)
 	if (!_currConnected.empty())
 	{
 		for (std::vector<Channel *>::iterator delIt = _currConnected.begin(); delIt != _currConnected.end(); ++delIt)
-		{
 			delete *delIt;
-		}
 		_currConnected.clear();
 	}
+	close(this->getSocket());
 }
 
 int	Clients::getSocket(void)

@@ -348,22 +348,110 @@ void Server::part(Clients *client, std::istringstream &lineStream)
     }
 }
 
+//c'est le part pour le /quit celui la
+void Server::part(Clients *client, std::string channelName)
+{
+    std::string partMessage;
+    
+    std::cerr << "Part command received from client: " << client->getNickname() << std::endl;
+	std::cerr << "Channel to part: " << channelName << std::endl;
+
+	std::vector<Channel *> &connectedChannels = client->getCurrConnected();
+	std::vector<Channel *>::iterator it = connectedChannels.end();
+	for (std::vector<Channel *>::iterator iter = connectedChannels.begin(); iter != connectedChannels.end(); ++iter)
+	{
+		if ((*iter)->getChanName() == channelName)
+		{
+			it = iter;
+			break;
+		}
+	}
+	if (it != connectedChannels.end())
+	{
+		std::cerr << "Client found in channel: " << channelName << std::endl;
+		_Channel[channelName].getConnUsers().erase(client->getNickname());
+		connectedChannels.erase(it);
+
+		partMessage = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU PART " + channelName + " :\n";
+		if (_Channel[channelName].getConnUsers().empty())
+			_Channel.erase(channelName);
+
+		send(client->getSocket(), partMessage.c_str(), partMessage.length(), 0);
+	}
+	else
+	{
+		std::cerr << "Client not found in channel: " << channelName << std::endl;
+		std::string errMsg = "You're not on that channel\n";
+		send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
+	}
+}
+
+void Server::quit(Clients *client, std::istringstream &lineStream)
+{
+    std::string quitMsg;
+
+    // Lire le message de déconnexion s'il est fourni
+    if (lineStream >> quitMsg)
+	{
+        if (std::getline(lineStream, quitMsg))
+		{
+            if (!quitMsg.empty() && quitMsg[0] == ' ' && quitMsg[1] == ':')
+                quitMsg.erase(0, 2);
+        }
+    }
+
+    // Construire le message complet de déconnexion
+    std::string fullQuitMsg;
+    if (!quitMsg.empty())
+        fullQuitMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU QUIT :" + quitMsg + "\n";
+	else
+        fullQuitMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU QUIT :\n";
+    // Utiliser un vector pour suivre les sockets déjà notifiées
+    std::vector<int> notifiedSockets;
+
+    // Envoyer le message de déconnexion à tous les clients connectés aux mêmes canaux
+    std::vector<Channel*>::iterator chIt;
+    for (chIt = client->getCurrConnected().begin(); chIt != client->getCurrConnected().end(); ++chIt)
+	{
+        Channel* channel = *chIt;
+        std::map<std::string, Clients*>::iterator chanClientIt;
+        for (chanClientIt = channel->getConnUsers().begin(); chanClientIt != channel->getConnUsers().end(); ++chanClientIt)
+		{
+            //Clients* chanClientIt = *chanClientIt;
+            if (std::find(notifiedSockets.begin(), notifiedSockets.end(), chanClientIt->second->getSocket()) == notifiedSockets.end())
+			{
+                send(chanClientIt->second->getSocket(), fullQuitMsg.c_str(), fullQuitMsg.size(), 0);
+                notifiedSockets.push_back(chanClientIt->second->getSocket());
+            }
+        }
+    }
+
+    // Supprimer le client de tous les canaux
+    for (chIt = client->getCurrConnected().begin(); chIt != client->getCurrConnected().end(); ++chIt)
+        part(client, (*chIt)->getChanName());
+    // Supprimer le client de la liste des clients du serveur
+    int clientSocket = client->getSocket();
+    _clients.erase(clientSocket);
+    // Fermer la socket du client
+    close(clientSocket);
+}
+
+
 void	Server::mode(Clients *client, std::istringstream &lineStream)
 {
 	std::string chan;
 	std::string mode;
-	std::string name;
 	std::vector<Channel *>::iterator currIt;
 
-	lineStream >> chan >> mode >> name;
+	lineStream >> chan >> mode;
 	std::cout << "chan : " << chan << std::endl;
 	std::cout << "mode : " << mode << std::endl;
-	std::cout << "name : " << name << std::endl;
+	// std::cout << "name : " << name << std::endl;
 	for (currIt = client->getCurrConnected().begin(); currIt != client->getCurrConnected().end(); ++currIt)
 	{
 		if (chan == (*currIt)->getChanName())
 		{
-			if ((*currIt)->getConnUsers().find(name) == (*currIt)->getConnUsers().end() && !name.empty())
+			if ((*currIt)->getConnUsers().find(client->getNickname()) == (*currIt)->getConnUsers().end())
 			{
 				std::string errMsg = ":I.R.SIUSIU 401 " + client->getNickname() + " " + chan + " :" RED "No such user\n" RESET;
 				send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
@@ -401,61 +489,62 @@ void	Server::mode(Clients *client, std::istringstream &lineStream)
 				(*currIt)->setTopicMode(type);
 				break;
 			case 'k':
-					if (type)
+				if (type)
+				{
+					std::string pwd;
+					if (lineStream >> pwd)
 					{
-						std::string pwd;
-						if (lineStream >> pwd)
+						if (!pwd.empty())
 						{
-							if (!pwd.empty())
-							{
-								(*currIt)->setPwd(pwd);
-								std::cout << BLUE << (*currIt)->getPwd() << RESET << std::endl;
-							}
-						}
-						else
-						{
-							std::string errMsg = "No password specified for +k mode\n";
-							send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
+							(*currIt)->setPwd(pwd);
+							std::cout << BLUE << (*currIt)->getPwd() << RESET << std::endl;
 						}
 					}
 					else
-						(*currIt)->setPwd("");
-					break;
-				case 'o':
 					{
-						std::string opNick = name;
-						if (!opNick.empty())
-							(*currIt)->setOperator(opNick, type);
-						else
-						{
-							std::string errMsg = (type ? "No operator specified for +o mode\n" : "No operator specified for -o mode\n");
-							send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
-						}
-					}
-					break;
-				// case 'l':
-				// 	if (type)
-				// 	{
-				// 		int userLimit;
-				// 		lineStream >> userLimit;
-				// 		if (lineStream.fail())
-				// 		{
-				// 			std::string errMsg = "No user limit specified for +l mode\n";
-				// 			send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
-				// 			lineStream.clear();
-				// 		}
-				// 		else
-				// 			(*currIt)->setUserLimit(userLimit);
-				// 	}
-				// 	else
-				// 		(*currIt)->setUserLimit(0);
-				// 	break;
-				default:
-					{
-						std::string errMsg = "This option is not handled, see IRC subject\n";
+						std::string errMsg = "No password specified for +k mode\n";
 						send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
 					}
-					break;
+				}
+				else
+					(*currIt)->setPwd("");
+				break;
+			case 'o':
+				{
+					std::string name;
+					lineStream >> name;
+					if (!name.empty())
+						(*currIt)->setOperator(name, type);
+					else
+					{
+						std::string errMsg = (type ? "No operator specified for +o mode\n" : "No operator specified for -o mode\n");
+						send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
+					}
+				}
+				break;
+			// case 'l':
+			// 	if (type)
+			// 	{
+			// 		int userLimit;
+			// 		lineStream >> userLimit;
+			// 		if (lineStream.fail())
+			// 		{
+			// 			std::string errMsg = "No user limit specified for +l mode\n";
+			// 			send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
+			// 			lineStream.clear();
+			// 		}
+			// 		else
+			// 			(*currIt)->setUserLimit(userLimit);
+			// 	}
+			// 	else
+			// 		(*currIt)->setUserLimit(0);
+			// 	break;
+			default:
+				{
+					std::string errMsg = "This option is not handled, see IRC subject\n";
+					send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
+				}
+				break;
 			}
 		}
 	}

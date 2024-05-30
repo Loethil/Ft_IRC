@@ -10,9 +10,7 @@ Channel::~Channel()
 	if (!_connUsers.empty())
 	{
 		for (std::map<std::string, Clients *>::iterator delIt = _connUsers.begin(); delIt != _connUsers.end(); ++delIt)
-		{
 			delete delIt->second;
-		}
 		_connUsers.clear();
 	}
 }
