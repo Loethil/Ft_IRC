@@ -41,8 +41,9 @@ class Channel
 
         void                                addInvite(const std::string& nickname);
         bool                                isInvited(const std::string& nickname);
-		bool								getOperator(std::string op);
-		bool								setOperator(std::string newOp, bool key);
+		std::vector<std::string>&			getOperator();
+		bool								setOperator(Clients *client, bool key, std::string newOp);
+		bool								getOpStatus(std::string op);
         std::vector<std::string>&           getInvitedUsers(void);
 };
 
