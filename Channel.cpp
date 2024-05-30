@@ -1,9 +1,13 @@
 #include "Channel.hpp"
 #include "Clients.hpp"
 
-Channel::Channel(std::string & chanName): _chanName(chanName), _topic("") {}
+Channel::Channel(std::string & chanName): _chanName(chanName), _topic(""), _invite(false), _topicMode(false), _pwd("") {}
 
+<<<<<<< HEAD
 Channel::Channel():_chanName(""), _topic("") , _invite(false), _topicMode(false) , _pwd(""){}
+=======
+Channel::Channel():_chanName(""), _topic(""), _invite(false), _topicMode(false), _pwd("") {}
+>>>>>>> simon
 
 Channel::~Channel()
 {
@@ -133,7 +137,7 @@ bool Channel::setOperator(std::string newOp, bool key)
 		std::cout << "User " << newOp << " is now an operator" << std::endl;
 		return true; // the user is successfully added
 	}
-	else 
+	else
 	{
 		for (it = this->_operator.begin(); it != this->_operator.end(); ++it) 
 		{
