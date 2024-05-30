@@ -9,10 +9,11 @@ class Channel
        	std::string              			_chanName;
 		std::string							_topic;
         std::map<std::string, Clients *>	_connUsers;
-		bool								_invit;
-		bool								_topic_mode;
+        std::vector<std::string>            _invitedUsers;
+		bool								_invite;
+		bool								_topicMode;
 		std::string							_pwd;
-		int									_max_user;
+		int									_maxUser;
 		std::vector<std::string>			_operator;
 
     public:
@@ -26,20 +27,23 @@ class Channel
         std::string                         getTopic();
         void                                setTopic(std::string& topic);
 
-		bool								get_invit(void);
-		void								set_invit(bool key);
+		bool								getInvite(void);
+		void								setInvite(bool key);
 
-		bool								get_topic_mode(void);
-		void								set_topic_mode(bool key);
+		bool								getTopicMode(void);
+		void								setTopicMode(bool key);
 
-		std::string							get_pwd(void);
-		void								set_pwd(std::string new_pwd);
+		std::string							getPwd(void);
+		void								setPwd(std::string newPwd);
 
-		int									get_max_user(void);
-		void								set_max_user(int new_max_user);
+		int									getMaxUser(void);
+		void								setMaxUser(int newMaxUser);
 
-		bool								get_operator(std::string op);
-		bool								set_operator(std::string new_op, bool key);
+        void                                addInvite(const std::string& nickname);
+        bool                                isInvited(const std::string& nickname);
+		bool								getOperator(std::string op);
+		bool								setOperator(std::string newOp, bool key);
+        std::vector<std::string>&           getInvitedUsers(void);
 };
 
 std::ostream	&operator<<(std::ostream &o, Channel &rhs);

@@ -1,9 +1,9 @@
 #include "Channel.hpp"
 #include "Clients.hpp"
 
-Channel::Channel(std::string & chanName): _chanName(chanName), _topic("") {}
+Channel::Channel(std::string & chanName): _chanName(chanName), _topic(""), _invite(false), _topicMode(false), _pwd(""), _maxUser(0) {}
 
-Channel::Channel():_chanName(""), _topic("") , _invit(false), _topic_mode(false), _max_user(0) {}
+Channel::Channel():_chanName(""), _topic(""), _invite(false), _topicMode(false), _pwd(""), _maxUser(0) {}
 
 Channel::~Channel()
 {
@@ -32,80 +32,80 @@ std::string Channel::getTopic()
 	return _topic;
 }
 
-void	Channel::setTopic(std::string& new_topic)
+void	Channel::setTopic(std::string& newTopic)
 {
-	_topic = new_topic;
+	_topic = newTopic;
 }
 
-bool	Channel::get_invit(void)
+bool	Channel::getInvite(void)
 {
-	return (this->_invit);
+	return (this->_invite);
 }
 
-void	Channel::set_invit(bool key)
+void	Channel::setInvite(bool key)
 {
-	if (this->_invit == true && key == false)
-		std::cout << this->getChanName() << " is set on 'no invit only'" << std::endl;
-	else if (this->_invit == false && key == true)
-		std::cout << this->getChanName() << " is set on 'invit only'" << std::endl;
-	else if (this->_invit == true && key == true)
+	if (this->_invite == true && key == false)
+		std::cout << this->getChanName() << " is set on 'no invite only'" << std::endl;
+	else if (this->_invite == false && key == true)
+		std::cout << this->getChanName() << " is set on 'invite only'" << std::endl;
+	else if (this->_invite == true && key == true)
 	{
-		std::cout << this->getChanName() << " is already set on 'invit only'" << std::endl;
+		std::cout << this->getChanName() << " is already set on 'invite only'" << std::endl;
 		return ;
 	}
-	else if (this->_invit == false && key == false)
+	else if (this->_invite == false && key == false)
 	{
-		std::cout << this->getChanName() << " is already set on 'no invit only'" << std::endl;
+		std::cout << this->getChanName() << " is already set on 'no invite only'" << std::endl;
 		return ;
 	}
-	this->_invit = key;
+	this->_invite = key;
 }
 
-bool	Channel::get_topic_mode(void)
+bool	Channel::getTopicMode(void)
 {
-	return (this->_topic_mode);
+	return (this->_topicMode);
 }
 
-void	Channel::set_topic_mode(bool key)
+void	Channel::setTopicMode(bool key)
 {
-	if (this->_topic_mode == true && key == false)
+	if (this->_topicMode == true && key == false)
 		std::cout << this->getChanName() << " is set on 'topic for operator only'" << std::endl;
-	else if (this->_topic_mode == false && key == true)
+	else if (this->_topicMode == false && key == true)
 		std::cout << this->getChanName() << " is set on 'topic for everyone'" << std::endl;
-	else if (this->_topic_mode == true && key == true)
+	else if (this->_topicMode == true && key == true)
 	{
 		std::cout << this->getChanName() << " is already set on 'topic for operator only'" << std::endl;
 		return ;
 	}
-	else if (this->_topic_mode == false && key == false)
+	else if (this->_topicMode == false && key == false)
 	{
 		std::cout << this->getChanName() << " is already set on 'topic for everyone'" << std::endl;
 		return ;
 	}
-	this->_topic_mode = key;
+	this->_topicMode = key;
 }
 
-std::string		Channel::get_pwd(void)
+std::string		Channel::getPwd(void)
 {
 	return (this->_pwd);
 }
 
-void	Channel::set_pwd(std::string new_pwd)
+void	Channel::setPwd(std::string newPwd)
 {
-	this->_pwd = new_pwd;
+	this->_pwd = newPwd;
 }
 
-int		Channel::get_max_user(void)
+int		Channel::getMaxUser(void)
 {
-	return (this->_max_user);
+	return (this->_maxUser);
 }
 
-void	Channel::set_max_user(int new_max_user)
+void	Channel::setMaxUser(int newMaxUser)
 {
-	this->_max_user = new_max_user;
+	this->_maxUser = newMaxUser;
 }
 
-bool	Channel::get_operator(std::string op)
+bool	Channel::getOperator(std::string op)
 {
 	std::vector<std::string>::iterator it;
 	for (it = this->_operator.begin(); it != this->_operator.end(); ++it)
@@ -116,35 +116,35 @@ bool	Channel::get_operator(std::string op)
 	return (false);
 }
 
-bool Channel::set_operator(std::string new_op, bool key)
+bool Channel::setOperator(std::string newOp, bool key)
 {
     std::vector<std::string>::iterator it;
 	if (key) 
 	{
 		for (it = this->_operator.begin(); it != this->_operator.end(); ++it) 
 		{
-			if (*it == new_op)
+			if (*it == newOp)
 			{
-				std::cout << "User " << new_op << " is already an operator" << std::endl;
+				std::cout << "User " << newOp << " is already an operator" << std::endl;
 				return false; // user already operator
 			}
 		}
-		this->_operator.push_back(new_op);
-		std::cout << "User " << new_op << " is now operator" << std::endl;
+		this->_operator.push_back(newOp);
+		std::cout << "User " << newOp << " is now an operator" << std::endl;
 		return true; // the user is successfully added
 	}
-	else 
+	else
 	{
 		for (it = this->_operator.begin(); it != this->_operator.end(); ++it) 
 		{
-			if (*it == new_op) 
+			if (*it == newOp) 
 			{
 				this->_operator.erase(it);
-				std::cout << "User " << new_op << " isn't an operator anymore" << std::endl;
+				std::cout << "User " << newOp << " isn't an operator anymore" << std::endl;
 				return true; // user has been removed from operators
 			}
 		}
-		std::cout << "User " << new_op << " was not an operator" << std::endl;
+		std::cout << "User " << newOp << " wasn't an operator" << std::endl;
 		return false; // the user was not an operator
 	}
 }
@@ -155,7 +155,22 @@ std::ostream	&operator<<(std::ostream &o, Channel &rhs)
 	o << "Topic : " << rhs.getTopic() << std::endl;
 	for (std::map<std::string, Clients*>::iterator it = rhs.getConnUsers().begin(); it != rhs.getConnUsers().end(); ++it)
 	{
-		o << "Connected Users on this channel : " << it->second->get_Nickname() << std::endl;
+		o << "Connected Users on this channel : " << it->second->getNickname() << std::endl;
 	}
 	return (o);
+}
+
+void Channel::addInvite(const std::string& nickname)
+{
+    _invitedUsers.push_back(nickname);
+}
+
+bool Channel::isInvited(const std::string& nickname)
+{
+    return std::find(_invitedUsers.begin(), _invitedUsers.end(), nickname) != _invitedUsers.end();
+}
+
+std::vector<std::string>	&Channel::getInvitedUsers()
+{
+	return (_invitedUsers);
 }

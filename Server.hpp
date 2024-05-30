@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
+/*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:24:31 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/28 18:55:19 by llaigle          ###   ########.fr       */
+/*   Updated: 2024/05/29 18:55:13 by scarpent         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,13 +31,13 @@
 class Server
 {
     private:
-        int                                 _server_fd;
+        int                                 _serverFd;
         int                                 _port;
         std::string                         _pwd;
-        std::string                         _server_name;
+        std::string                         _serverName;
         std::map<int , Clients *>           _clients;
-        struct sockaddr_in                  _cli_adr;
-        struct sockaddr_in                  _serv_adr;
+        struct sockaddr_in                  _clientAdr;
+        struct sockaddr_in                  _serverAdr;
 		std::map<std::string, Channel>		_Channel;
 
     public:
@@ -54,13 +54,13 @@ class Server
 		void	join(Clients *client, std::istringstream &lineStream, int client_socket);
         void    msg(Clients *client, std::istringstream &lineStream, char *buffer);
         void    run();
-		void	regularChat(Clients *client, std::istringstream &lineStream, char *buffer);
 		void	mode(Clients *client, std::istringstream &lineStream);
         void    part(Clients *client, std::istringstream &lineStream);
         void    topic(Clients *client, std::istringstream &lineStream, int client_socket);
+        void	invite(Clients *client, std::istringstream &lineStream, int client_socket);
+        void	joinChannel(Clients *client, std::string channelName);
 
         std::string getPwd();
-        
 
         void    setPwd(std::string pwd);
         void    setPort(int port);

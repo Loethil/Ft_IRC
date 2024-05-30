@@ -6,7 +6,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/ircserv", // Chemin de l'exécutable de votre programme
-            "args": ["4000", "oui"], // Arguments de ligne de commande pour votre programme (s'il y en a)
+            "args": ["3020", "oui"], // Arguments de ligne de commande pour votre programme (s'il y en a)
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
