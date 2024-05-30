@@ -1,6 +1,6 @@
 #include "Server.hpp"
 
-void	Server::topic(Clients *client, std::istringstream &lineStream, int client_socket)
+void	Server::topic(Clients *client, std::istringstream &lineStream)
 {
 	std::string channelName;
 	std::string newTopic;
@@ -195,7 +195,7 @@ void	Server::joinChannel(Clients *client, std::string channelName)
 	send(client->getSocket(), endNamesMessage.c_str(), endNamesMessage.length(), 0);
 }
 
-void	Server::join(Clients *client, std::istringstream &lineStream, int client_socket)
+void	Server::join(Clients *client, std::istringstream &lineStream)
 {
 	std::string channelName;
 	if (lineStream >> channelName)
@@ -408,10 +408,15 @@ void Server::quit(Clients *client, std::istringstream &lineStream)
             }
         }
     }
-
+	//a REGLER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // Supprimer le client de tous les canaux
     for (chIt = client->getCurrConnected().begin(); chIt != client->getCurrConnected().end(); ++chIt)
-        part(client, (*chIt)->getChanName());
+	{
+		if (client->getCurrConnected().empty())
+			part(client, (*chIt)->getChanName());
+		else
+			break ;
+	}
     // Supprimer le client de la liste des clients du serveur
     int clientSocket = client->getSocket();
     _clients.erase(clientSocket);

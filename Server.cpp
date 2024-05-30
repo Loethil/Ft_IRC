@@ -182,11 +182,11 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 		else if (status == Clients::COMPLETED)
 		{
 			if (command == "JOIN")
-				join(client, lineStream, client_socket);
+				join(client, lineStream);
 			else if (command == "PRIVMSG")
 				msg(client, lineStream, buffer);
 			else if (command == "TOPIC")
-				topic(client, lineStream, client_socket);
+				topic(client, lineStream);
 			else if (command == "NICK")
 				nick(client, lineStream);
 			else if (command == "PART")

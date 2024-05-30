@@ -51,13 +51,13 @@ class Server
 		void	user(Clients *client, std::istringstream &lineStream, int client_socket);
 		void	nick(Clients *client, std::istringstream &lineStream);
 		bool	pass(Clients *client, std::istringstream &lineStream, int client_socket);
-		void	join(Clients *client, std::istringstream &lineStream, int client_socket);
+		void	join(Clients *client, std::istringstream &lineStream);
         void    msg(Clients *client, std::istringstream &lineStream, char *buffer);
         void    run();
 		void	mode(Clients *client, std::istringstream &lineStream);
         void    part(Clients *client, std::istringstream &lineStream);
         void    part(Clients *client, std::string channelName);
-        void    topic(Clients *client, std::istringstream &lineStream, int client_socket);
+        void    topic(Clients *client, std::istringstream &lineStream);
         void	invite(Clients *client, std::istringstream &lineStream, int client_socket);
         void	joinChannel(Clients *client, std::string channelName);
         void	quit(Clients *client, std::istringstream &lineStream);
