@@ -3,20 +3,14 @@
 
 Channel::Channel(std::string & chanName): _chanName(chanName), _topic(""), _invite(false), _topicMode(false), _pwd("") {}
 
-<<<<<<< HEAD
-Channel::Channel():_chanName(""), _topic("") , _invite(false), _topicMode(false) , _pwd(""){}
-=======
 Channel::Channel():_chanName(""), _topic(""), _invite(false), _topicMode(false), _pwd("") {}
->>>>>>> simon
 
 Channel::~Channel()
 {
 	if (!_connUsers.empty())
 	{
 		for (std::map<std::string, Clients *>::iterator delIt = _connUsers.begin(); delIt != _connUsers.end(); ++delIt)
-		{
 			delete delIt->second;
-		}
 		_connUsers.clear();
 	}
 }
