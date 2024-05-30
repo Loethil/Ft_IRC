@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
+/*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:24:31 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/30 13:39:10 by llaigle          ###   ########.fr       */
+/*   Updated: 2024/05/30 18:02:18 by scarpent         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,17 +48,17 @@ class Server
         void    acceptNewConnection();
         void	handleClientMessage(int client_socket, Clients::status status);
         void    sendWelcomeMessages(int client_socket, Clients *client);
-		void	user(Clients *client, std::istringstream &lineStream, int client_socket);
+		void	user(Clients *client, std::istringstream &lineStream);
 		void	nick(Clients *client, std::istringstream &lineStream);
-		bool	pass(Clients *client, std::istringstream &lineStream, int client_socket);
-		void	join(Clients *client, std::istringstream &lineStream, int client_socket);
+		bool	pass(Clients *client, std::istringstream &lineStream);
+		void	join(Clients *client, std::istringstream &lineStream);
         void    msg(Clients *client, std::istringstream &lineStream, char *buffer);
         void    run();
 		void	mode(Clients *client, std::istringstream &lineStream);
         void    part(Clients *client, std::istringstream &lineStream);
         void    part(Clients *client, std::string channelName);
-        void    topic(Clients *client, std::istringstream &lineStream, int client_socket);
-        void	invite(Clients *client, std::istringstream &lineStream, int client_socket);
+        void    topic(Clients *client, std::istringstream &lineStream);
+        void	invite(Clients *client, std::istringstream &lineStream);
         void	joinChannel(Clients *client, std::string channelName);
         void	quit(Clients *client, std::istringstream &lineStream);
 

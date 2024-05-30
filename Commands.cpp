@@ -1,6 +1,6 @@
 #include "Server.hpp"
 
-void	Server::topic(Clients *client, std::istringstream &lineStream, int client_socket)
+void	Server::topic(Clients *client, std::istringstream &lineStream)
 {
 	std::string channelName;
 	std::string newTopic;
@@ -104,7 +104,7 @@ void Server::msg(Clients *client, std::istringstream &lineStream, char *buffer)
     }
 }
 
-void Server::invite(Clients *client, std::istringstream &lineStream, int client_socket)
+void Server::invite(Clients *client, std::istringstream &lineStream)
 {
     std::string nickname;
     std::string channelName;
@@ -145,20 +145,20 @@ void Server::invite(Clients *client, std::istringstream &lineStream, int client_
 
                 // Informer l'utilisateur qui envoie l'invitation du succès
                 std::string successMsg = "You invited " + nickname + " to " + channelName + "\n";
-                send(client_socket, successMsg.c_str(), successMsg.length(), 0);
+                send(client->getSocket(), successMsg.c_str(), successMsg.length(), 0);
             }
             else
             {
                 // L'utilisateur à inviter n'existe pas
                 std::string errMsg = "User " + nickname + " does not exist\n";
-                send(client_socket, errMsg.c_str(), errMsg.length(), 0);
+                send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
             }
         }
         else
         {
             // Le canal n'existe pas
             std::string errMsg = "No such channel: " + channelName + "\n";
-            send(client_socket, errMsg.c_str(), errMsg.length(), 0);
+            send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
         }
     }
 }
@@ -195,7 +195,7 @@ void	Server::joinChannel(Clients *client, std::string channelName)
 	send(client->getSocket(), endNamesMessage.c_str(), endNamesMessage.length(), 0);
 }
 
-void	Server::join(Clients *client, std::istringstream &lineStream, int client_socket)
+void	Server::join(Clients *client, std::istringstream &lineStream)
 {
 	std::string channelName;
 	if (lineStream >> channelName)
@@ -538,7 +538,7 @@ void	Server::mode(Clients *client, std::istringstream &lineStream)
 }
 
 //fonction permettant de verifier le mot de passe
-bool	Server::pass(Clients *client, std::istringstream &lineStream, int client_socket)
+bool	Server::pass(Clients *client, std::istringstream &lineStream)
 {
 	std::string pass;
 	lineStream >> pass;
@@ -550,10 +550,10 @@ bool	Server::pass(Clients *client, std::istringstream &lineStream, int client_so
 	else
 	{
 		std::string errormsg = ":I.R.SIUSIU 300 " + client->getNickname() + " :Invalid password, try again...\n";
-		send(client_socket, errormsg.c_str(), errormsg.size(), 0);
-		close(client_socket);
-		delete _clients[client_socket];
-		_clients.erase(client_socket);
+		send(client->getSocket(), errormsg.c_str(), errormsg.size(), 0);
+		close(client->getSocket());
+		delete _clients[client->getSocket()];
+		_clients.erase(client->getSocket());
 		return (false);
 	}
 }
@@ -568,7 +568,7 @@ void	Server::nick(Clients *client, std::istringstream &lineStream)
 }
 
 //fonction permettant de set l'Username, le Realname et le status de l'utilisateur
-void	Server::user(Clients *client, std::istringstream &lineStream, int client_socket)
+void	Server::user(Clients *client, std::istringstream &lineStream)
 {
 	std::string user, mode, unused, realname;
 	lineStream >> user >> mode >> unused;
@@ -580,5 +580,5 @@ void	Server::user(Clients *client, std::istringstream &lineStream, int client_so
 	client->setStatus(Clients::COMPLETED);
 	std::cout << "Username set to: " << client->getUsername() << std::endl;
 	std::cout << "Realname set to: " << client->getRealname() << std::endl;
-	sendWelcomeMessages(client_socket, client);
+	sendWelcomeMessages(client->getSocket(), client);
 }

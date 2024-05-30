@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
+/*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 16:23:59 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/30 12:47:01 by llaigle          ###   ########.fr       */
+/*   Updated: 2024/05/30 18:02:10 by scarpent         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,22 +171,22 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 		{
 			if (command == "PASS")
 			{
-				if (pass(client, lineStream, client_socket) == false)
+				if (pass(client, lineStream) == false)
 					return ;
 			}
 			else if (command == "NICK")
 				nick(client, lineStream);
 			else if (command == "USER")
-				user(client, lineStream, client_socket);
+				user(client, lineStream);
 		}
 		else if (status == Clients::COMPLETED)
 		{
 			if (command == "JOIN")
-				join(client, lineStream, client_socket);
+				join(client, lineStream);
 			else if (command == "PRIVMSG")
 				msg(client, lineStream, buffer);
 			else if (command == "TOPIC")
-				topic(client, lineStream, client_socket);
+				topic(client, lineStream);
 			else if (command == "NICK")
 				nick(client, lineStream);
 			else if (command == "PART")
@@ -194,7 +194,7 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 			else if (command == "MODE")
 				mode(client, lineStream);
 			else if (command == "INVITE")
-				invite(client, lineStream, client_socket);
+				invite(client, lineStream);
 			else if (command == "QUIT")
 				quit(client, lineStream);
 			else if (valread == 0)
