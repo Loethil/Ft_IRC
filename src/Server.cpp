@@ -1,25 +1,13 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Server.cpp                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/05/16 16:23:59 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/27 14:25:18 by scarpent         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "Server.hpp"
 
-Server::Server() : _server_fd(-1), _server_name("I.R.SIUSIU") {}
+Server::Server() : _serverFd(-1), _serverName("I.R.SIUSIU") {}
 
 Server::~Server()
 {
-	if (_server_fd != -1)
-		close(_server_fd);
+	if (_serverFd != -1)
+		close(_serverFd);
 	for (size_t i = 0; i < _clients.size(); ++i)
-		close(_clients[i]->get_Socket());
+		close(_clients[i]->getSocket());
 	if (!_clients.empty())
 	{
 		for (std::map<int, Clients *>::iterator delIt = _clients.begin(); delIt != _clients.end(); ++delIt)
@@ -49,25 +37,25 @@ void	Server::setPort(int port)
 void	Server::start(int port)
 {
 	std::cout << "Starting the server on port " << port << "..." << std::endl;
-	_server_fd = socket(AF_INET, SOCK_STREAM, 0);
-	if (_server_fd == -1)
+	_serverFd = socket(AF_INET, SOCK_STREAM, 0);
+	if (_serverFd == -1)
 	{
 		std::cerr << "Socket failed" << std::endl;
 		exit(EXIT_FAILURE);
 	}
-	fcntl(_server_fd, F_SETFL, O_NONBLOCK);
-	_serv_adr.sin_family = AF_INET;
-	_serv_adr.sin_addr.s_addr = INADDR_ANY;
-	_serv_adr.sin_port = htons(port);
-	if (bind(_server_fd, (struct sockaddr *)&_serv_adr, sizeof(_serv_adr)) < 0)
+	fcntl(_serverFd, F_SETFL, O_NONBLOCK);
+	_serverAdr.sin_family = AF_INET;
+	_serverAdr.sin_addr.s_addr = INADDR_ANY;
+	_serverAdr.sin_port = htons(port);
+	if (bind(_serverFd, (struct sockaddr *)&_serverAdr, sizeof(_serverAdr)) < 0)
 	{
-		close(_server_fd);
+		close(_serverFd);
 		throw std::runtime_error("Bind failed");
 		exit(EXIT_FAILURE);
 	}
-	if (listen(_server_fd, 3) < 0)
+	if (listen(_serverFd, 3) < 0)
 	{
-		close(_server_fd);
+		close(_serverFd);
 		throw std::runtime_error("Listen failed");
 		exit(EXIT_FAILURE);
 	}
@@ -77,7 +65,7 @@ void	Server::start(int port)
 //fonction permettant de lancer le serveur
 void	Server::run()
 {
-	if (_server_fd == -1)
+	if (_serverFd == -1)
 	{
 		throw std::runtime_error("Server not initialized");
 		return;
@@ -86,7 +74,7 @@ void	Server::run()
 	std::vector<struct pollfd>	pollfds;
 	struct pollfd				server_pollfd;
 
-	server_pollfd.fd = _server_fd;
+	server_pollfd.fd = _serverFd;
 	server_pollfd.events = POLLIN;
 	pollfds.push_back(server_pollfd);
 
@@ -102,7 +90,7 @@ void	Server::run()
 		{
 			if (pollfds[i].revents & POLLIN)
 			{
-				if (pollfds[i].fd == _server_fd)
+				if (pollfds[i].fd == _serverFd)
 				{
 					acceptNewConnection();
 					int new_socket = _clients.rbegin()->first; // Get the last added client's socket
@@ -114,7 +102,7 @@ void	Server::run()
 				else
 				{
 					int client_socket = pollfds[i].fd;
-					handleClientMessage(client_socket, _clients[client_socket]->get_Status());
+					handleClientMessage(client_socket, _clients[client_socket]->getStatus());
 				}
 			}
 		}
@@ -124,19 +112,18 @@ void	Server::run()
 //fonction permettant d'accepter de nouveau clients et de lui donner ses bons parametres
 void	Server::acceptNewConnection()
 {
-	socklen_t addrlen = sizeof(_cli_adr);
-	int new_socket = accept(_server_fd, (struct sockaddr *)&_cli_adr, &addrlen);
+	socklen_t addrlen = sizeof(_clientAdr);
+	int new_socket = accept(_serverFd, (struct sockaddr *)&_clientAdr, &addrlen);
 	if (new_socket < 0)
 	{
 		throw std::runtime_error("Accept failed");
 		exit(EXIT_FAILURE);
 	}
-	fcntl(_server_fd, F_SETFL, O_NONBLOCK);
+	fcntl(_serverFd, F_SETFL, O_NONBLOCK);
 	Clients *newClient = new Clients();
-	newClient->set_Socket(new_socket);
-	newClient->set_Status(Clients::USERNAME); //modif
+	newClient->setSocket(new_socket);
+	newClient->setStatus(Clients::USERNAME); //modif
 	_clients[new_socket] = newClient;
-	std::cout << "New connection accepted: " << new_socket << std::endl;
 }
 
 //fonction qui gere toutes les entrees de l'utilisateur 
@@ -154,8 +141,8 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 	buffer[valread] = '\0';
 	Clients *client = _clients[client_socket];
 	client->partialData.append(buffer, valread);
+	
 	size_t pos;
-
 	while ((pos = client->partialData.find('\n')) != std::string::npos)
 	{
 		std::string line = client->partialData.substr(0, pos);
@@ -172,29 +159,32 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 		{
 			if (command == "PASS")
 			{
-				if (pass(client, lineStream, client_socket) == false)
+				if (pass(client, lineStream) == false)
 					return ;
 			}
 			else if (command == "NICK")
 				nick(client, lineStream);
 			else if (command == "USER")
-				user(client, lineStream, client_socket);
+				user(client, lineStream);
 		}
 		else if (status == Clients::COMPLETED)
 		{
 			if (command == "JOIN")
-				join(client, lineStream, client_socket);
-			else if (command == "PRIVMSG") // ne marche pas
-				// msg(client, lineStream, client_socket, _clients);
-				;
+				join(client, lineStream);
+			else if (command == "PRIVMSG")
+				msg(client, lineStream, buffer);
 			else if (command == "TOPIC")
-				topic(client, lineStream, client_socket);
+				topic(client, lineStream);
 			else if (command == "NICK")
 				nick(client, lineStream);
 			else if (command == "PART")
 				part(client, lineStream);
 			else if (command == "MODE")
 				mode(client, lineStream);
+			else if (command == "INVITE")
+				invite(client, lineStream);
+			else if (command == "QUIT")
+				quit(client, lineStream);
 			else if (valread == 0)
 			{
 				close(client_socket);
@@ -204,11 +194,10 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 					delete it->second;
 					_clients.erase(it->first);
 				}
-				std::cout << "Client disconnected" << std::endl;
 				return;
 			}
 			else
-				regularChat(client, lineStream, buffer);
+				std::string errmsg = ":I.R.SIUSIU 421 " + client->getNickname() + " " + command + " :" RED "The command " + command + "doesn't exist\n" RESET;
 		}
 	}
 }
@@ -216,38 +205,37 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 //fonction permettant d'afficher les messages de bienvenu a l'utilisateur
 void Server::sendWelcomeMessages(int client_socket, Clients *client)
 {
-	std::string welcomeMsg = ":I.R.SIUSIU 001 " + client->get_Nickname() + " :" GREEN "Welcome to the IRC server, " + client->get_Realname() + RESET "\n";
+	std::string truncatedNick = client->getNickname().substr(0, 9); // Tronque le pseudo à 9 caractères
+	std::string paddedNick = truncatedNick;
+	if (truncatedNick.size() < 9)
+		paddedNick += std::string(9 - truncatedNick.size(), ' ');
+
+	std::string welcomeMsg = ":I.R.SIUSIU 001 " + client->getNickname() + " :" GREEN "Welcome to the IRC server, " + client->getRealname() + RESET "\n";
 	send(client_socket, welcomeMsg.c_str(), welcomeMsg.size(), 0);
-	std::cout << "Sent welcome message: " << welcomeMsg;
 
-	std::string yourHost = ":I.R.SIUSIU 002 " + client->get_Nickname() + " :" GREEN "Your host is I.R.SIUSIU, running version 1.0" RESET "\n";
+	std::string yourHost = ":I.R.SIUSIU 002 " + client->getNickname() + " :" GREEN "Your host is I.R.SIUSIU, running version 1.0" RESET "\n";
 	send(client_socket, yourHost.c_str(), yourHost.size(), 0);
-	std::cout << "Sent yourHost message: " << yourHost;
 
-	std::string created = ":I.R.SIUSIU 003 " + client->get_Nickname() + "\n";
+	std::string created = ":I.R.SIUSIU 003 " + client->getNickname() + "\n";
 	send(client_socket, created.c_str(), created.size(), 0);
-	std::cout << "Sent created message: " << created;
 
-	std::string myInfo = ":I.R.SIUSIU 004 " + client->get_Nickname() + "\n";
+	std::string myInfo = ":I.R.SIUSIU 004 " + client->getNickname() + "\n";
 	send(client_socket, myInfo.c_str(), myInfo.size(), 0);
-	std::cout << "Sent myInfo message: " << myInfo;
 
-	std::string motdStart = ":I.R.SIUSIU 375 " + client->get_Nickname() + " :" YELLOW "------ I.R.SIUSIU Message of the Day ------" RESET "\n";
+	std::string motdStart = ":I.R.SIUSIU 375 " + client->getNickname() + " :" YELLOW "------ I.R.SIUSIU Message of the Day ------" RESET "\n";
 	send(client_socket, motdStart.c_str(), motdStart.size(), 0);
-	std::cout << "Sent MOTD start: " << motdStart;
 
-	std::string motdSpaces = ":I.R.SIUSIU 372 " + client->get_Nickname() + " :" YELLOW "|                                         |" RESET "\n";
+	std::string motdSpaces = ":I.R.SIUSIU 372 " + client->getNickname() + " :" YELLOW "|                                         |" RESET "\n";
 	send(client_socket, motdSpaces.c_str(), motdSpaces.size(), 0);
 
-	std::string motd = ":I.R.SIUSIU 372 " + client->get_Nickname() + " :" YELLOW "| Enjoy our Internet Relay chat " + client->get_Nickname() + " ! |" RESET "\n";
+	std::string motd = ":I.R.SIUSIU 372 " + client->getNickname() + " :" YELLOW "| Enjoy our Internet Relay chat " + paddedNick + " |" RESET "\n";
 	send(client_socket, motd.c_str(), motd.size(), 0);
 
 	send(client_socket, motdSpaces.c_str(), motdSpaces.size(), 0);
 
-	std::string motd2 = ":I.R.SIUSIU 372 " + client->get_Nickname() + " :" YELLOW "-------------------------------------------" RESET "\n";
+	std::string motd2 = ":I.R.SIUSIU 372 " + client->getNickname() + " :" YELLOW "-------------------------------------------" RESET "\n";
 	send(client_socket, motd2.c_str(), motd2.size(), 0);
 
-	std::string motdEnd = ":I.R.SIUSIU 376 " + client->get_Nickname() + " :End of Message Of The Day\n";
+	std::string motdEnd = ":I.R.SIUSIU 376 " + client->getNickname() + " :End of Message Of The Day\n";
 	send(client_socket, motdEnd.c_str(), motdEnd.size(), 0);
-	std::cout << "Sent MOTD end: " << motdEnd;
 }
