@@ -1,18 +1,3 @@
-<<<<<<< HEAD:src/Server.cpp
-=======
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Server.cpp                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: llaigle <llaigle@student.42.fr>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/05/16 16:23:59 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/30 12:47:01 by llaigle          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
->>>>>>> 5600489ace1c4462df6108b807f0d8c6b160b618:Server.cpp
 #include "Server.hpp"
 
 Server::Server() : _serverFd(-1), _serverName("I.R.SIUSIU") {}
@@ -197,11 +182,7 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 			else if (command == "MODE")
 				mode(client, lineStream);
 			else if (command == "INVITE")
-<<<<<<< HEAD:src/Server.cpp
 				invite(client, lineStream);
-=======
-				invite(client, lineStream, client_socket);
->>>>>>> 5600489ace1c4462df6108b807f0d8c6b160b618:Server.cpp
 			else if (command == "QUIT")
 				quit(client, lineStream);
 			else if (valread == 0)
