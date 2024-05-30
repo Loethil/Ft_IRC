@@ -49,11 +49,6 @@ void	Server::topic(Clients *client, std::istringstream &lineStream, int client_s
 			send(client->getSocket(), send_msg.c_str(), send_msg.size(), 0);
 		}
 	}
-	else
-	{
-		std::string errMsg = ":I.R.SIUSIU " + client->getNickname() + "TOPIC " + channelName + " :" RED "Command error. Use : TOPIC <channelName> [new_topic]\n" RESET;
-		send(client_socket, errMsg.c_str(), errMsg.length(), 0);
-	}
 }
 
 void Server::msg(Clients *client, std::istringstream &lineStream, char *buffer)
@@ -85,7 +80,7 @@ void Server::msg(Clients *client, std::istringstream &lineStream, char *buffer)
             }
 			if (currIt == client->getCurrConnected().end())
 			{
-				std::string send_msg = ":I.R.SIUSIU 442 " + client->getNickname() + dest + " :" RED "You are not connected to that channel.\n" RESET;
+				std::string send_msg = ":I.R.SIUSIU 442 " + client->getNickname() + dest + " :" RED "You aren't connected to that channel.\n" RESET;
 				send(client->getSocket(), send_msg.c_str(), send_msg.size(), 0);
 			}
         }
@@ -107,11 +102,6 @@ void Server::msg(Clients *client, std::istringstream &lineStream, char *buffer)
             send(client->getSocket(), errMsg.c_str(), errMsg.size(), 0);
         }
     }
-    else
-    {
-        std::string errMsg = "MSG command error. Use : MSG <destinataire> <message>\n";
-        send(client->getSocket(), errMsg.c_str(), errMsg.size(), 0);
-    }
 }
 
 void Server::invite(Clients *client, std::istringstream &lineStream, int client_socket)
@@ -119,16 +109,22 @@ void Server::invite(Clients *client, std::istringstream &lineStream, int client_
     std::string nickname;
     std::string channelName;
 
+	// Check de l'operator status
     // Lire le nom de l'utilisateur à inviter et le canal
     if (lineStream >> nickname >> channelName)
     {
+		if (_Channel[channelName].getOpStatus(client->getNickname()) == false)
+		{
+			std::string msg = ":I.R.SIUSIU PRIVMSG " + channelName + " :" RED "You're not an operator" RESET "\n";
+			send(client->getSocket(), msg.c_str(), msg.size(), 0);
+			return ;
+		}
         std::map<std::string, Channel>::iterator chanIt = _Channel.find(channelName);
         if (chanIt != _Channel.end())
         {
             Channel &channel = chanIt->second;
             
             // Vérifier si l'utilisateur qui envoie l'invitation est dans le canal
-            // Vérifier si l'utilisateur à inviter existe
             Clients* invitedClient = NULL;
             for(std::map<int, Clients*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
             {
@@ -165,12 +161,6 @@ void Server::invite(Clients *client, std::istringstream &lineStream, int client_
             send(client_socket, errMsg.c_str(), errMsg.length(), 0);
         }
     }
-    else
-    {
-        // La commande INVITE est mal formée
-        std::string errMsg = "INVITE command error. Use: INVITE <nickname> <channel>\n";
-        send(client_socket, errMsg.c_str(), errMsg.length(), 0);
-    }
 }
 
 void	Server::joinChannel(Clients *client, std::string channelName)
@@ -178,7 +168,8 @@ void	Server::joinChannel(Clients *client, std::string channelName)
 	// Add the client to the channel's connected users
 	_Channel[channelName].getConnUsers()[client->getNickname()] = client;
 	client->getCurrConnected().push_back(&_Channel[channelName]);
-
+	if (_Channel[channelName].getConnUsers().size() == 1)
+		_Channel[channelName].setOperator(client, true, client->getNickname());
 
 	// Notify all clients in the channel
 	std::string joinMessage = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU JOIN " + channelName + "\n";
@@ -222,7 +213,9 @@ void	Server::join(Clients *client, std::istringstream &lineStream, int client_so
 		if (channel.getInvite() == false)
 		{
 			if (channel.getPwd().empty())
+			{
 				joinChannel(client, channelName);
+			}
 			else
 			{
 				std::string pwd;
@@ -281,11 +274,6 @@ void	Server::join(Clients *client, std::istringstream &lineStream, int client_so
 			}
 		}
 	}
-	else
-	{
-		std::string errorMessage = "Usage: JOIN <channelName>\n";
-		send(client_socket, errorMessage.c_str(), errorMessage.length(), 0);
-	}
 }
 
 void Server::part(Clients *client, std::istringstream &lineStream)
@@ -340,11 +328,6 @@ void Server::part(Clients *client, std::istringstream &lineStream)
             std::string errMsg = "You're not on that channel\n";
             send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
         }
-    }
-    else
-    {
-        std::string errMsg = "Usage: PART <channelName> [message]\n";
-        send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
     }
 }
 
@@ -468,12 +451,6 @@ void	Server::mode(Clients *client, std::istringstream &lineStream)
 		send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
 		return ;
 	}
-	if (mode.empty() == true)
-	{
-		std::string errMsg = "No mode specified\n";
-		send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
-		return;
-	}
 	if (mode[0] == '+' || mode[0] == '-')
 	{
 		bool type = (mode[0] == '+') ? true : false;
@@ -511,10 +488,20 @@ void	Server::mode(Clients *client, std::istringstream &lineStream)
 				break;
 			case 'o':
 				{
-					std::string name;
-					lineStream >> name;
-					if (!name.empty())
-						(*currIt)->setOperator(name, type);
+					std::string newOp;
+					if (lineStream >> newOp)
+					{
+						for (std::vector<std::string>::iterator opIt = _Channel[chan].getOperator().begin(); opIt != _Channel[chan].getOperator().end(); ++opIt)
+						{
+							if ((*opIt).compare(client->getNickname()) == 0)
+							{
+								(*currIt)->setOperator(client, type, newOp);
+								return ;
+							}
+						}
+						std::string errMsg = ":I.R.SIUSIU PRIVMSG " + chan + " :You don't have the privilege to give operator rights\n";;
+						send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
+					}
 					else
 					{
 						std::string errMsg = (type ? "No operator specified for +o mode\n" : "No operator specified for -o mode\n");
@@ -547,11 +534,6 @@ void	Server::mode(Clients *client, std::istringstream &lineStream)
 				break;
 			}
 		}
-	}
-	else
-	{
-		std::string errMsg = "Invalid mode string\n";
-		send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
 	}
 }
 
