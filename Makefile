@@ -1,34 +1,29 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2024/05/16 15:51:04 by llaigle           #+#    #+#              #
-#    Updated: 2024/05/27 14:05:14 by scarpent         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
 NAME = ircserv
-CPP = main.cpp\
-	Clients.cpp\
-	Server.cpp\
-	Channel.cpp\
-	Commands.cpp
+SRC_DIR = src
+OBJ_DIR = obj
+INC_DIR = inc
 
-OOO = $(CPP:.cpp=.o)
+CPP = $(wildcard $(SRC_DIR)/*.cpp)
+OOO = $(CPP:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
-FLAG = -Wall -Wextra -Werror -std=c++98 -g
+FLAG = -Wall -Wextra -Werror -std=c++98 -g -I$(INC_DIR)
 
 all: $(NAME)
 
 $(NAME): $(OOO)
 	c++ $(OOO) $(FLAG) -o $(NAME)
-$(OOO): $(CPP)
-	c++ -c $(CPP) $(FLAG)
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
+	c++ -c $< $(FLAG) -o $@
+
+$(OBJ_DIR):
+	mkdir -p $(OBJ_DIR)
+
 clean:
-	rm -f $(OOO)
+	rm -f $(OBJ_DIR)/*.o
+	rmdir $(OBJ_DIR)
+
 fclean: clean
 	rm -f $(NAME)
+
 re: fclean all

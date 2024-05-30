@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Server.cpp                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: scarpent <scarpent@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/05/16 16:23:59 by llaigle           #+#    #+#             */
-/*   Updated: 2024/05/30 18:02:10 by scarpent         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "Server.hpp"
 
 Server::Server() : _serverFd(-1), _serverName("I.R.SIUSIU") {}
@@ -153,8 +141,8 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 	buffer[valread] = '\0';
 	Clients *client = _clients[client_socket];
 	client->partialData.append(buffer, valread);
+	
 	size_t pos;
-
 	while ((pos = client->partialData.find('\n')) != std::string::npos)
 	{
 		std::string line = client->partialData.substr(0, pos);

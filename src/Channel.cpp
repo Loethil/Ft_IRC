@@ -1,9 +1,9 @@
 #include "Channel.hpp"
 #include "Clients.hpp"
 
-Channel::Channel(std::string & chanName): _chanName(chanName), _topic(""), _invite(false), _topicMode(false), _pwd("") {}
+Channel::Channel(std::string & chanName): _chanName(chanName), _topic(""), _invite(false), _topicMode(false), _pwd(""), _maxUser(0) {}
 
-Channel::Channel():_chanName(""), _topic(""), _invite(false), _topicMode(false), _pwd("") {}
+Channel::Channel():_chanName(""), _topic(""), _invite(false), _topicMode(false), _pwd(""), _maxUser(0) {}
 
 Channel::~Channel()
 {
