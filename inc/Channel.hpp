@@ -14,6 +14,7 @@ class Channel
 		bool								_topicMode;
 		std::string							_pwd;
 		int									_maxUser;
+		int									_currentUser;
 		std::vector<std::string>			_operator;
 
     public:
@@ -38,6 +39,8 @@ class Channel
 
 		int									getMaxUser(void);
 		void								setMaxUser(int newMaxUser);
+		int									getCurrentUser(void);
+		void								setCurrentUser(bool key);
 
         void                                addInvite(const std::string& nickname);
         bool                                isInvited(const std::string& nickname);

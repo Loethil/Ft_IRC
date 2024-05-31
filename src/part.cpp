@@ -32,6 +32,7 @@ void Server::part(Clients *client, std::istringstream &lineStream)
             std::string partMessageFull;
             _Channel[channelName]->getConnUsers().erase(client->getNickname());
             connectedChannels.erase(it);
+			_Channel[channelName]->setCurrentUser(false);
 
             if (!partMessage.empty())
                 partMessageFull = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU PART " + channelName + " :" + partMessage + "\n";
@@ -66,6 +67,7 @@ void Server::part(Clients *client)
 		{
 			std::cerr << "Client found in channel: " << it->first << std::endl;
 			it->second->getConnUsers().erase(client->getNickname());
+			it->second->setCurrentUser(false);
 			if (_Channel[it->first]->getConnUsers().empty())
 			{
 				delete _Channel[it->first];
