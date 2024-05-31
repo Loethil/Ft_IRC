@@ -132,46 +132,51 @@ std::vector<std::string>&	Channel::getOperator()
 bool Channel::setOperator(Clients *client, bool key, std::string newOp)
 {
     std::vector<std::string>::iterator it;
-	std::map<std::string, Clients*>::iterator connIt = _connUsers.find(newOp);
-	if (connIt == _connUsers.end())
-	{
-		std::string msg = ":I.R.SIUSIU PRIVMSG " + _chanName + " :This client isn't connected on the channel\n";
-		send(client->getSocket(), msg.c_str(), msg.size(), 0);
-		return false;
-	}
-	int	newOpSocket = connIt->second->getSocket();
-	if (key)
-	{
-		for (it = this->_operator.begin(); it != this->_operator.end(); ++it) 
-		{
-			if (*it == newOp)
-			{
-				std::string msg = ":I.R.SIUSIU PRIVMSG " + _chanName + " :You already are an operator\n";
-				send(newOpSocket, msg.c_str(), msg.size(), 0);
-				return false; // user already operator
-			}
-		}
-		this->_operator.push_back(newOp);
-		std::string msg = ":I.R.SIUSIU PRIVMSG " + _chanName + " :You now are an operator\n";
-		send(newOpSocket, msg.c_str(), msg.size(), 0);
-		return true; // the user is successfully added
-	}
-	else
-	{
-		for (it = this->_operator.begin(); it != this->_operator.end(); ++it) 
-		{
-			if (*it == newOp)
-			{
-				this->_operator.erase(it);
-				std::string msg = ":I.R.SIUSIU PRIVMSG " + _chanName + " :You are not an operator anymore\n";
-				send(newOpSocket, msg.c_str(), msg.size(), 0);
-				return true; // user has been removed from operators
-			}
-		}
-		std::string msg = ":I.R.SIUSIU PRIVMSG " + _chanName + " :You weren't an operator\n";
-		send(newOpSocket, msg.c_str(), msg.size(), 0);
-		return false; // the user was not an operator
-	}
+    std::map<std::string, Clients*>::iterator connIt = _connUsers.find(newOp);
+    if (connIt == _connUsers.end())
+    {
+        std::string msg = ":I.R.SIUSIU " + client->getNickname() + " " + _chanName + " :This client isn't connected on the channel\n";
+        send(client->getSocket(), msg.c_str(), msg.size(), 0);
+        return false;
+    }
+    int newOpSocket = connIt->second->getSocket();
+    std::string notifyMsg;
+    if (key)
+    {
+        for (it = this->_operator.begin(); it != this->_operator.end(); ++it) 
+        {
+            if (*it == newOp)
+            {
+                std::string msg = ":I.R.SIUSIU " + _chanName + " :You already are an operator\n";
+                send(newOpSocket, msg.c_str(), msg.size(), 0);
+                return false;
+            }
+        }
+        this->_operator.push_back(newOp);
+        notifyMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU MODE " + _chanName + " +o " + newOp + "\n";
+        notifyChannel(notifyMsg);
+        std::string msg = ":I.R.SIUSIU " + _chanName + " :You now are an operator\n";
+        send(newOpSocket, msg.c_str(), msg.size(), 0);
+        return true;
+    }
+    else
+    {
+        for (it = this->_operator.begin(); it != this->_operator.end(); ++it) 
+        {
+            if (*it == newOp)
+            {
+                this->_operator.erase(it);
+                notifyMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU MODE " + _chanName + " -o " + newOp + "\n";
+                notifyChannel(notifyMsg);
+                std::string msg = ":I.R.SIUSIU " + _chanName + " :You are not an operator anymore\n";
+                send(newOpSocket, msg.c_str(), msg.size(), 0);
+                return true;
+            }
+        }
+        std::string msg = ":I.R.SIUSIU " + _chanName + " :You weren't an operator\n";
+        send(newOpSocket, msg.c_str(), msg.size(), 0);
+        return false;
+    }
 }
 
 std::ostream	&operator<<(std::ostream &o, Channel &rhs)

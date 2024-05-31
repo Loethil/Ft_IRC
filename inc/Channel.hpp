@@ -22,6 +22,8 @@ class Channel
 		Channel();
         ~Channel();
 
+		void    							notifyChannel(const std::string &message);
+
         std::string 						getChanName();
 		std::map<std::string, Clients *>	&getConnUsers(void);
 

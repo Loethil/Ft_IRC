@@ -48,6 +48,7 @@ class Server
         void	invite(Clients *client, std::istringstream &lineStream);
         void	joinChannel(Clients *client, std::string channelName);
         void	quit(Clients *client, std::istringstream &lineStream);
+		void	pong(Clients *client, const std::string &token);
 		
         void	mode(Clients *client, std::istringstream &lineStream);
         void	caseK(bool type, Clients *client, std::istringstream &lineStream, std::vector<Channel *>::iterator currIt);

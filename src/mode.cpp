@@ -55,7 +55,6 @@ void	Server::mode(Clients *client, std::istringstream &lineStream)
 	lineStream >> chan >> mode;
 	std::cout << "chan : " << chan << std::endl;
 	std::cout << "mode : " << mode << std::endl;
-	// std::cout << "name : " << name << std::endl;
 	for (currIt = client->getCurrConnected().begin(); currIt != client->getCurrConnected().end(); ++currIt)
 	{
 		if (chan == (*currIt)->getChanName())
