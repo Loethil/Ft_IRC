@@ -9,16 +9,16 @@ void Server::invite(Clients *client, std::istringstream &lineStream)
     // Lire le nom de l'utilisateur à inviter et le canal
     if (lineStream >> nickname >> channelName)
     {
-		if (_Channel[channelName].getOpStatus(client->getNickname()) == false)
+		if (_Channel[channelName]->getOpStatus(client->getNickname()) == false)
 		{
 			std::string msg = ":I.R.SIUSIU PRIVMSG " + channelName + " :" RED "You're not an operator" RESET "\n";
 			send(client->getSocket(), msg.c_str(), msg.size(), 0);
 			return ;
 		}
-        std::map<std::string, Channel>::iterator chanIt = _Channel.find(channelName);
+        std::map<std::string, Channel *>::iterator chanIt = _Channel.find(channelName);
         if (chanIt != _Channel.end())
         {
-            Channel &channel = chanIt->second;
+            Channel *channel = chanIt->second;
             
             // Vérifier si l'utilisateur qui envoie l'invitation est dans le canal
             Clients* invitedClient = NULL;
@@ -33,7 +33,7 @@ void Server::invite(Clients *client, std::istringstream &lineStream)
             if (invitedClient != NULL)
             {
                 // Ajouter l'utilisateur à la liste des invitations du canal
-                channel.addInvite(nickname);
+                channel->addInvite(nickname);
 
                 // Envoyer un message à l'utilisateur invité
                 std::string inviteMessage = ":I.R.SIUSIU 341 " + client->getNickname() + " " + nickname + " " + channelName + "\n";

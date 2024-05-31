@@ -7,12 +7,9 @@ Channel::Channel():_chanName(""), _topic(""), _invite(false), _topicMode(false),
 
 Channel::~Channel()
 {
-	// if (!_connUsers.empty())
-	// {
-	// 	for (std::map<std::string, Clients *>::iterator delIt = _connUsers.begin(); delIt != _connUsers.end(); ++delIt)
-	// 		delete delIt->second;
-	// 	_connUsers.clear();
-	// }
+	 _connUsers.clear();
+	 _invitedUsers.clear();
+	 _operator.clear();
 }
 
 std::string   Channel::getChanName()

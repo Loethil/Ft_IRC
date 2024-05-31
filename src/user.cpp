@@ -4,7 +4,8 @@
 void	Server::user(Clients *client, std::istringstream &lineStream)
 {
 	std::string user, mode, unused, realname;
-	lineStream >> user >> mode >> unused >> realname;
+	lineStream >> user >> mode >> unused;
+	std::getline(lineStream, realname);
 	if (!realname.empty() && realname[0] == ' ' && realname[1] == ':')
 		realname.erase(0, 2);
 	client->setUsername(user);
