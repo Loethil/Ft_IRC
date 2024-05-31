@@ -42,6 +42,7 @@ void Server::quit(Clients *client, std::istringstream &lineStream)
 	for (chIt = client->getCurrConnected().begin(); chIt != client->getCurrConnected().end(); ++chIt)
 		part(client);
 	client->getCurrConnected().clear();
+
 	// Supprimer le client de la liste des clients du serveur
 	// Fermer la socket du client
 	std::map<int, Clients*>::iterator it = _clients.find(client->getSocket());

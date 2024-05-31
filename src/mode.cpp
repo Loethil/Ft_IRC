@@ -96,23 +96,23 @@ void	Server::mode(Clients *client, std::istringstream &lineStream)
 				case 'o':
 					caseO(type, client, lineStream, currIt, chan);
 					break;
-				// case 'l':
-				// 	if (type)
-				// 	{
-				// 		int userLimit;
-				// 		lineStream >> userLimit;
-				// 		if (lineStream.fail())
-				// 		{
-				// 			std::string errMsg = "No user limit specified for +l mode\n";
-				// 			send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
-				// 			lineStream.clear();
-				// 		}
-				// 		else
-				// 			(*currIt)->setUserLimit(userLimit);
-				// 	}
-				// 	else
-				// 		(*currIt)->setUserLimit(0);
-				// 	break;
+				case 'l':
+					if (type)
+					{
+						int userLimit;
+						lineStream >> userLimit;
+						if (lineStream.fail())
+						{
+							std::string errMsg = "No user limit specified for +l mode\n";
+							send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
+							lineStream.clear();
+						}
+						else
+							(*currIt)->setMaxUser(userLimit);
+					}
+					else
+						(*currIt)->setMaxUser(0);
+					break;
 				default:
 				{
 					std::string errMsg = "This option is not handled, see IRC subject\n";
@@ -123,3 +123,4 @@ void	Server::mode(Clients *client, std::istringstream &lineStream)
 		}
 	}
 }
+

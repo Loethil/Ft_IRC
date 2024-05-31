@@ -2,9 +2,19 @@
 
 void	Server::joinChannel(Clients *client, std::string channelName)
 {
+	if (_Channel[channelName]->getMaxUser() != 0)
+	{
+		if (_Channel[channelName]->getCurrentUser() >= _Channel[channelName]->getMaxUser())
+		{
+			std::string errMsg = ":I.R.SIUSIU 471 " + client->getNickname() + " " + channelName + " :Channel is full\n";
+			send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
+			return ;
+		}
+	}
 	// Add the client to the channel's connected users
 	_Channel[channelName]->getConnUsers()[client->getNickname()] = client;
 	client->getCurrConnected().push_back(_Channel[channelName]);
+	_Channel[channelName]->setCurrentUser(true);
 	if (_Channel[channelName]->getConnUsers().size() == 1)
 		_Channel[channelName]->setOperator(client, true, client->getNickname());
 

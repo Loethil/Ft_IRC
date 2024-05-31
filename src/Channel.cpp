@@ -1,9 +1,9 @@
 #include "Channel.hpp"
 #include "Clients.hpp"
 
-Channel::Channel(std::string & chanName): _chanName(chanName), _topic(""), _invite(false), _topicMode(false), _pwd(""), _maxUser(0) {}
+Channel::Channel(std::string & chanName): _chanName(chanName), _topic(""), _invite(false), _topicMode(false), _pwd(""), _maxUser(0), _currentUser(0) {}
 
-Channel::Channel():_chanName(""), _topic(""), _invite(false), _topicMode(false), _pwd(""), _maxUser(0) {}
+Channel::Channel():_chanName(""), _topic(""), _invite(false), _topicMode(false), _pwd(""), _maxUser(0), _currentUser(0) {}
 
 Channel::~Channel()
 {
@@ -98,6 +98,19 @@ int		Channel::getMaxUser(void)
 void	Channel::setMaxUser(int newMaxUser)
 {
 	this->_maxUser = newMaxUser;
+}
+
+int		Channel::getCurrentUser(void)
+{
+	return (this->_currentUser);
+}
+
+void	Channel::setCurrentUser(bool key)
+{
+	if (key)
+		this->_currentUser += 1;
+	else if (this->_currentUser > 0)
+		this->_currentUser -= 1;
 }
 
 bool	Channel::getOpStatus(std::string op)
