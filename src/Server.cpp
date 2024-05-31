@@ -184,14 +184,12 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 			else if (command == "QUIT")
 				quit(client, lineStream);
 			else if (command == "PING")
-				pong(client);
+			{
+				std::string token;
+				lineStream >> token;
+				pong(client, token);
+			}
 			return ;
 		}
 	}
-}
-
-void	Server::pong(Clients *client)
-{
-	std::string msg = client->getNickname() + " PONG server/n";
-	send(client->getSocket(), msg.c_str(), msg.size(), 0);
 }
