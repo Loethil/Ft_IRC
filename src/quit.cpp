@@ -73,9 +73,6 @@ void Server::quit(Clients *client, std::istringstream &lineStream)
     // Utiliser un vector pour suivre les sockets déjà notifiées
     std::vector<int> notifiedSockets;
 
-    // Utiliser un conteneur temporaire pour stocker les canaux à vérifier pour suppression
-    std::vector<std::string> channelsToRemove;
-
     // Parcourir tous les canaux pour trouver et supprimer le client
     for (std::map<std::string, Channel>::iterator it = _Channel.begin(); it != _Channel.end();)
     {
@@ -99,29 +96,26 @@ void Server::quit(Clients *client, std::istringstream &lineStream)
             // Vérifier si le canal est vide après la suppression du client
             if (it->second.getConnUsers().empty())
             {
-                channelsToRemove.push_back(it->first);
+                it = _Channel.erase(it); // retourne un nouvel itérateur valide
+            }
+            else
+            {
+                ++it;
             }
         }
-
-        // Avancer l'itérateur de manière sûre
-        ++it;
+        else
+        {
+            ++it;
+        }
     }
 
-    // Supprimer les canaux vides
-    for (size_t i = 0; i < channelsToRemove.size(); ++i)
-    {
-        _Channel.erase(channelsToRemove[i]);
-    }
-
-    // Supprimer le client de la liste des clients du serveur et fermer la socket du client
+    // Supprimer le client de la liste des clients du serveur
     std::map<int, Clients*>::iterator clientIt = _clients.find(client->getSocket());
     if (clientIt != _clients.end())
     {
-        close(client->getSocket());
-        delete clientIt->second;
+        delete clientIt->second;  // Le destructeur fermera la socket
         _clients.erase(clientIt);
     }
 
     std::cout << "Client " << client->getNickname() << " has disconnected." << std::endl;
 }
-

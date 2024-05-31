@@ -4,7 +4,8 @@ Clients::Clients(void) {}
 
 Clients::~Clients(void)
 {
-	
+	_Status = status::USERNAME;
+	close(_Socket);
 }
 
 int	Clients::getSocket(void)
@@ -54,7 +55,7 @@ Clients::status		Clients::getStatus(void)
 
 void		Clients::setStatus(status new_status)
 {
-	this->_Status = new_status;
+	_Status = new_status;
 }
 
 std::vector<Channel *>&		Clients::getCurrConnected(void)
