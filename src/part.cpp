@@ -55,38 +55,37 @@ void Server::part(Clients *client, std::istringstream &lineStream)
     }
 }
 
-//c'est le part pour le /quit celui la
-void Server::part(Clients *client)
-{
-    std::cerr << "Part command received from client: " << client->getNickname() << std::endl;
+// //c'est le part pour le /quit celui la
+// void Server::part(Clients *client)
+// {
+//     std::cerr << "Part command received from client: " << client->getNickname() << std::endl;
 
-    // Utiliser un conteneur temporaire pour stocker les canaux à vérifier pour suppression
-    std::vector<std::string> channelsToRemove;
+//     // Utiliser un conteneur temporaire pour stocker les canaux à vérifier pour suppression
+//     std::vector<std::string> channelsToRemove;
 
-    // Parcourir tous les canaux pour trouver et supprimer le client
-    for (std::map<std::string, Channel>::iterator it = _Channel.begin(); it != _Channel.end(); ++it)
-    {
-        if (it->second.getConnUsers().find(client->getNickname()) != it->second.getConnUsers().end())
-        {
-            std::cerr << "Client found in channel: " << it->first << std::endl;
-            it->second.getConnUsers().erase(client->getNickname());
+//     // Parcourir tous les canaux pour trouver et supprimer le client
+//     for (std::map<std::string, Channel>::iterator it = _Channel.begin(); it != _Channel.end(); ++it)
+//     {
+//         if (it->second.getConnUsers().find(client->getNickname()) != it->second.getConnUsers().end())
+//         {
+//             std::cerr << "Client found in channel: " << it->first << std::endl;
+//             it->second.getConnUsers().erase(client->getNickname());
             
-            // Vérifier si le canal est vide après la suppression du client
-            if (it->second.getConnUsers().empty())
-            {
-                channelsToRemove.push_back(it->first); // Ajouter le canal à la liste de suppression
-                it->second.getConnUsers().clear();
-            }
-        }
-        else
-        {
-            std::cerr << "Client not found in channel: " << it->first << std::endl;
-        }
-    }
-
-    // Supprimer les canaux vides
-    for (size_t i = 0; i < channelsToRemove.size(); ++i)
-    {
-        _Channel.erase(channelsToRemove[i]);
-    }
-}
+//             // Vérifier si le canal est vide après la suppression du client
+//             if (it->second.getConnUsers().empty())
+//             {
+//                 channelsToRemove.push_back(it->first); // Ajouter le canal à la liste de suppression
+//                 it->second.getConnUsers().clear();
+//             }
+//         }
+//         else
+//         {
+//             std::cerr << "Client not found in channel: " << it->first << std::endl;
+//         }
+//     }
+//     // Supprimer les canaux vides
+//     for (size_t i = 0; i < channelsToRemove.size(); ++i)
+//     {
+//         _Channel.erase(channelsToRemove[i]);
+//     }
+// }

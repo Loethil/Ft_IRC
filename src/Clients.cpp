@@ -4,7 +4,7 @@ Clients::Clients(void) {}
 
 Clients::~Clients(void)
 {
-	//close(this->getSocket());
+	
 }
 
 int	Clients::getSocket(void)
