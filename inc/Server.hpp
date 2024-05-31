@@ -26,38 +26,40 @@ class Server
         std::map<int , Clients *>           _clients;
         struct sockaddr_in                  _clientAdr;
         struct sockaddr_in                  _serverAdr;
-		std::map<std::string, Channel *>		_Channel;
+		std::map<std::string, Channel *>	_Channel;
 
     public:
 
         Server();
         ~Server();
-        void    start(int port);
-        void    acceptNewConnection();
-        void	handleClientMessage(int client_socket, Clients::status status);
-        void    sendWelcomeMessages(int client_socket, Clients *client);
-		void	user(Clients *client, std::istringstream &lineStream);
-		void	nick(Clients *client, std::istringstream &lineStream);
-		bool	pass(Clients *client, std::istringstream &lineStream);
-		void	join(Clients *client, std::istringstream &lineStream);
-        void    msg(Clients *client, std::istringstream &lineStream, char *buffer);
-        void    run();
-        void    part(Clients *client, std::istringstream &lineStream);
-        void    part(Clients *client, std::string channelName);
-		void	part(Clients *client);
-        void    topic(Clients *client, std::istringstream &lineStream);
-        void	invite(Clients *client, std::istringstream &lineStream);
-        void	joinChannel(Clients *client, std::string channelName);
-        void	quit(Clients *client, std::istringstream &lineStream);
-		void	pong(Clients *client, const std::string &token);
-        void	kick(Clients *client, std::istringstream &lineStream);
+        void    	start(int port);
+        void    	acceptNewConnection();
+        void		handleClientMessage(int client_socket, Clients::status status);
+        void    	sendWelcomeMessages(int client_socket, Clients *client);
+		void		user(Clients *client, std::istringstream &lineStream);
+		void		nick(Clients *client, std::istringstream &lineStream);
+		bool		pass(Clients *client, std::istringstream &lineStream);
+		void		join(Clients *client, std::istringstream &lineStream);
+        void    	msg(Clients *client, std::istringstream &lineStream, char *buffer);
+        void   		run();
+        void    	part(Clients *client, std::istringstream &lineStream);
+        void    	part(Clients *client, std::string channelName);
+		void		part(Clients *client);
+        void    	topic(Clients *client, std::istringstream &lineStream);
+        void		invite(Clients *client, std::istringstream &lineStream);
+        void		joinChannel(Clients *client, std::string channelName);
+        void		quit(Clients *client, std::istringstream &lineStream);
+		void		pong(Clients *client, const std::string &token);
+        void		kick(Clients *client, std::istringstream &lineStream);
 		
-        void	mode(Clients *client, std::istringstream &lineStream);
-        void	caseK(bool type, Clients *client, std::istringstream &lineStream, std::vector<Channel *>::iterator currIt);
-        void	caseO(bool type, Clients *client, std::istringstream &lineStream, std::vector<Channel *>::iterator currIt, std::string chan);
+        void		mode(Clients *client, std::istringstream &lineStream);
+        void		caseK(bool type, Clients *client, std::istringstream &lineStream, std::vector<Channel *>::iterator currIt);
+        void		caseO(bool type, Clients *client, std::istringstream &lineStream, std::vector<Channel *>::iterator currIt, std::string chan);
+
+		static void	sigInt_Hdl(int signo);
 
         std::string getPwd();
 
-        void    setPwd(std::string pwd);
-        void    setPort(int port);
+        void    	setPwd(std::string pwd);
+        void    	setPort(int port);
 };

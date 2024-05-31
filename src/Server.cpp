@@ -1,21 +1,17 @@
 #include "Server.hpp"
 
+static bool sigStop = false;
+
 Server::Server() : _serverFd(-1), _serverName("I.R.SIUSIU") {}
 
 Server::~Server()
 {
+	// for (size_t i = 0; i < _clients.size(); ++i)
+	// 	close(_clients[i]->getSocket());
+	_clients.clear();
+	_Channel.clear();
 	if (_serverFd != -1)
 		close(_serverFd);
-	for (size_t i = 0; i < _clients.size(); ++i)
-		close(_clients[i]->getSocket());
-	if (!_clients.empty())
-	{
-		for (std::map<int, Clients *>::iterator delIt = _clients.begin(); delIt != _clients.end(); ++delIt)
-		{
-			delete delIt->second;
-		}
-		_clients.clear();
-	}
 }
 
 std::string Server::getPwd()
@@ -40,7 +36,7 @@ void	Server::start(int port)
 	_serverFd = socket(AF_INET, SOCK_STREAM, 0);
 	if (_serverFd == -1)
 	{
-		std::cerr << "Socket failed" << std::endl;
+		throw std::runtime_error("Socket failed\n");
 		exit(EXIT_FAILURE);
 	}
 	// fcntl(_serverFd, F_SETFL, O_NONBLOCK);
@@ -50,13 +46,13 @@ void	Server::start(int port)
 	if (bind(_serverFd, (struct sockaddr *)&_serverAdr, sizeof(_serverAdr)) < 0)
 	{
 		close(_serverFd);
-		throw std::runtime_error("Bind failed");
+		throw std::runtime_error("Bind failed\n");
 		exit(EXIT_FAILURE);
 	}
 	if (listen(_serverFd, 3) < 0)
 	{
 		close(_serverFd);
-		throw std::runtime_error("Listen failed");
+		throw std::runtime_error("Listen failed\n");
 		exit(EXIT_FAILURE);
 	}
 	std::cout << "The server started with success !" << std::endl;
@@ -67,7 +63,7 @@ void	Server::run()
 {
 	if (_serverFd == -1)
 	{
-		throw std::runtime_error("Server not initialized");
+		throw std::runtime_error("Server not initialized\n");
 		return;
 	}
 
@@ -77,13 +73,14 @@ void	Server::run()
 	server_pollfd.fd = _serverFd;
 	server_pollfd.events = POLLIN;
 	pollfds.push_back(server_pollfd);
+	signal(SIGINT, Server::sigInt_Hdl);
 
-	while (true)
+	while (sigStop == 0)
 	{
 		int poll_count = poll(pollfds.data(), pollfds.size(), -1);
 		if (poll_count < 0)
 		{
-			throw std::runtime_error("Poll error");
+			throw std::runtime_error("Poll error\n");
 			exit(EXIT_FAILURE);
 		}
 		for (size_t i = 0; i < pollfds.size(); ++i)
@@ -129,7 +126,7 @@ void	Server::acceptNewConnection()
 //fonction qui gere toutes les entrees de l'utilisateur 
 void Server::handleClientMessage(int client_socket, Clients::status status)
 {
-	char buffer[BUFFER_SIZE + 1]; // +1 for null terminator
+	char buffer[BUFFER_SIZE];
 	ssize_t valread = read(client_socket, buffer, BUFFER_SIZE);
 	if (valread <= 0)
 	{
@@ -193,5 +190,14 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 			}
 			return ;
 		}
+	}
+}
+
+void    Server::sigInt_Hdl(int signo)
+{
+    if (signo == SIGINT)
+	{
+        sigStop = true;
+		std::cerr << "\b\b  \b\b" << std::endl;
 	}
 }
