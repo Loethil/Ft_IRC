@@ -4,12 +4,6 @@ Clients::Clients(void) {}
 
 Clients::~Clients(void)
 {
-	if (!_currConnected.empty())
-	{
-		for (std::vector<Channel *>::iterator delIt = _currConnected.begin(); delIt != _currConnected.end(); ++delIt)
-			delete *delIt;
-		_currConnected.clear();
-	}
 	close(this->getSocket());
 }
 

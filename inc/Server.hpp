@@ -43,7 +43,7 @@ class Server
         void    msg(Clients *client, std::istringstream &lineStream, char *buffer);
         void    run();
         void    part(Clients *client, std::istringstream &lineStream);
-        void    part(Clients *client, std::string channelName);
+		void	part(Clients *client);
         void    topic(Clients *client, std::istringstream &lineStream);
         void	invite(Clients *client, std::istringstream &lineStream);
         void	joinChannel(Clients *client, std::string channelName);
