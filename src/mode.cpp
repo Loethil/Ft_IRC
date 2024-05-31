@@ -28,7 +28,7 @@ void	Server::caseO(bool type, Clients *client, std::istringstream &lineStream, s
 	std::string newOp;
 	if (lineStream >> newOp)
 	{
-		for (std::vector<std::string>::iterator opIt = _Channel[chan].getOperator().begin(); opIt != _Channel[chan].getOperator().end(); ++opIt)
+		for (std::vector<std::string>::iterator opIt = _Channel[chan]->getOperator().begin(); opIt != _Channel[chan]->getOperator().end(); ++opIt)
 		{
 			if ((*opIt).compare(client->getNickname()) == 0)
 			{

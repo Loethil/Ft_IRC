@@ -16,10 +16,10 @@ void	Server::topic(Clients *client, std::istringstream &lineStream)
 		}
 		else
 		{
-			if (_Channel[channelName].getTopic().size() > 0)
+			if (_Channel[channelName]->getTopic().size() > 0)
 			{
-				std::string fullTopicMessage = ":I.R.SIUSIU 332 " + client->getNickname() + " " + channelName + " :" + _Channel[channelName].getTopic() + "\n";
-				send(client->getSocket(), fullTopicMessage.c_str(), _Channel[channelName].getTopic().length(), 0);
+				std::string fullTopicMessage = ":I.R.SIUSIU 332 " + client->getNickname() + " " + channelName + " :" + _Channel[channelName]->getTopic() + "\n";
+				send(client->getSocket(), fullTopicMessage.c_str(), _Channel[channelName]->getTopic().length(), 0);
 			}
 			return ;
 		}
@@ -40,7 +40,7 @@ void	Server::topic(Clients *client, std::istringstream &lineStream)
 			(*it)->setTopic(newTopic);
 			// Notify all members of the channel about the topic change
 			std::string fullTopicMessage = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU TOPIC " + channelName + " " + newTopic + "\n";
-			for (std::map<std::string, Clients*>::iterator connIt = _Channel[channelName].getConnUsers().begin(); connIt != _Channel[channelName].getConnUsers().end(); ++connIt)
+			for (std::map<std::string, Clients*>::iterator connIt = _Channel[channelName]->getConnUsers().begin(); connIt != _Channel[channelName]->getConnUsers().end(); ++connIt)
 				send(connIt->second->getSocket(), fullTopicMessage.c_str(), fullTopicMessage.length(), 0);
 		}
 		else

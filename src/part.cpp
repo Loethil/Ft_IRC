@@ -30,20 +30,20 @@ void Server::part(Clients *client, std::istringstream &lineStream)
         {
             std::cerr << "Client found in channel: " << channelName << std::endl;
             std::string partMessageFull;
-            _Channel[channelName].getConnUsers().erase(client->getNickname());
+            _Channel[channelName]->getConnUsers().erase(client->getNickname());
             connectedChannels.erase(it);
 
             if (!partMessage.empty())
                 partMessageFull = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU PART " + channelName + " :" + partMessage + "\n";
             else
                 partMessageFull = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU PART " + channelName + " :\n";
-            for (std::map<std::string, Clients*>::iterator connIt = _Channel[channelName].getConnUsers().begin(); connIt != _Channel[channelName].getConnUsers().end(); ++connIt)
-            {
+            for (std::map<std::string, Clients*>::iterator connIt = _Channel[channelName]->getConnUsers().begin(); connIt != _Channel[channelName]->getConnUsers().end(); ++connIt)
                 send(connIt->second->getSocket(), partMessageFull.c_str(), partMessageFull.length(), 0);
-            }
-			if (_Channel[channelName].getConnUsers().empty())
-                _Channel.erase(channelName);
-
+			if (_Channel[channelName]->getConnUsers().empty())
+			{
+				delete _Channel[channelName];
+				_Channel.erase(channelName);
+			}
             send(client->getSocket(), partMessageFull.c_str(), partMessageFull.length(), 0);
         }
         else
@@ -60,14 +60,17 @@ void Server::part(Clients *client)
 {
     std::cerr << "Part command received from client: " << client->getNickname() << std::endl;
 
-	for (std::map<std::string, Channel>::iterator it = _Channel.begin(); it != _Channel.end(); ++it)
+	for (std::map<std::string, Channel *>::iterator it = _Channel.begin(); it != _Channel.end(); ++it)
 	{
-		if (it->second.getConnUsers().find(client->getNickname()) != it->second.getConnUsers().end())
+		if (it->second->getConnUsers().find(client->getNickname()) != it->second->getConnUsers().end())
 		{
 			std::cerr << "Client found in channel: " << it->first << std::endl;
-			it->second.getConnUsers().erase(client->getNickname());
-			// if (_Channel[it->first].getConnUsers().empty())
-			// 	_Channel.erase(it->first);
+			it->second->getConnUsers().erase(client->getNickname());
+			if (_Channel[it->first]->getConnUsers().empty())
+			{
+				delete _Channel[it->first];
+				_Channel.erase(it->first);
+			}
 		}
 		else
 			std::cerr << "Client not found in channel: " << it->first << std::endl;

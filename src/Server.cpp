@@ -131,7 +131,7 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 {
 	char buffer[BUFFER_SIZE + 1]; // +1 for null terminator
 	ssize_t valread = read(client_socket, buffer, BUFFER_SIZE);
-	if (valread < 0)
+	if (valread <= 0)
 	{
 		throw std::runtime_error("Read failed");
 		close(client_socket);
@@ -175,8 +175,6 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 				msg(client, lineStream, buffer);
 			else if (command == "TOPIC")
 				topic(client, lineStream);
-			else if (command == "NICK")
-				nick(client, lineStream);
 			else if (command == "PART")
 				part(client, lineStream);
 			else if (command == "MODE")
@@ -185,7 +183,15 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 				invite(client, lineStream);
 			else if (command == "QUIT")
 				quit(client, lineStream);
+			else if (command == "PING")
+				pong(client);
 			return ;
 		}
 	}
+}
+
+void	Server::pong(Clients *client)
+{
+	std::string msg = client->getNickname() + " PONG server/n";
+	send(client->getSocket(), msg.c_str(), msg.size(), 0);
 }

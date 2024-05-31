@@ -47,7 +47,6 @@ void Server::quit(Clients *client, std::istringstream &lineStream)
 	std::map<int, Clients*>::iterator it = _clients.find(client->getSocket());
 	if (it != _clients.end())
 	{
-		close(client->getSocket());
 		delete it->second;
 		_clients.erase(it->first);
 	}
