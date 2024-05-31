@@ -15,8 +15,8 @@ bool	Server::pass(Clients *client, std::istringstream &lineStream)
 		std::string errormsg = ":I.R.SIUSIU 300 " + client->getNickname() + " :Invalid password, try again...\n";
 		send(client->getSocket(), errormsg.c_str(), errormsg.size(), 0);
 		close(client->getSocket());
-		delete _clients[client->getSocket()];
-		_clients.erase(client->getSocket());
+		// delete _clients[client->getSocket()];
+		// _clients.erase(client->getSocket());
 		return (false);
 	}
 }

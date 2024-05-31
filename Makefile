@@ -21,7 +21,7 @@ $(OBJ_DIR):
 
 clean:
 	rm -f $(OBJ_DIR)/*.o
-	rmdir $(OBJ_DIR)
+	rm -rf $(OBJ_DIR)
 
 fclean: clean
 	rm -f $(NAME)
