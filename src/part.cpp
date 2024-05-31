@@ -1,5 +1,6 @@
 #include "Server.hpp"
 
+//commande part de base
 void Server::part(Clients *client, std::istringstream &lineStream)
 {
     std::string channelName;
@@ -77,4 +78,29 @@ void Server::part(Clients *client)
 		else
 			std::cerr << "Client not found in channel: " << it->first << std::endl;
 	}
+}
+
+//part du kick
+void Server::part(Clients *client, std::string channelName)
+{
+    std::vector<Channel *> &connectedChannels = client->getCurrConnected();
+    std::vector<Channel *>::iterator it = connectedChannels.end();
+
+    for (std::vector<Channel *>::iterator iter = connectedChannels.begin(); iter != connectedChannels.end(); ++iter)
+    {
+        if ((*iter)->getChanName() == channelName)
+        {
+            it = iter;
+            break;
+        }
+    }
+    if (it != connectedChannels.end())
+    {
+        std::string partMessageFull = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU PART " + channelName + " :\n";
+        send(client->getSocket(), partMessageFull.c_str(), partMessageFull.length(), 0);
+        // Supprimer l'utilisateur de la liste des utilisateurs connectés au canal
+		_Channel[channelName]->setCurrentUser(false);
+        _Channel[channelName]->getConnUsers().erase(client->getNickname());
+        connectedChannels.erase(it);
+    }
 }
