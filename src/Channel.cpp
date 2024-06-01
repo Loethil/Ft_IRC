@@ -7,9 +7,9 @@ Channel::Channel():_chanName(""), _topic(""), _invite(false), _topicMode(false),
 
 Channel::~Channel()
 {
-	_connUsers.clear();
-	_invitedUsers.clear();
-	_operator.clear();
+	// _connUsers.clear();
+	// _invitedUsers.clear();
+	// _operator.clear();
 }
 
 std::string   Channel::getChanName()

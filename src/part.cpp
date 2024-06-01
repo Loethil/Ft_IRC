@@ -62,22 +62,21 @@ void Server::part(Clients *client)
 {
     std::cerr << "Part command received from client: " << client->getNickname() << std::endl;
 
-	for (std::map<std::string, Channel *>::iterator it = _Channel.begin(); it != _Channel.end(); ++it)
-	{
-		if (it->second->getConnUsers().find(client->getNickname()) != it->second->getConnUsers().end())
-		{
-			std::cerr << "Client found in channel: " << it->first << std::endl;
-			it->second->getConnUsers().erase(client->getNickname());
-			it->second->setCurrentUser(false);
-			if (_Channel[it->first]->getConnUsers().empty())
-			{
-				delete _Channel[it->first];
-				_Channel.erase(it->first);
-			}
-		}
-		else
-			std::cerr << "Client not found in channel: " << it->first << std::endl;
-	}
+    std::map<std::string, Channel*> channelMap = _Channel;
+    std::map<std::string, Channel*>::iterator it;
+    for (it = channelMap.begin(); it != channelMap.end(); ++it)
+    {
+        if (it->second->getConnUsers().find(client->getNickname()) != it->second->getConnUsers().end())
+        {
+            std::cerr << "Client found in channel: " << it->first << std::endl;
+            //it->second->getConnUsers().erase(client->getNickname());
+            it->second->setCurrentUser(false);
+            if (channelMap[it->first]->getConnUsers().size() == 0)
+                delete channelMap[it->first];
+        }
+        else
+            std::cerr << "Client not found in channel: " << it->first << std::endl;
+    }
 }
 
 //part du kick

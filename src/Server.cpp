@@ -72,15 +72,7 @@ void	Server::run()
 	{
 		int poll_count = poll(pollfds.data(), pollfds.size(), -1);
 		if (poll_count < 0)
-		{
-			//throw std::runtime_error("Poll error\n");
-			// if (client_pollfd.fd != -1)
-			// 	close(client_pollfd.fd);
-			// if (server_pollfd.fd != -1)
-			// 	close(server_pollfd.fd);
-			// exit(EXIT_FAILURE);
 			break ;
-		}
 		for (size_t i = 0; i < pollfds.size(); ++i)
 		{
 			if (pollfds[i].revents & POLLIN)
@@ -105,6 +97,14 @@ void	Server::run()
 		close(client_pollfd.fd);
 	if (server_pollfd.fd != -1)
 		close(server_pollfd.fd);
+	if (_clients.size() > 0)
+	{
+		std::map<int, Clients*> clientMap = _clients;
+		std::map<int, Clients*>::iterator it;
+		std::istringstream line;
+		for (it = clientMap.begin(); it != clientMap.end(); ++it)
+			quit(it->second, line);
+	}
 }
 
 //fonction permettant d'accepter de nouveau clients et de lui donner ses bons parametres
