@@ -27,7 +27,7 @@ void Server::kick(Clients *client, std::istringstream &lineStream)
         // Vérifier si l'utilisateur qui effectue le kick est un opérateur
         if (!channel->getOpStatus(client->getNickname()))
         {
-            std::string msg = ":I.R.SIUSIU PRIVMSG " + channelName + " :You're not an operator\n";
+            std::string msg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU NOTICE " + channelName + " :You're not an operator\n";
             send(client->getSocket(), msg.c_str(), msg.size(), 0);
             return;
         }
@@ -45,7 +45,7 @@ void Server::kick(Clients *client, std::istringstream &lineStream)
         if (kickedClient == NULL)
         {
             // L'utilisateur à expulser n'existe pas
-            std::string errMsg = "User " + nickname + " does not exist\n";
+            std::string errMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU NOTICE " + channelName + " :User " + nickname + " does not exist\n";
             send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
             return;
         }
@@ -54,7 +54,7 @@ void Server::kick(Clients *client, std::istringstream &lineStream)
         if (channel->getConnUsers().find(kickedClient->getNickname()) == channel->getConnUsers().end())
         {
             // L'utilisateur à expulser n'est pas dans le canal
-            std::string errMsg = "User " + nickname + " is not in channel " + channelName + "\n";
+            std::string errMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU NOTICE " + channelName + " :User " + nickname + " is not in channel " + channelName + "\n";
             send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
             return;
         }
@@ -74,7 +74,7 @@ void Server::kick(Clients *client, std::istringstream &lineStream)
     }
     else
     {
-        std::string errMsg = "Usage: KICK <channel> <user> [<reason>]\n";
+        std::string errMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU NOTICE " + channelName + " :Usage: KICK <channel> <user> [<reason>]\n";
         send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
     }
 }

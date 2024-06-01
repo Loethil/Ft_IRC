@@ -51,7 +51,7 @@ void Server::part(Clients *client, std::istringstream &lineStream)
         else
         {
             std::cerr << "Client not found in channel: " << channelName << std::endl;
-            std::string errMsg = "You're not on that channel\n";
+            std::string errMsg = RED "You're not on that channel" RESET "\n";
             send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
         }
     }

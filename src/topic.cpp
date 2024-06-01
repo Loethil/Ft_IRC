@@ -16,7 +16,7 @@ void	Server::topic(Clients *client, std::istringstream &lineStream)
 		}
 		else
 		{
-			if (_Channel[channelName]->getTopic().size() > 0)
+			if (_Channel[channelName]->getTopic().size() > 0 && _Channel[channelName]->getConnUsers().find(client->getNickname()) != _Channel[channelName]->getConnUsers().end())
 			{
 				std::string fullTopicMessage = ":I.R.SIUSIU 332 " + client->getNickname() + " " + channelName + " :" + _Channel[channelName]->getTopic() + "\n";
 				send(client->getSocket(), fullTopicMessage.c_str(), _Channel[channelName]->getTopic().length(), 0);

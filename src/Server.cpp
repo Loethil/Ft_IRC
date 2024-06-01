@@ -80,7 +80,7 @@ void	Server::run()
 		int poll_count = poll(pollfds.data(), pollfds.size(), -1);
 		if (poll_count < 0)
 		{
-			throw std::runtime_error("Poll error\n");
+			//throw std::runtime_error("Poll error\n");
 			exit(EXIT_FAILURE);
 		}
 		for (size_t i = 0; i < pollfds.size(); ++i)
