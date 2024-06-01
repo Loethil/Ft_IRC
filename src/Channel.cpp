@@ -116,10 +116,13 @@ void	Channel::setCurrentUser(bool key)
 bool	Channel::getOpStatus(std::string op)
 {
 	std::vector<std::string>::iterator it;
-	for (it = this->_operator.begin(); it != this->_operator.end(); ++it)
+	if (!_operator.empty())
 	{
-		if ((*it) == op)
-			return (true); // the user is an operator
+		for (it = this->_operator.begin(); it != this->_operator.end(); ++it)
+		{
+			if ((*it) == op)
+				return (true); // the user is an operator
+		}
 	}
 	return (false);
 }
