@@ -36,7 +36,7 @@ void	Server::caseO(bool type, Clients *client, std::istringstream &lineStream, s
 				return ;
 			}
 		}
-		std::string errMsg = ":I.R.SIUSIU PRIVMSG " + chan + " :You don't have the privilege to give operator rights\n";;
+		std::string errMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU NOTICE " + chan + " :You don't have the privilege to give operator rights\n";
 		send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
 	}
 	else

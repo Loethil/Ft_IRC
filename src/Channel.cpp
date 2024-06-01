@@ -135,7 +135,7 @@ bool Channel::setOperator(Clients *client, bool key, std::string newOp)
     std::map<std::string, Clients*>::iterator connIt = _connUsers.find(newOp);
     if (connIt == _connUsers.end())
     {
-        std::string msg = ":I.R.SIUSIU " + client->getNickname() + " " + _chanName + " :This client isn't connected on the channel\n";
+		std::string msg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU NOTICE " + _chanName + " :This client isn't connected on the channel\n";
         send(client->getSocket(), msg.c_str(), msg.size(), 0);
         return false;
     }
@@ -152,12 +152,13 @@ bool Channel::setOperator(Clients *client, bool key, std::string newOp)
                 return false;
             }
         }
-        this->_operator.push_back(newOp);
-        notifyMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU MODE " + _chanName + " +o " + newOp + "\n";
-        notifyChannel(notifyMsg);
-        std::string msg = ":I.R.SIUSIU " + _chanName + " :You now are an operator\n";
-        send(newOpSocket, msg.c_str(), msg.size(), 0);
-        return true;
+		this->_operator.push_back(newOp);
+		std::string notifyMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU MODE " + _chanName + " +o " + newOp + "\n";
+		notifyChannel(notifyMsg);
+		//NOTICE WTF TROP BIEN CETTE MERDASS
+		std::string msg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU NOTICE " + _chanName + " :You are now an operator\n";
+		send(newOpSocket, msg.c_str(), msg.size(), 0);
+		return true;
     }
     else
     {
@@ -168,16 +169,17 @@ bool Channel::setOperator(Clients *client, bool key, std::string newOp)
                 this->_operator.erase(it);
                 notifyMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU MODE " + _chanName + " -o " + newOp + "\n";
                 notifyChannel(notifyMsg);
-                std::string msg = ":I.R.SIUSIU " + _chanName + " :You are not an operator anymore\n";
+				std::string msg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU NOTICE " + _chanName + " :You are not an operator anymore\n";
                 send(newOpSocket, msg.c_str(), msg.size(), 0);
                 return true;
             }
         }
-        std::string msg = ":I.R.SIUSIU " + _chanName + " :You weren't an operator\n";
+		std::string msg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU NOTICE " + _chanName + " :You weren't an operator\n";
         send(newOpSocket, msg.c_str(), msg.size(), 0);
         return false;
     }
 }
+
 
 std::ostream	&operator<<(std::ostream &o, Channel &rhs)
 {

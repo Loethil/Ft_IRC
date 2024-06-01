@@ -51,6 +51,7 @@ class Server
         void		quit(Clients *client, std::istringstream &lineStream);
 		void		pong(Clients *client, const std::string &token);
         void		kick(Clients *client, std::istringstream &lineStream);
+        void        sendNamesList(Channel *channel);
 		
         void		mode(Clients *client, std::istringstream &lineStream);
         void		caseK(bool type, Clients *client, std::istringstream &lineStream, std::vector<Channel *>::iterator currIt);
