@@ -4,15 +4,7 @@ static bool sigStop = false;
 
 Server::Server() : _serverFd(-1), _serverName("I.R.SIUSIU") {}
 
-Server::~Server()
-{
-	// for (size_t i = 0; i < _clients.size(); ++i)
-	// 	close(_clients[i]->getSocket());
-	_clients.clear();
-	_Channel.clear();
-	if (_serverFd != -1)
-		close(_serverFd);
-}
+Server::~Server() {}
 
 std::string Server::getPwd()
 {
@@ -61,11 +53,11 @@ void	Server::start(int port)
 //fonction permettant de lancer le serveur
 void	Server::run()
 {
-	if (_serverFd == -1)
-	{
-		throw std::runtime_error("Server not initialized\n");
-		return;
-	}
+	// if (_serverFd == -1)
+	// {
+	// 	throw std::runtime_error("Server not initialized\n");
+	// 	return;
+	// }
 
 	std::vector<struct pollfd>	pollfds;
 	struct pollfd				server_pollfd;
@@ -74,6 +66,7 @@ void	Server::run()
 	server_pollfd.events = POLLIN;
 	pollfds.push_back(server_pollfd);
 	signal(SIGINT, Server::sigInt_Hdl);
+	struct pollfd client_pollfd;
 
 	while (sigStop == 0)
 	{
@@ -81,7 +74,12 @@ void	Server::run()
 		if (poll_count < 0)
 		{
 			//throw std::runtime_error("Poll error\n");
-			exit(EXIT_FAILURE);
+			// if (client_pollfd.fd != -1)
+			// 	close(client_pollfd.fd);
+			// if (server_pollfd.fd != -1)
+			// 	close(server_pollfd.fd);
+			// exit(EXIT_FAILURE);
+			break ;
 		}
 		for (size_t i = 0; i < pollfds.size(); ++i)
 		{
@@ -91,7 +89,6 @@ void	Server::run()
 				{
 					acceptNewConnection();
 					int new_socket = _clients.rbegin()->first; // Get the last added client's socket
-					struct pollfd client_pollfd;
 					client_pollfd.fd = new_socket;
 					client_pollfd.events = POLLIN;
 					pollfds.push_back(client_pollfd);
@@ -104,6 +101,10 @@ void	Server::run()
 			}
 		}
 	}
+	if (client_pollfd.fd != -1)
+		close(client_pollfd.fd);
+	if (server_pollfd.fd != -1)
+		close(server_pollfd.fd);
 }
 
 //fonction permettant d'accepter de nouveau clients et de lui donner ses bons parametres
@@ -111,7 +112,7 @@ void	Server::acceptNewConnection()
 {
 	socklen_t addrlen = sizeof(_clientAdr);
 	int new_socket = accept(_serverFd, (struct sockaddr *)&_clientAdr, &addrlen);
-	if (new_socket < 0)
+	if (new_socket == -1)
 	{
 		throw std::runtime_error("Accept failed");
 		exit(EXIT_FAILURE);
@@ -138,7 +139,7 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 	buffer[valread] = '\0';
 	Clients *client = _clients[client_socket];
 	client->partialData.append(buffer, valread);
-	
+
 	size_t pos;
 	while ((pos = client->partialData.find('\n')) != std::string::npos)
 	{

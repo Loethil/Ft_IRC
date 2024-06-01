@@ -11,7 +11,7 @@ void Server::part(Clients *client, std::istringstream &lineStream)
     if (lineStream >> channelName)
     {
         std::cerr << "Channel to part: " << channelName << std::endl;
-        if (std::getline(lineStream, partMessage))
+        if (lineStream >> partMessage)
         {
             if (!partMessage.empty() && partMessage[0] == ' ' && partMessage[1] == ':')
                 partMessage.erase(0, 2);

@@ -7,9 +7,9 @@ Channel::Channel():_chanName(""), _topic(""), _invite(false), _topicMode(false),
 
 Channel::~Channel()
 {
-	 _connUsers.clear();
-	 _invitedUsers.clear();
-	 _operator.clear();
+	_connUsers.clear();
+	_invitedUsers.clear();
+	_operator.clear();
 }
 
 std::string   Channel::getChanName()
@@ -153,11 +153,10 @@ bool Channel::setOperator(Clients *client, bool key, std::string newOp)
             }
         }
 		this->_operator.push_back(newOp);
-		std::string notifyMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU MODE " + _chanName + " +o " + newOp + "\n";
-		notifyChannel(notifyMsg);
-		//NOTICE WTF TROP BIEN CETTE MERDASS
 		std::string msg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU NOTICE " + _chanName + " :You are now an operator\n";
 		send(newOpSocket, msg.c_str(), msg.size(), 0);
+		std::string notifyMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU MODE " + _chanName + " +o " + newOp + "\n";
+		notifyChannel(notifyMsg);
 		return true;
     }
     else

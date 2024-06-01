@@ -7,7 +7,7 @@ void Server::kick(Clients *client, std::istringstream &lineStream)
 
     if (lineStream >> channelName >> nickname)
     {
-        if (std::getline(lineStream, reason))
+        if (lineStream >> reason)
         {
             if (!reason.empty() && reason[0] == ' ' && reason[1] == ':')
                 reason.erase(0, 2);

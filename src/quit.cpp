@@ -7,11 +7,8 @@ void Server::quit(Clients *client, std::istringstream &lineStream)
 	// Lire le message de déconnexion s'il est fourni
 	if (lineStream >> quitMsg)
 	{
-		if (std::getline(lineStream, quitMsg))
-		{
-			if (!quitMsg.empty() && quitMsg[0] == ' ' && quitMsg[1] == ':')
-				quitMsg.erase(0, 2);
-		}
+		if (!quitMsg.empty() && quitMsg[0] == ' ' && quitMsg[1] == ':')
+			quitMsg.erase(0, 2);
 	}
 
 	// Construire le message complet de déconnexion

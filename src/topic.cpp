@@ -9,17 +9,30 @@ void	Server::topic(Clients *client, std::istringstream &lineStream)
 	if (lineStream >> channelName)
 	{
 		// Read the new topic
-		if (std::getline(lineStream, newTopic))
+		if (lineStream >> newTopic)
 		{
 			if (!newTopic.empty() && newTopic[0] == ' ' && newTopic[1] == ':')
 				newTopic.erase(0, 2);
 		}
 		else
 		{
-			if (_Channel[channelName]->getTopic().size() > 0 && _Channel[channelName]->getConnUsers().find(client->getNickname()) != _Channel[channelName]->getConnUsers().end())
+			if (_Channel[channelName])
 			{
-				std::string fullTopicMessage = ":I.R.SIUSIU 332 " + client->getNickname() + " " + channelName + " :" + _Channel[channelName]->getTopic() + "\n";
-				send(client->getSocket(), fullTopicMessage.c_str(), _Channel[channelName]->getTopic().length(), 0);
+				if (_Channel[channelName]->getConnUsers().find(client->getNickname()) != _Channel[channelName]->getConnUsers().end() && _Channel[channelName]->getTopic().size() > 0)
+				{
+					std::string fullTopicMessage = ":I.R.SIUSIU 332 " + client->getNickname() + " " + channelName + " :" + _Channel[channelName]->getTopic() + "\n";
+					send(client->getSocket(), fullTopicMessage.c_str(), _Channel[channelName]->getTopic().length(), 0);
+				}
+				else
+				{
+					std::string send_msg = ":I.R.SIUSIU 442 " + client->getNickname() + channelName + " :" RED "You are not connected to that channel.\n" RESET;
+					send(client->getSocket(), send_msg.c_str(), send_msg.size(), 0);
+				}
+			}
+			else
+			{
+				std::string errMsg = ":I.R.SIUSIU 403 " + client->getNickname() + " " + channelName + " :" RED "No such channel" RESET "\n";
+				send(client->getSocket(), errMsg.c_str(), errMsg.size(), 0);
 			}
 			return ;
 		}

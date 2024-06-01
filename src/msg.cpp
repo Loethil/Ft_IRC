@@ -29,7 +29,7 @@ void Server::msg(Clients *client, std::istringstream &lineStream, char *buffer)
             }
 			if (currIt == client->getCurrConnected().end())
 			{
-				std::string send_msg = ":I.R.SIUSIU 442 " + client->getNickname() + dest + " :" RED "You aren't connected to that channel.\n" RESET;
+				std::string send_msg = ":I.R.SIUSIU 442 " + client->getNickname() + " " + dest + " :" RED "You aren't connected to that channel.\n" RESET;
 				send(client->getSocket(), send_msg.c_str(), send_msg.size(), 0);
 			}
         }
