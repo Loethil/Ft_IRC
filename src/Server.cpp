@@ -53,21 +53,20 @@ void	Server::start(int port)
 //fonction permettant de lancer le serveur
 void	Server::run()
 {
-	// if (_serverFd == -1)
-	// {
-	// 	throw std::runtime_error("Server not initialized\n");
-	// 	return;
-	// }
-
 	std::vector<struct pollfd>	pollfds;
 	struct pollfd				server_pollfd;
-
 	server_pollfd.fd = _serverFd;
 	server_pollfd.events = POLLIN;
+	server_pollfd.revents = 0;
 	pollfds.push_back(server_pollfd);
-	signal(SIGINT, Server::sigInt_Hdl);
-	struct pollfd client_pollfd;
 
+	struct pollfd client_pollfd;
+	client_pollfd.fd = -1;
+	client_pollfd.events = 0;
+	client_pollfd.revents = 0;
+
+	signal(SIGINT, Server::sigInt_Hdl);
+	
 	while (sigStop == 0)
 	{
 		int poll_count = poll(pollfds.data(), pollfds.size(), -1);
@@ -93,11 +92,7 @@ void	Server::run()
 			}
 		}
 	}
-	if (client_pollfd.fd != -1)
-		close(client_pollfd.fd);
-	if (server_pollfd.fd != -1)
-		close(server_pollfd.fd);
-	if (_clients.size() > 0)
+	if (!_clients.empty())
 	{
 		std::map<int, Clients*> clientMap = _clients;
 		std::map<int, Clients*>::iterator it;
@@ -105,6 +100,16 @@ void	Server::run()
 		for (it = clientMap.begin(); it != clientMap.end(); ++it)
 			quit(it->second, line);
 	}
+	if (!_Channel.empty())
+	{
+		std::map<std::string, Channel*>::iterator it;
+		for (it = _Channel.begin(); it != _Channel.end(); ++it)
+			delete it->second;
+	}
+	if (client_pollfd.fd != -1)
+		close(client_pollfd.fd);
+	if (server_pollfd.fd != -1)
+		close(server_pollfd.fd);
 }
 
 //fonction permettant d'accepter de nouveau clients et de lui donner ses bons parametres

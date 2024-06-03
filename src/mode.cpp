@@ -7,20 +7,23 @@ void	Server::caseK(bool type, Clients *client, std::istringstream &lineStream, s
 		std::string pwd;
 		if (lineStream >> pwd)
 		{
-			if (!pwd.empty())
-			{
-				(*currIt)->setPwd(pwd);
-				std::cout << BLUE << (*currIt)->getPwd() << RESET << std::endl;
-			}
+			(*currIt)->setPwd(pwd);
+			std::string notifyMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU MODE " + (*currIt)->getChanName() + " :(+k) Channel needs the password\n";
+			(*currIt)->notifChan(notifyMsg);
+			std::cout << BLUE << (*currIt)->getPwd() << RESET << std::endl;
 		}
 		else
 		{
-			std::string errMsg = "No password specified for +k mode\n";
+			std::string errMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU NOTICE " + (*currIt)->getChanName() + " :No password was given for mode (+k)\n";
 			send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
 		}
 	}
 	else
+	{
 		(*currIt)->setPwd("");
+		std::string notifyMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU MODE " + (*currIt)->getChanName() + " :(-k) Channel doesn't need a password anymore\n";
+		(*currIt)->notifChan(notifyMsg);
+	}
 }
 
 void	Server::caseO(bool type, Clients *client, std::istringstream &lineStream, std::vector<Channel *>::iterator currIt, std::string chan)
@@ -76,51 +79,59 @@ void	Server::mode(Clients *client, std::istringstream &lineStream)
 		send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
 		return ;
 	}
-	if (mode[0] == '+' || mode[0] == '-')
+	if ((*currIt)->getOpStatus(client->getNickname()))
 	{
-		bool type = (mode[0] == '+') ? true : false;
-		for (size_t i = 1; i < mode.size(); ++i)
+		if (mode[0] == '+' || mode[0] == '-')
 		{
-			char modeChar = mode[i];
-			switch (modeChar)
+			bool type = (mode[0] == '+') ? true : false;
+			for (size_t i = 1; i < mode.size(); ++i)
 			{
-				case 'i':
-					(*currIt)->setInvite(type);
-					break;
-				case 't':
-					(*currIt)->setTopicMode(type);
-					break;
-				case 'k':
-					caseK(type, client, lineStream, currIt);
-					break;
-				case 'o':
-					caseO(type, client, lineStream, currIt, chan);
-					break;
-				case 'l':
-					if (type)
-					{
-						int userLimit;
-						lineStream >> userLimit;
-						if (lineStream.fail())
+				char modeChar = mode[i];
+				switch (modeChar)
+				{
+					case 'i':
+						(*currIt)->setInvite(client, type);
+						break;
+					case 't':
+						(*currIt)->setTopicMode(client, type);
+						break;
+					case 'k':
+						caseK(type, client, lineStream, currIt);
+						break;
+					case 'o':
+						caseO(type, client, lineStream, currIt, chan);
+						break;
+					case 'l':
+						if (type)
 						{
-							std::string errMsg = "No user limit specified for +l mode\n";
-							send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
-							lineStream.clear();
+							int userLimit;
+							lineStream >> userLimit;
+							if (lineStream.fail())
+							{
+								std::string msg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU NOTICE " + (*currIt)->getChanName() + " :No limit specified for (+l) mode\n";
+								send(client->getSocket(), msg.c_str(), msg.size(), 0);
+								lineStream.clear();
+							}
+							else
+								(*currIt)->setMaxUser(userLimit);
 						}
 						else
-							(*currIt)->setMaxUser(userLimit);
+							(*currIt)->setMaxUser(0);
+						break;
+					default:
+					{
+						std::string msg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU NOTICE " + (*currIt)->getChanName() + " :This mode option isn't handled\n";
+						send(client->getSocket(), msg.c_str(), msg.size(), 0);
 					}
-					else
-						(*currIt)->setMaxUser(0);
 					break;
-				default:
-				{
-					std::string errMsg = "This option is not handled, see IRC subject\n";
-					send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
 				}
-				break;
 			}
 		}
+	}
+	else
+	{
+		std::string msg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU NOTICE " + (*currIt)->getChanName() + " :You're not an operator\n";
+		send(client->getSocket(), msg.c_str(), msg.size(), 0);
 	}
 }
 

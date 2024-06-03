@@ -5,12 +5,7 @@ Channel::Channel(std::string & chanName): _chanName(chanName), _topic(""), _invi
 
 Channel::Channel():_chanName(""), _topic(""), _invite(false), _topicMode(false), _pwd(""), _maxUser(0), _currentUser(0) {}
 
-Channel::~Channel()
-{
-	// _connUsers.clear();
-	// _invitedUsers.clear();
-	// _operator.clear();
-}
+Channel::~Channel() {}
 
 std::string   Channel::getChanName()
 {
@@ -37,23 +32,30 @@ bool	Channel::getInvite(void)
 	return (this->_invite);
 }
 
-void	Channel::setInvite(bool key)
+void	Channel::setInvite(Clients *client, bool key)
 {
 	if (this->_invite == true && key == false)
-		std::cout << this->getChanName() << " is set on 'no invite only'" << std::endl;
+	{
+		std::string notifyMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU MODE " + _chanName + " :(-i) Channel is not in invite only anymore\n";
+		notifChan(notifyMsg);
+		_invite = key;
+	}
 	else if (this->_invite == false && key == true)
-		std::cout << this->getChanName() << " is set on 'invite only'" << std::endl;
+	{
+		std::string notifyMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU MODE " + _chanName + " :(+i) Channel is now in invite only\n";
+		notifChan(notifyMsg);
+		_invite = key;
+	}
 	else if (this->_invite == true && key == true)
 	{
-		std::cout << this->getChanName() << " is already set on 'invite only'" << std::endl;
-		return ;
+		std::string notifyMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU MODE " + _chanName + " :(+i) Channel was already in invite only\n";
+		notifChan(notifyMsg);
 	}
 	else if (this->_invite == false && key == false)
 	{
-		std::cout << this->getChanName() << " is already set on 'no invite only'" << std::endl;
-		return ;
+		std::string notifyMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU MODE " + _chanName + " :(-i) Channel wasn't in invite only\n";
+		notifChan(notifyMsg);
 	}
-	this->_invite = key;
 }
 
 bool	Channel::getTopicMode(void)
@@ -61,23 +63,30 @@ bool	Channel::getTopicMode(void)
 	return (this->_topicMode);
 }
 
-void	Channel::setTopicMode(bool key)
+void	Channel::setTopicMode(Clients *client, bool key)
 {
 	if (this->_topicMode == true && key == false)
-		std::cout << this->getChanName() << " is set on 'topic for operator only'" << std::endl;
+	{
+		std::string notifyMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU MODE " + _chanName + " :(-t) Anyone can topic\n";
+		notifChan(notifyMsg);
+		_topicMode = key;
+	}
 	else if (this->_topicMode == false && key == true)
-		std::cout << this->getChanName() << " is set on 'topic for everyone'" << std::endl;
+	{
+		std::string notifyMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU MODE " + _chanName + " :(+t) Only ops can topic\n";
+		notifChan(notifyMsg);
+		_topicMode = key;
+	}
 	else if (this->_topicMode == true && key == true)
 	{
-		std::cout << this->getChanName() << " is already set on 'topic for operator only'" << std::endl;
-		return ;
+		std::string notifyMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU MODE " + _chanName + " :(+t) Already in topic mode\n";
+		notifChan(notifyMsg);
 	}
 	else if (this->_topicMode == false && key == false)
 	{
-		std::cout << this->getChanName() << " is already set on 'topic for everyone'" << std::endl;
-		return ;
+		std::string notifyMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU MODE " + _chanName + " :(-t) Already not in topic mode\n";
+		notifChan(notifyMsg);
 	}
-	this->_topicMode = key;
 }
 
 std::string		Channel::getPwd(void)
@@ -131,7 +140,6 @@ std::vector<std::string>&	Channel::getOperator()
 
 bool Channel::setOperator(Clients *client, bool key, std::string newOp)
 {
-    std::vector<std::string>::iterator it;
     std::map<std::string, Clients*>::iterator connIt = _connUsers.find(newOp);
     if (connIt == _connUsers.end())
     {
@@ -140,6 +148,7 @@ bool Channel::setOperator(Clients *client, bool key, std::string newOp)
         return false;
     }
     int newOpSocket = connIt->second->getSocket();
+    std::vector<std::string>::iterator it;
     std::string notifyMsg;
     if (key)
     {
@@ -156,7 +165,7 @@ bool Channel::setOperator(Clients *client, bool key, std::string newOp)
 		std::string msg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU NOTICE " + _chanName + " :You are now an operator\n";
 		send(newOpSocket, msg.c_str(), msg.size(), 0);
 		std::string notifyMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU MODE " + _chanName + " +o " + newOp + "\n";
-		notifyChannel(notifyMsg);
+		notifChan(notifyMsg);
 		return true;
     }
     else
@@ -167,7 +176,7 @@ bool Channel::setOperator(Clients *client, bool key, std::string newOp)
             {
                 this->_operator.erase(it);
                 notifyMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU MODE " + _chanName + " -o " + newOp + "\n";
-                notifyChannel(notifyMsg);
+                notifChan(notifyMsg);
 				std::string msg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU NOTICE " + _chanName + " :You are not an operator anymore\n";
                 send(newOpSocket, msg.c_str(), msg.size(), 0);
                 return true;

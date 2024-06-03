@@ -22,7 +22,8 @@ class Channel
 		Channel();
         ~Channel();
 
-		void    							notifyChannel(const std::string &message);
+		void    							notifyChannel(Clients *client, const std::string &message);
+		void    							notifChan(const std::string &message);
 
         std::string 						getChanName();
 		std::map<std::string, Clients *>	&getConnUsers(void);
@@ -31,10 +32,10 @@ class Channel
         void                                setTopic(std::string& topic);
 
 		bool								getInvite(void);
-		void								setInvite(bool key);
+		void								setInvite(Clients *client, bool key);
 
 		bool								getTopicMode(void);
-		void								setTopicMode(bool key);
+		void								setTopicMode(Clients *client, bool key);
 
 		std::string							getPwd(void);
 		void								setPwd(std::string newPwd);

@@ -1,5 +1,34 @@
 #include "Server.hpp"
 
+void	Server::subTopic(Clients *client, std::string channelName, std::string newTopic)
+{
+	// Check if the client is in the channel
+	std::vector<Channel *> &connectedChannels = client->getCurrConnected();
+	std::vector<Channel *>::iterator it = connectedChannels.end();
+	for (std::vector<Channel *>::iterator iter = connectedChannels.begin(); iter != connectedChannels.end(); ++iter)
+	{
+		if ((*iter)->getChanName() == channelName)
+		{
+			it = iter;
+			break ;
+		}
+	}
+	if (it != connectedChannels.end())
+	{
+		// Stocks the topic in the channel instance
+		(*it)->setTopic(newTopic);
+		// Notify all members of the channel about the topic change
+		std::string fullTopicMessage = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU TOPIC " + channelName + " " + newTopic + "\n";
+		for (std::map<std::string, Clients*>::iterator connIt = _Channel[channelName]->getConnUsers().begin(); connIt != _Channel[channelName]->getConnUsers().end(); ++connIt)
+			send(connIt->second->getSocket(), fullTopicMessage.c_str(), fullTopicMessage.length(), 0);
+	}
+	else
+	{
+		std::string send_msg = ":I.R.SIUSIU 442 " + client->getNickname() + channelName + " :" RED "You are not connected to that channel.\n" RESET;
+		send(client->getSocket(), send_msg.c_str(), send_msg.size(), 0);
+	}
+}
+
 void	Server::topic(Clients *client, std::istringstream &lineStream)
 {
 	std::string channelName;
@@ -36,30 +65,17 @@ void	Server::topic(Clients *client, std::istringstream &lineStream)
 			}
 			return ;
 		}
-		// Check if the client is in the channel
-		std::vector<Channel *> &connectedChannels = client->getCurrConnected();
-		std::vector<Channel *>::iterator it = connectedChannels.end();
-		for (std::vector<Channel *>::iterator iter = connectedChannels.begin(); iter != connectedChannels.end(); ++iter)
+		if (_Channel[channelName] && _Channel[channelName]->getTopicMode() == false)
+			subTopic(client, channelName, newTopic);
+		else if (_Channel[channelName])
 		{
-			if ((*iter)->getChanName() == channelName)
+			if (_Channel[channelName]->getOpStatus(client->getNickname()) == true)
+				subTopic(client, channelName, newTopic);
+			else
 			{
-				it = iter;
-				break ;
+				std::string msg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU NOTICE " + channelName + " :You're not an operator\n";
+				send(client->getSocket(), msg.c_str(), msg.size(), 0);
 			}
-		}
-		if (it != connectedChannels.end())
-		{
-			// Stocks the topic in the channel instance
-			(*it)->setTopic(newTopic);
-			// Notify all members of the channel about the topic change
-			std::string fullTopicMessage = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU TOPIC " + channelName + " " + newTopic + "\n";
-			for (std::map<std::string, Clients*>::iterator connIt = _Channel[channelName]->getConnUsers().begin(); connIt != _Channel[channelName]->getConnUsers().end(); ++connIt)
-				send(connIt->second->getSocket(), fullTopicMessage.c_str(), fullTopicMessage.length(), 0);
-		}
-		else
-		{
-			std::string send_msg = ":I.R.SIUSIU 442 " + client->getNickname() + channelName + " :" RED "You are not connected to that channel.\n" RESET;
-			send(client->getSocket(), send_msg.c_str(), send_msg.size(), 0);
 		}
 	}
 }

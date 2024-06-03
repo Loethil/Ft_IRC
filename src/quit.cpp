@@ -22,19 +22,11 @@ void Server::quit(Clients *client, std::istringstream &lineStream)
 
 	// Envoyer le message de déconnexion à tous les clients connectés aux mêmes canaux
 	std::vector<Channel*>::iterator chIt;
+	send(client->getSocket(), fullQuitMsg.c_str(), fullQuitMsg.size(), 0);
 	for (chIt = client->getCurrConnected().begin(); chIt != client->getCurrConnected().end(); ++chIt)
 	{
-		Channel* channel = *chIt;
-		std::map<std::string, Clients*>::iterator chanClientIt;
-		for (chanClientIt = channel->getConnUsers().begin(); chanClientIt != channel->getConnUsers().end(); ++chanClientIt)
-		{
-			//Clients* chanClientIt = *chanClientIt;
-			if (std::find(notifiedSockets.begin(), notifiedSockets.end(), chanClientIt->second->getSocket()) == notifiedSockets.end())
-			{
-				send(chanClientIt->second->getSocket(), fullQuitMsg.c_str(), fullQuitMsg.size(), 0);
-				notifiedSockets.push_back(chanClientIt->second->getSocket());
-			}
-		}
+		Channel *chan = *chIt;
+		chan->notifyChannel(client, fullQuitMsg);
 	}
 	for (chIt = client->getCurrConnected().begin(); chIt != client->getCurrConnected().end(); ++chIt)
 		part(client);
@@ -43,5 +35,8 @@ void Server::quit(Clients *client, std::istringstream &lineStream)
 	// Fermer la socket du client
 	std::map<int, Clients*>::iterator it = _clients.find(client->getSocket());
 	if (it != _clients.end())
+	{
 		delete it->second;
+		_clients.erase(it);
+	}
 }

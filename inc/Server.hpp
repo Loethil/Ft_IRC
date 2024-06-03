@@ -46,6 +46,7 @@ class Server
         void    	part(Clients *client, std::string channelName);
 		void		part(Clients *client);
         void    	topic(Clients *client, std::istringstream &lineStream);
+        void        subTopic(Clients *client, std::string channelName, std::string newTopic);
         void		invite(Clients *client, std::istringstream &lineStream);
         void		joinChannel(Clients *client, std::string channelName);
         void		quit(Clients *client, std::istringstream &lineStream);
