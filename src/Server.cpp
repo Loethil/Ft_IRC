@@ -36,7 +36,7 @@ void	Server::acceptNewConnection()
 }
 
 //fonction qui gere toutes les entrees de l'utilisateur 
-void Server::handleClientMessage(int client_socket, Clients::status status)
+int Server::handleClientMessage(int client_socket, Clients::status status)
 {
 	char buffer[BUFFER_SIZE];
 	ssize_t valread = read(client_socket, buffer, BUFFER_SIZE);
@@ -44,7 +44,7 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 	{
 		std::istringstream line;
 		quit(_clients[client_socket], line);
-		return;
+		return (1);
 	}
 	buffer[valread] = '\0';
 	Clients *client = _clients[client_socket];
@@ -71,7 +71,7 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 				{
 					std::istringstream line;
 					quit(client, line);
-					return ;
+					return (1);
 				}
 			}
 			else if (command == "NICK")
@@ -94,7 +94,10 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 			else if (command == "INVITE")
 				invite(client, lineStream);
 			else if (command == "QUIT")
+			{
 				quit(client, lineStream);
+				return (1);
+			}
 			else if (command == "KICK")
 				kick(client, lineStream);
 			else if (command == "PING")
@@ -103,7 +106,8 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 				lineStream >> token;
 				pong(client, token);
 			}
-			return ;
+			return (0);
 		}
 	}
+	return (0);
 }

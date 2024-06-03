@@ -34,7 +34,7 @@ class Server
         ~Server();
         void    	start(int port);
         void    	acceptNewConnection();
-        void		handleClientMessage(int client_socket, Clients::status status);
+        int			handleClientMessage(int client_socket, Clients::status status);
         void    	sendWelcomeMessages(int client_socket, Clients *client);
 		void		user(Clients *client, std::istringstream &lineStream);
 		void		nick(Clients *client, std::istringstream &lineStream);
