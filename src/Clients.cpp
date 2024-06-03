@@ -1,6 +1,6 @@
 #include "Clients.hpp"
 
-Clients::Clients(void) {}
+Clients::Clients(void): _Socket(-1), _Nickname(""), _Username(""), _Realname("") {}
 
 Clients::~Clients(void)
 {

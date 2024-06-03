@@ -11,7 +11,7 @@ class Clients
 		typedef enum		status
 		{
 			USERNAME,
-			COMPLETED,
+			COMPLETED
 		}					status;
 		int						getSocket(void);
 		void					setSocket(int	newSocket);

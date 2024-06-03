@@ -17,9 +17,7 @@ void Server::quit(Clients *client, std::istringstream &lineStream)
 		fullQuitMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU QUIT :" + quitMsg + "\n";
 	else
 		fullQuitMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU QUIT :\n";
-	// Utiliser un vector pour suivre les sockets déjà notifiées
-	std::vector<int> notifiedSockets;
-
+	
 	// Envoyer le message de déconnexion à tous les clients connectés aux mêmes canaux
 	std::vector<Channel*>::iterator chIt;
 	send(client->getSocket(), fullQuitMsg.c_str(), fullQuitMsg.size(), 0);
@@ -37,6 +35,6 @@ void Server::quit(Clients *client, std::istringstream &lineStream)
 	if (it != _clients.end())
 	{
 		delete it->second;
-		_clients.erase(it);
+		_clients.erase(it->first);
 	}
 }

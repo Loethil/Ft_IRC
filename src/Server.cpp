@@ -31,7 +31,6 @@ void	Server::start(int port)
 		throw std::runtime_error("Socket failed\n");
 		exit(EXIT_FAILURE);
 	}
-	// fcntl(_serverFd, F_SETFL, O_NONBLOCK);
 	_serverAdr.sin_family = AF_INET;
 	_serverAdr.sin_addr.s_addr = INADDR_ANY;
 	_serverAdr.sin_port = htons(port);
@@ -87,7 +86,10 @@ void	Server::run()
 				else
 				{
 					int client_socket = pollfds[i].fd;
-					handleClientMessage(client_socket, _clients[client_socket]->getStatus());
+					if (_clients[client_socket])
+						handleClientMessage(client_socket, _clients[client_socket]->getStatus());
+					else
+						pollfds.erase(pollfds.begin() + i);
 				}
 			}
 		}
@@ -122,7 +124,6 @@ void	Server::acceptNewConnection()
 		throw std::runtime_error("Accept failed");
 		exit(EXIT_FAILURE);
 	}
-	// fcntl(_serverFd, F_SETFL, O_NONBLOCK);
 	Clients *newClient = new Clients();
 	newClient->setSocket(new_socket);
 	newClient->setStatus(Clients::USERNAME); //modif
@@ -136,9 +137,8 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 	ssize_t valread = read(client_socket, buffer, BUFFER_SIZE);
 	if (valread <= 0)
 	{
-		throw std::runtime_error("Read failed");
-		close(client_socket);
-		_clients.erase(client_socket);
+		std::istringstream line;
+		quit(_clients[client_socket], line);
 		return;
 	}
 	buffer[valread] = '\0';
@@ -163,7 +163,11 @@ void Server::handleClientMessage(int client_socket, Clients::status status)
 			if (command == "PASS")
 			{
 				if (pass(client, lineStream) == false)
+				{
+					std::istringstream line;
+					quit(client, line);
 					return ;
+				}
 			}
 			else if (command == "NICK")
 				nick(client, lineStream);
