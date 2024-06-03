@@ -56,8 +56,6 @@ void	Server::mode(Clients *client, std::istringstream &lineStream)
 	std::vector<Channel *>::iterator currIt;
 
 	lineStream >> chan >> mode;
-	std::cout << "chan : " << chan << std::endl;
-	std::cout << "mode : " << mode << std::endl;
 	for (currIt = client->getCurrConnected().begin(); currIt != client->getCurrConnected().end(); ++currIt)
 	{
 		if (chan == (*currIt)->getChanName())
