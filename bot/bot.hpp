@@ -13,9 +13,9 @@ class bot
 
         bot();
         ~bot();
-        void    fillTab(std::vector<std::string> funfact);
+        void	fillTab(std::map<int, std::string> funfact);
 
     private :
 
-        std::vector<std::string> funfact;
+        std::map<int, std::string> funfact;
 };
