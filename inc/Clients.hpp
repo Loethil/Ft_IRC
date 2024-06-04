@@ -25,6 +25,8 @@ class Clients
 		void					setStatus(status newStatus);
 		std::vector<Channel *>& getCurrConnected(void);
 		void					setCurrConnected(std::vector<Channel *>& newCurrConnected);
+		std::string				getClientPwd(void);
+		void					setClientPwd(std::string new_pwd);
 	private:
 		int						_Socket;
 		std::string 			_Nickname;
@@ -32,6 +34,7 @@ class Clients
 		std::string				_Realname;
 		status					_Status;
 		std::vector<Channel *>	_currConnected;
+		std::string				_ClientPwd;
 };
 
 std::ostream	&operator<<(std::ostream &o, Clients &rhs);

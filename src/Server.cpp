@@ -75,9 +75,9 @@ int Server::handleClientMessage(int client_socket, Clients::status status)
 					return (1);
 				}
 			}
-			else if (command == "NICK")
+			else if (command == "NICK" && client->getClientPwd() == _pwd)
 				nick(client, lineStream);
-			else if (command == "USER")
+			else if (command == "USER" && client->getClientPwd() == _pwd)
 				user(client, lineStream);
 		}
 		else if (status == Clients::COMPLETED)

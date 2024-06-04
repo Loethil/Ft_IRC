@@ -8,6 +8,7 @@ bool	Server::pass(Clients *client, std::istringstream &lineStream)
 	if (pass == _pwd)
 	{
 		client->setStatus(Clients::USERNAME);
+		client->setClientPwd(pass);
 		return (true);
 	}
 	else

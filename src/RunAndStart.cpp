@@ -55,7 +55,6 @@ void	Server::run()
 		for (size_t i = 0; i < pollfds.size(); ++i)
 		{
 
-			std::cout << "i: " << i << " pollfds[i].fd = " << pollfds[i].fd << std::endl;
 			if (pollfds[i].revents & POLLIN)
 			{
 				if (pollfds[i].fd == _serverFd)

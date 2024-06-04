@@ -67,6 +67,16 @@ void	Clients::setCurrConnected(std::vector<Channel *>& newCurrConnected)
 	this->_currConnected = newCurrConnected;
 }
 
+std::string	Clients::getClientPwd(void)
+{
+	return (_ClientPwd);
+}
+
+void	Clients::setClientPwd(std::string new_pwd)
+{
+	this->_ClientPwd = new_pwd;
+}
+
 std::ostream	&operator<<(std::ostream &o, Clients &rhs)
 {
 	o << "Username : " << rhs.getUsername() << std::endl;
