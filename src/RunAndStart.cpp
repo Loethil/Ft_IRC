@@ -52,14 +52,6 @@ void	Server::run()
 		int poll_count = poll(pollfds.data(), pollfds.size(), -1);
 		if (poll_count < 0)
 			break ;
-		static int x = 0;
-		if (x == 0)
-		{
-			client_pollfd.fd = acceptBotConnection();
-			client_pollfd.events = POLLIN;
-			pollfds.push_back(client_pollfd);
-			x = 1;
-		}
 		for (size_t i = 0; i < pollfds.size(); ++i)
 		{
 
@@ -72,10 +64,6 @@ void	Server::run()
 					client_pollfd.events = POLLIN;
 					pollfds.push_back(client_pollfd);
 				}
-				// else if (pollfds[i].fd == _botFd)
-				// {
-
-				// }
 				else
 				{
 					int client_socket = pollfds[i].fd;
