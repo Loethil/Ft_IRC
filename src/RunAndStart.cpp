@@ -54,13 +54,13 @@ void	Server::run()
 			break ;
 		for (size_t i = 0; i < pollfds.size(); ++i)
 		{
+
+			std::cout << "i: " << i << " pollfds[i].fd = " << pollfds[i].fd << std::endl;
 			if (pollfds[i].revents & POLLIN)
 			{
 				if (pollfds[i].fd == _serverFd)
 				{
-					acceptNewConnection();
-					int new_socket = _clients.rbegin()->first; // Get the last added client's socket
-					client_pollfd.fd = new_socket;
+					client_pollfd.fd = acceptNewConnection();
 					client_pollfd.events = POLLIN;
 					pollfds.push_back(client_pollfd);
 				}
@@ -70,7 +70,10 @@ void	Server::run()
 					if (_clients[client_socket])
 					{
 						if (handleClientMessage(client_socket, _clients[client_socket]->getStatus()) == 1)
+						{
+							close (pollfds[i].fd);
 							pollfds.erase(pollfds.begin() + i);
+						}
 					}
 				}
 			}

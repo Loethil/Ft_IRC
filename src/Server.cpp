@@ -20,7 +20,7 @@ void	Server::setPort(int port)
 }
 
 //fonction permettant d'accepter de nouveau clients et de lui donner ses bons parametres
-void	Server::acceptNewConnection()
+int	Server::acceptNewConnection()
 {
 	socklen_t addrlen = sizeof(_clientAdr);
 	int new_socket = accept(_serverFd, (struct sockaddr *)&_clientAdr, &addrlen);
@@ -33,6 +33,7 @@ void	Server::acceptNewConnection()
 	newClient->setSocket(new_socket);
 	newClient->setStatus(Clients::USERNAME); //modif
 	_clients[new_socket] = newClient;
+	return new_socket;
 }
 
 //fonction qui gere toutes les entrees de l'utilisateur 
