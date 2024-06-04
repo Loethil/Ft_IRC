@@ -112,10 +112,10 @@ void	Server::mode(Clients *client, std::istringstream &lineStream)
 							}
 							else
 							{
-								std::string msg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU NOTICE " + (*currIt)->getChanName() + " :Limit of max users in this channel set to ";
 								std::stringstream userLimitStr;
 								userLimitStr << userLimit;
-								msg += userLimitStr.str() + "(+l) \n";
+								std::string msg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU NOTICE " + (*currIt)->getChanName() + " :Limit of max users in this channel set to ";
+								msg += userLimitStr.str() + " (+l) \n";
 								(*currIt)->setMaxUser(userLimit);
 								(*currIt)->notifChan(msg);
 							}

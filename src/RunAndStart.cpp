@@ -69,7 +69,7 @@ void	Server::run()
 					int client_socket = pollfds[i].fd;
 					if (_clients[client_socket])
 					{
-						if (handleClientMessage(client_socket, _clients[client_socket]->getStatus()) ==1 )
+						if (handleClientMessage(client_socket, _clients[client_socket]->getStatus()) == 1)
 							pollfds.erase(pollfds.begin() + i);
 					}
 				}
