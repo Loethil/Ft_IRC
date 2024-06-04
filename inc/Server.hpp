@@ -37,7 +37,7 @@ class Server
         void    	start(int port);
         void        botStart(int port);
         int         acceptBotConnection();
-        void    	acceptNewConnection();
+        int     	acceptNewConnection();
         int			handleClientMessage(int client_socket, Clients::status status);
         void    	sendWelcomeMessages(int client_socket, Clients *client);
 		void		user(Clients *client, std::istringstream &lineStream);
