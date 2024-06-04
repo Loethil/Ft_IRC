@@ -20,11 +20,13 @@ class Server
 {
     private:
         int                                 _serverFd;
+        int                                 _botFd;
         int                                 _port;
         std::string                         _pwd;
         std::string                         _serverName;
         std::map<int , Clients *>           _clients;
         struct sockaddr_in                  _clientAdr;
+        struct sockaddr_in                  _botAdr;
         struct sockaddr_in                  _serverAdr;
 		std::map<std::string, Channel *>	_Channel;
 
@@ -33,6 +35,8 @@ class Server
         Server();
         ~Server();
         void    	start(int port);
+        void        botStart(int port);
+        int         acceptBotConnection();
         void    	acceptNewConnection();
         int			handleClientMessage(int client_socket, Clients::status status);
         void    	sendWelcomeMessages(int client_socket, Clients *client);

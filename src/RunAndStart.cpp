@@ -52,20 +52,37 @@ void	Server::run()
 		int poll_count = poll(pollfds.data(), pollfds.size(), -1);
 		if (poll_count < 0)
 			break ;
+		static int x = 0;
+		if (x == 0)
+		{
+			client_pollfd.fd = acceptBotConnection();
+			client_pollfd.events = POLLIN;
+			pollfds.push_back(client_pollfd);
+			x = 1;
+		}
 		for (size_t i = 0; i < pollfds.size(); ++i)
 		{
+			std::cout << x << " . . . " << client_pollfd.fd << std::endl;
 			if (pollfds[i].revents & POLLIN)
 			{
+				std::cout << "yo" << std::endl;
 				if (pollfds[i].fd == _serverFd)
 				{
+					std::cout << "yoyoyo" << std::endl;
 					acceptNewConnection();
 					int new_socket = _clients.rbegin()->first; // Get the last added client's socket
+					std::cout << new_socket << std::endl;
 					client_pollfd.fd = new_socket;
 					client_pollfd.events = POLLIN;
 					pollfds.push_back(client_pollfd);
 				}
+				// else if (pollfds[i].fd == _botFd)
+				// {
+
+				// }
 				else
 				{
+					std::cout << "yoyoyoyoyoyoyoyoyoy" << std::endl;
 					int client_socket = pollfds[i].fd;
 					if (_clients[client_socket])
 					{

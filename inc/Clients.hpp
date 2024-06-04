@@ -25,6 +25,7 @@ class Clients
 		void					setStatus(status newStatus);
 		std::vector<Channel *>& getCurrConnected(void);
 		void					setCurrConnected(std::vector<Channel *>& newCurrConnected);
+		void    				setIsBot(bool key);
 	private:
 		int						_Socket;
 		std::string 			_Nickname;
@@ -32,6 +33,7 @@ class Clients
 		std::string				_Realname;
 		status					_Status;
 		std::vector<Channel *>	_currConnected;
+		bool					_isBot;
 };
 
 std::ostream	&operator<<(std::ostream &o, Clients &rhs);
