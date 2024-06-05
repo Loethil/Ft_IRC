@@ -5,12 +5,9 @@ void Server::part(Clients *client, std::istringstream &lineStream)
 {
 	std::string channelName;
 	std::string partMessage;
-	
-	std::cerr << "Part command received from client: " << client->getNickname() << std::endl;
 
 	if (lineStream >> channelName)
 	{
-		std::cerr << "Channel to part: " << channelName << std::endl;
 		if (lineStream >> partMessage)
 		{
 			if (!partMessage.empty() && partMessage[0] == ' ' && partMessage[1] == ':')
@@ -29,7 +26,6 @@ void Server::part(Clients *client, std::istringstream &lineStream)
 		}
 		if (it != connectedChannels.end())
 		{
-			std::cerr << "Client found in channel: " << channelName << std::endl;
 			std::string partMessageFull;
 			_Channel[channelName]->getConnUsers().erase(client->getNickname());
 			connectedChannels.erase(it);
@@ -50,7 +46,6 @@ void Server::part(Clients *client, std::istringstream &lineStream)
 		}
 		else
 		{
-			std::cerr << "Client not found in channel: " << channelName << std::endl;
 			std::string errMsg = RED "You're not on that channel" RESET "\n";
 			send(client->getSocket(), errMsg.c_str(), errMsg.length(), 0);
 		}
@@ -60,20 +55,15 @@ void Server::part(Clients *client, std::istringstream &lineStream)
 //c'est le part pour le /quit celui la
 void Server::part(Clients *client)
 {
-	std::cerr << "Part command received from client: " << client->getNickname() << std::endl;
-
 	std::map<std::string, Channel*> channelMap = _Channel;
 	std::map<std::string, Channel*>::iterator it;
 	for (it = channelMap.begin(); it != channelMap.end(); ++it)
 	{
 		if (it->second->getConnUsers().find(client->getNickname()) != it->second->getConnUsers().end())
 		{
-			std::cerr << "Client found in channel: " << it->first << std::endl;
 			it->second->getConnUsers().erase(client->getNickname());
 			it->second->setCurrentUser(false);
 		}
-		else
-			std::cerr << "Client not found in channel: " << it->first << std::endl;
 	}
 	for (std::map<std::string, Channel*>::iterator chIt =  channelMap.begin(); it != channelMap.end(); ++chIt)
 		if (it->second->getConnUsers().empty())

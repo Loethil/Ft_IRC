@@ -10,7 +10,6 @@ void	Server::caseK(bool type, Clients *client, std::istringstream &lineStream, s
 			(*currIt)->setPwd(pwd);
 			std::string notifyMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@I.R.SIUSIU MODE " + (*currIt)->getChanName() + " :(+k) Channel needs the password\n";
 			(*currIt)->notifChan(notifyMsg);
-			std::cout << BLUE << (*currIt)->getPwd() << RESET << std::endl;
 		}
 		else
 		{

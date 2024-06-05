@@ -27,7 +27,6 @@ void	Server::start(int port)
 		throw std::runtime_error("Listen failed\n");
 		exit(EXIT_FAILURE);
 	}
-	std::cout << "The server started with success !" << std::endl;
 }
 
 //fonction permettant de lancer le serveur
@@ -92,8 +91,6 @@ void	Server::run()
 		for (it = _Channel.begin(); it != _Channel.end(); ++it)
 			delete it->second;
 	}
-	// if (client_pollfd.fd != -1)
-	// 	close(client_pollfd.fd);
 	if (server_pollfd.fd != -1)
 		close(server_pollfd.fd);
 }

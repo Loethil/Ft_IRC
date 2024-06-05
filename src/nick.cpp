@@ -6,7 +6,6 @@ int	Server::nick(Clients *client, std::istringstream &lineStream)
 	std::string nick;
 	lineStream >> nick;
 	client->setNickname(nick);
-	std::cout << "Nickname set to: " << client->getNickname() << std::endl;
 	for (std::map<int , Clients *>::iterator it = _clients.begin(); it != _clients.end(); ++it)
 	{
 		

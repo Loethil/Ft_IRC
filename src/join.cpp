@@ -52,7 +52,6 @@ void	Server::join(Clients *client, std::istringstream &lineStream)
 		{
 			Channel *new_channel = new Channel(channelName);
 			_Channel[channelName] = new_channel;
-			std::cout << "New Channel created: " << channelName << std::endl;
 		}
 
 		Channel *channel = _Channel[channelName];

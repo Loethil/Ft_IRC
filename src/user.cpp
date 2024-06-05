@@ -17,7 +17,5 @@ void	Server::user(Clients *client, std::istringstream &lineStream)
 	client->setUsername(user);
 	client->setRealname(realname);
 	client->setStatus(Clients::COMPLETED);
-	std::cout << "Username set to: " << client->getUsername() << std::endl;
-	std::cout << "Realname set to: " << client->getRealname() << std::endl;
 	sendWelcomeMessages(client->getSocket(), client);
 }

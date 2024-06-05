@@ -5,8 +5,6 @@ void Server::msg(Clients *client, std::istringstream &lineStream, char *buffer)
     std::string dest;
     std::string msg = buffer;
 
-    std::cerr << "Msg command received from client: " << client->getNickname() << std::endl;
-
     if (lineStream >> dest)
     {
         if (dest.find("#") < dest.size())

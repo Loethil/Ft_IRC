@@ -67,7 +67,7 @@ int Server::handleClientMessage(int client_socket, Clients::status status)
 
 		std::string command;
 		lineStream >> command;
-		std::cout << "read buffer: " << buffer << std::endl;
+		std::cout << YELLOW "Read buffer: " RESET << buffer << std::endl;
 
 		if (status == Clients::USERNAME)
 		{
