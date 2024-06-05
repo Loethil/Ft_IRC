@@ -1,29 +1,23 @@
 NAME = ircbot
-SRC_DIR = src
-OBJ_DIR = obj
-INC_DIR = inc
+CFLAGS = -Wall -Wextra -Werror -std=c++98
+CC = c++
+RM = rm -rf
 
-CPP = $(wildcard $(SRC_DIR)/*.cpp)
-OOO = $(CPP:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
-
-FLAG = -Wall -Wextra -Werror -std=c++98 -g -I$(INC_DIR)
+SRCS = main.cpp bot.cpp
+OBJS = $(SRCS:.cpp=.o)
 
 all: $(NAME)
 
-$(NAME): $(OOO)
-	c++ $(OOO) $(FLAG) -o $(NAME)
+$(NAME): $(OBJS)
+	@$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
-	c++ -c $< $(FLAG) -o $@
-
-$(OBJ_DIR):
-	mkdir -p $(OBJ_DIR)
+%.o:%.cpp bot.hpp
+	@$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJ_DIR)/*.o
-	rm -rf $(OBJ_DIR)
+	@$(RM) $(OBJS)
 
 fclean: clean
-	rm -f $(NAME)
+	@$(RM) $(NAME)
 
 re: fclean all
