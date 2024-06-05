@@ -50,12 +50,15 @@ class Server
         void		invite(Clients *client, std::istringstream &lineStream);
         void		joinChannel(Clients *client, std::string channelName);
         void		quit(Clients *client, std::istringstream &lineStream);
+        void        quit(Clients *client);
 		void		pong(Clients *client, const std::string &token);
         void		kick(Clients *client, std::istringstream &lineStream);
 		
         void		mode(Clients *client, std::istringstream &lineStream);
         void		caseK(bool type, Clients *client, std::istringstream &lineStream, std::vector<Channel *>::iterator currIt);
         void		caseO(bool type, Clients *client, std::istringstream &lineStream, std::vector<Channel *>::iterator currIt, std::string chan);
+
+        void        botMsg(Clients *client, char *buffer);
 
 		static void	sigInt_Hdl(int signo);
 

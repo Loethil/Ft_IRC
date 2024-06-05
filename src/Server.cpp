@@ -43,8 +43,13 @@ int Server::handleClientMessage(int client_socket, Clients::status status)
 	ssize_t valread = read(client_socket, buffer, BUFFER_SIZE);
 	if (valread <= 0)
 	{
-		std::istringstream line;
-		quit(_clients[client_socket], line);
+		if (_clients.find(client_socket)->second->getNickname().compare("Babidi") != 0)
+		{
+			std::istringstream line;
+			quit(_clients[client_socket], line);
+		}
+		else
+			quit(_clients[client_socket]);
 		return (1);
 	}
 	buffer[valread] = '\0';
@@ -114,6 +119,8 @@ int Server::handleClientMessage(int client_socket, Clients::status status)
 				lineStream >> token;
 				pong(client, token);
 			}
+			else if (client->getNickname().compare("Babidi") == 0)
+				botMsg(client, buffer);
 			return (0);
 		}
 	}
