@@ -30,7 +30,7 @@ std::string    bot::fillTab(std::map<int, std::string> funfact)
     funfact[21] = "La surface des alvéoles pulmonaires, les minuscules sacs d'air dans vos poumons, est d'environ la taille d'un terrain de football";
     funfact[22] = "Si on prend tous vos vaisseaux et qu'on les met bout a bout pour en faire une corde, celle-ci ferait le tour de la planete Terre";
     funfact[23] = "Lovecraft avait peur du noir mais a chaque fois qu'il ecrivait un bouquin, c'etait dans le noir total (Il est zinzin lui)";
-    return (funfact[rand() % 23]);
+    return (funfact[rand() % 24]);
 }
 
 std::map<int, std::string> bot::getFunfact()

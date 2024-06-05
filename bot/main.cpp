@@ -8,6 +8,7 @@ int main(int ac, char **av)
 	{
 		int sockfd;
 		struct sockaddr_in addr;
+		srand(time(NULL));
 		bot Bot;
 
 		sockfd = socket(AF_INET, SOCK_STREAM, 0);
