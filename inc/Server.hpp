@@ -37,7 +37,7 @@ class Server
         int			handleClientMessage(int client_socket, Clients::status status);
         void    	sendWelcomeMessages(int client_socket, Clients *client);
 		void		user(Clients *client, std::istringstream &lineStream);
-		void		nick(Clients *client, std::istringstream &lineStream);
+		int			nick(Clients *client, std::istringstream &lineStream);
 		bool		pass(Clients *client, std::istringstream &lineStream);
 		void		join(Clients *client, std::istringstream &lineStream);
         void    	msg(Clients *client, std::istringstream &lineStream, char *buffer);

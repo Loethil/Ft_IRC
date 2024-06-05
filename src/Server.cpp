@@ -76,7 +76,14 @@ int Server::handleClientMessage(int client_socket, Clients::status status)
 				}
 			}
 			else if (command == "NICK" && client->getClientPwd() == _pwd)
-				nick(client, lineStream);
+			{
+				if (nick(client, lineStream) == 1)
+				{
+					std::istringstream line;
+					quit(client, line);
+					return (1);
+				}
+			}
 			else if (command == "USER" && client->getClientPwd() == _pwd)
 				user(client, lineStream);
 		}

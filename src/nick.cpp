@@ -1,12 +1,23 @@
 #include "Server.hpp"
 
 //fonction permettant de set le nickname de l'utilisateur
-void	Server::nick(Clients *client, std::istringstream &lineStream)
+int	Server::nick(Clients *client, std::istringstream &lineStream)
 {
 	std::string nick;
 	lineStream >> nick;
 	client->setNickname(nick);
 	std::cout << "Nickname set to: " << client->getNickname() << std::endl;
+	for (std::map<int , Clients *>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+	{
+		
+		if (it->second->getNickname() == client->getNickname() && it->second->getSocket() != client->getSocket())
+		{
+			std::string errorMsg = RED "ERROR: A user has already this nickname. Please try another one" RESET "\n";
+			send(client->getSocket(), errorMsg.c_str(), errorMsg.size(), 0);
+			return (1);
+		}
+	}
+	return (0);
 }
 
 //fonction permettant d'afficher les messages de bienvenu a l'utilisateur
