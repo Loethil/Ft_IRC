@@ -40,32 +40,40 @@ void	Server::topic(Clients *client, std::istringstream &lineStream)
 		// Read the new topic
 		if (lineStream >> newTopic)
 		{
-			if (!newTopic.empty() && newTopic[0] == ' ' && newTopic[1] == ':')
-				newTopic.erase(0, 2);
+			if (!newTopic.empty() && newTopic[0] == ':')
+				newTopic.erase(0, 1);
 		}
 		else
 		{
-			if (_Channel[channelName])
+			if (_Channel.find(channelName) != _Channel.end())
 			{
 				if (_Channel[channelName]->getConnUsers().find(client->getNickname()) != _Channel[channelName]->getConnUsers().end() && _Channel[channelName]->getTopic().size() > 0)
 				{
 					std::string fullTopicMessage = ":I.R.SIUSIU 332 " + client->getNickname() + " " + channelName + " :" + _Channel[channelName]->getTopic() + "\n";
-					send(client->getSocket(), fullTopicMessage.c_str(), _Channel[channelName]->getTopic().length(), 0);
+					send(client->getSocket(), fullTopicMessage.c_str(), fullTopicMessage.size(), 0);
+					return ;
 				}
-				else
+				else if (_Channel[channelName]->getTopic().size() <= 0)
+				{
+					std::string noTopicMessage = ":I.R.SIUSIU 331 " + client->getNickname() + " " + channelName + " :" RED "No topic set for this channel.\n" RESET;
+					send(client->getSocket(), noTopicMessage.c_str(), noTopicMessage.size(), 0);
+					return ;
+				}
+				else if (_Channel[channelName]->getConnUsers().find(client->getNickname()) == _Channel[channelName]->getConnUsers().end())
 				{
 					std::string send_msg = ":I.R.SIUSIU 442 " + client->getNickname() + channelName + " :" RED "You are not connected to that channel.\n" RESET;
 					send(client->getSocket(), send_msg.c_str(), send_msg.size(), 0);
+					return ;
 				}
 			}
 			else
 			{
 				std::string errMsg = ":I.R.SIUSIU 403 " + client->getNickname() + " " + channelName + " :" RED "No such channel" RESET "\n";
 				send(client->getSocket(), errMsg.c_str(), errMsg.size(), 0);
+				return ;
 			}
-			return ;
 		}
-		if (_Channel[channelName] && _Channel[channelName]->getTopicMode() == false)
+		if (_Channel.find(channelName) != _Channel.end() && _Channel[channelName]->getTopicMode() == false)
 			subTopic(client, channelName, newTopic);
 		else if (_Channel[channelName])
 		{
