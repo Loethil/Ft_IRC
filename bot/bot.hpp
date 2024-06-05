@@ -1,10 +1,7 @@
-
 #pragma once
-
 #include <fcntl.h>
 #include <iostream>
 #include <string>
-#include <vector>
 #include <map>
 #include <stdlib.h>
 #include <time.h>
@@ -12,12 +9,15 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <fstream>
+#include <signal.h>
 
 class bot
 {
+    private :
+        std::map<int, std::string>  funfact;
+        int                         _socket;
+        static bool                 _stop;
     public :
-
         bot();
         ~bot();
         std::string	                fillTab(std::map<int, std::string> funfact);
@@ -26,9 +26,6 @@ class bot
         void                        flush(const std::string &message);
         int                         getSock();
         void                        setSock(int sock);
-
-    private :
-
-        std::map<int, std::string> funfact;
-        int _socket;
+        static void                 sigInt_hdl(int signo);
+        bool                        getStop();
 };

@@ -10,7 +10,7 @@ std::string    bot::fillTab(std::map<int, std::string> funfact)
     funfact[1] = "Tape Jordan9320 sur pornhub pour un compte hot++";
     funfact[2] = "Tu savais que shrek avait des problemes d'erection ?";
     funfact[3] = "La population de la Terre est d'environ 8 milliards de personnes, mais il y a environ 10 quintillions (10 000 000 000 000 000 000) de fourmis sur la planète";
-    funfact[4] = "La baleine c'est un super-heros ! Elle peut pas avoir de cancer car elle est big, et plus t'es big plus t'as de cellulesPlus t'as de cellules et plus tu peux regen vite";
+    funfact[4] = "La baleine c'est un super-heros ! Elle peut pas avoir de cancer car elle est big, et plus t'es big plus t'as de cellules, plus t'as de cellules et plus tu peux regen vite";
     funfact[5] = "Le savais tu ? La terre est plate";
     funfact[6] = "Naps prefere son urus a ses gosses (c'est un bon quand meme on l'aime)";
     funfact[7] = "Kim kardashian est en fait un agent du mossad depuis 2012";
@@ -22,7 +22,7 @@ std::string    bot::fillTab(std::map<int, std::string> funfact)
     funfact[13] = "Il y a plus d'arbres sur Terre que d'etoiles dans la Voie Lactee (J'ai dit \"VOIE LACTEE\")";
     funfact[14] = "Il y a plus de kangourous en Australie que d'habitants au Chili. Si il y avait un fight entre eux, un chilien devrait fumer environ 3 kangourous";
     funfact[15] = "Comment fonctionne la maintenance du cerveau ? il s'auto-mange (La phagocytose)";
-    funfact[16] = "300 types de fromages différents sont produits en France, ce qui en fait le pays qui en produit le plus au monde";
+    funfact[16] = "Trois-cents types de fromages différents sont produits en France, ce qui en fait le pays qui en produit le plus au monde";
     funfact[17] = "Votre estomac est suffisamment acide pour dissoudre du métal";
     funfact[18] = "Toi, tous les arbres, tous les animaux et tous les autres glandus vous descendez tous du meme ancetre organique. La seule forme de vie differente est le VIRUS";
     funfact[19] = "Votre corps produit de la chaleur équivalente à celle d'une ampoule électrique de 100 watts chaque jour";
@@ -40,7 +40,7 @@ std::map<int, std::string> bot::getFunfact()
 
 void bot::flush(const std::string &message)
 {
-	std::string normalized = message + "\r\n";
+	std::string normalized = message + "\n";
 	send(getSock(), normalized.c_str(), normalized.size(), 0);
 }
 
@@ -59,4 +59,18 @@ int bot::getSock()
 void    bot::setSock(int sock)
 {
     _socket = sock;
+}
+
+bool    bot::getStop()
+{
+    return _stop;
+}
+
+void    bot::sigInt_hdl(int signo)
+{
+    if (signo == SIGINT)
+    {
+        _stop = true;
+        std::cout << "\b\b  \b\b" << std::endl;
+    }
 }

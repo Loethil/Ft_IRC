@@ -38,3 +38,15 @@ void Server::quit(Clients *client, std::istringstream &lineStream)
 		_clients.erase(it->first);
 	}
 }
+
+void Server::quit(Clients *client)
+{
+	// Supprimer le client de la liste des clients du serveur
+	// Fermer la socket du client
+	std::map<int, Clients*>::iterator it = _clients.find(client->getSocket());
+	if (it != _clients.end())
+	{
+		delete it->second;
+		_clients.erase(it->first);
+	}
+}

@@ -71,7 +71,7 @@ void	Server::run()
 					{
 						if (handleClientMessage(client_socket, _clients[client_socket]->getStatus()) == 1)
 						{
-							close (pollfds[i].fd);
+							close(pollfds[i].fd);
 							pollfds.erase(pollfds.begin() + i);
 						}
 					}
@@ -93,8 +93,8 @@ void	Server::run()
 		for (it = _Channel.begin(); it != _Channel.end(); ++it)
 			delete it->second;
 	}
-	if (client_pollfd.fd != -1)
-		close(client_pollfd.fd);
+	// if (client_pollfd.fd != -1)
+	// 	close(client_pollfd.fd);
 	if (server_pollfd.fd != -1)
 		close(server_pollfd.fd);
 }
